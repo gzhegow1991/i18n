@@ -127,9 +127,9 @@ $config[ 'languages' ] = $languages;
 // $config[ 'lang' ] = null;
 // $config[ 'lang_default' ] = null;
 // $config[ 'logger' ] = null;
-// $config[ 'log_forgotten_group' ] = null;
-// $config[ 'log_missing_key' ] = null;
-// $config[ 'log_wrong_key' ] = null;
+// $config[ 'loggables' ][ \Gzhegow\I18n\I18nInterface::E_FORGOTTEN_GROUP ] = \Psr\Log\LogLevel::WARNING;
+// $config[ 'loggables' ][ \Gzhegow\I18n\I18nInterface::E_MISSING_WORD    ] = \Psr\Log\LogLevel::WARNING;
+// $config[ 'loggables' ][ \Gzhegow\I18n\I18nInterface::E_WRONG_AWORD     ] = \Psr\Log\LogLevel::WARNING;
 
 $i18n = $factory->newI18n($repoJson, $config);
 
@@ -182,9 +182,9 @@ $i18n->setLangDefault('en');
 // $logger = new \Monolog\Logger('lang', [ $rotatingFileHandler ]);
 // $i18n->setLogger($logger);
 // $i18n->setLoggables([
-//     \Gzhegow\I18n\I18nInterface::E_FORGOTTEN_GROUP => \Monolog\Logger::ERROR,
-//     \Gzhegow\I18n\I18nInterface::E_MISSING_WORD    => \Monolog\Logger::ERROR,
-//     \Gzhegow\I18n\I18nInterface::E_WRONG_AWORD     => \Monolog\Logger::ERROR,
+//     \Gzhegow\I18n\I18nInterface::E_FORGOTTEN_GROUP => \Monolog\Logger::WARNING,
+//     \Gzhegow\I18n\I18nInterface::E_MISSING_WORD    => \Monolog\Logger::WARNING,
+//     \Gzhegow\I18n\I18nInterface::E_WRONG_AWORD     => \Monolog\Logger::WARNING,
 // ]);
 
 

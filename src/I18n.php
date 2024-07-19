@@ -117,9 +117,9 @@ class I18n implements I18nInterface
 
         $logger = $config[ 'logger' ] ?? null;
         $loggables = [];
-        $loggables[ I18nInterface::E_FORGOTTEN_GROUP ] = (int) ($config[ 'log_forgotten_group' ] ?? null);
-        $loggables[ I18nInterface::E_MISSING_WORD ] = (int) ($config[ 'log_missing_key' ] ?? null);
-        $loggables[ I18nInterface::E_WRONG_AWORD ] = (int) ($config[ 'log_wrong_key' ] ?? null);
+        $loggables[ I18nInterface::E_FORGOTTEN_GROUP ] = $config[ 'loggables' ][ I18nInterface::E_FORGOTTEN_GROUP ] ?? null;
+        $loggables[ I18nInterface::E_MISSING_WORD ] = $config[ 'loggables' ][ I18nInterface::E_MISSING_WORD ] ?? null;
+        $loggables[ I18nInterface::E_WRONG_AWORD ] = $config[ 'loggables' ][ I18nInterface::E_WRONG_AWORD ] ?? null;
 
         $choiceDefault = new DefaultChoice();
 
@@ -372,9 +372,9 @@ class I18n implements I18nInterface
      */
     public function setLoggables(array $loggables) // : static
     {
-        $this->loggables[ I18nInterface::E_FORGOTTEN_GROUP ] = (int) ($loggables[ I18nInterface::E_FORGOTTEN_GROUP ] ?? null);
-        $this->loggables[ I18nInterface::E_MISSING_WORD ] = (int) ($loggables[ I18nInterface::E_MISSING_WORD ] ?? null);
-        $this->loggables[ I18nInterface::E_WRONG_AWORD ] = (int) ($loggables[ I18nInterface::E_WRONG_AWORD ] ?? null);
+        $this->loggables[ I18nInterface::E_FORGOTTEN_GROUP ] = $loggables[ I18nInterface::E_FORGOTTEN_GROUP ] ?? null;
+        $this->loggables[ I18nInterface::E_MISSING_WORD ] = $loggables[ I18nInterface::E_MISSING_WORD ] ?? null;
+        $this->loggables[ I18nInterface::E_WRONG_AWORD ] = $loggables[ I18nInterface::E_WRONG_AWORD ] ?? null;
 
         return $this;
     }

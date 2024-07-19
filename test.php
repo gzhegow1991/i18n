@@ -93,9 +93,9 @@ $i18n->setLangDefault('en');
 // $logger = new \Monolog\Logger('lang', [ $rotatingFileHandler ]);
 // $i18n->setLogger($logger);
 // $i18n->setLoggables([
-//     \Gzhegow\I18n\I18nInterface::E_FORGOTTEN_GROUP => \Psr\Log\LogLevel::WARNING,
-//     \Gzhegow\I18n\I18nInterface::E_MISSING_WORD    => \Psr\Log\LogLevel::WARNING,
-//     \Gzhegow\I18n\I18nInterface::E_WRONG_AWORD     => \Psr\Log\LogLevel::WARNING,
+//     \Gzhegow\I18n\I18nInterface::E_FORGOTTEN_GROUP => \Monolog\Logger::WARNING,
+//     \Gzhegow\I18n\I18nInterface::E_MISSING_WORD    => \Monolog\Logger::WARNING,
+//     \Gzhegow\I18n\I18nInterface::E_WRONG_AWORD     => \Monolog\Logger::WARNING,
 // ]);
 
 
