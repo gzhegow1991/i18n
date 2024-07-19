@@ -1,0 +1,33 @@
+{
+  "name": "gzhegow/i18n",
+  "type": "library",
+
+  "authors": [
+    {
+      "name": "gzhegow",
+      "email": "6562680@gmail.com"
+    }
+  ],
+
+  "require": {
+    "php": "^7.2|^8.0",
+
+    "ext-bcmath": "*",
+    "ext-mbstring": "*"
+  },
+
+  "autoload": {
+    "psr-4": {
+      "Gzhegow\\I18n\\": "src/"
+    }
+  },
+
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+
+  "config": {
+    "optimize-autoloader": true,
+
+    "sort-packages": false
+  }
+}

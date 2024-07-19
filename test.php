@@ -1,82 +1,3 @@
-# Lang
-
-## Что это?
-
-Языковой пакет для установка на чистый PHP без фреймворков.  
-Задача - внедрение языковых ссылок, переводимых текстов (с поддержкой множественного числа и параметров), и вообще i18n.
-
-## Установка
-
-```
-composer require gzhegow/lang;
-```
-
-## Результат примера
-
-```
-> php test.php
-
-TEST - Получаем часть пути, который подставляется при генерации URL, для языка по-умолчанию должен быть NULL
-OK
-OK
-
-TEST - Строим регулярное выражение, которое подключается в роутер для SEO оптимизации
-OK
-OK
-
-TEST - Интерполяция (подстановка) строк
-OK
-
-TEST - Получаем фразу (обратите внимание, что фраза до перевода начинаются с `@`, чтобы избежать повторного перевода)
-OK
-OK
-OK
-
-TEST - Получаем из памяти переводы (несколько) и подставляем в них аргументы (рекомендую в имени ключа указывать число аргументов)
-OK
-
-TEST - Проверка фразы, которая есть только в русском языке (ещё не переведена переводчиком)
-OK
-OK
-
-TEST - Проверка выбора фразы по количеству / EN
-OK
-OK
-OK
-OK
-
-TEST - Проверка выбора фразы по количеству / RU
-OK
-OK
-OK
-
-TEST - Проверка выбора фразы по количеству / EN-RU
-OK
-OK
-
-TEST - Проверяем наличие групп напрямую в репозитории
-OK
-
-TEST - Проверяем наличие переводов в репозитории
-OK
-
-TEST - Получаем переводы напрямую из репозитория
-OK
-
-TEST - Проверяем наличие переводов в памяти без запроса в репозиторий
-OK
-
-TEST - Получаем переводы из памяти без запроса в репозиторий
-OK
-
-TEST - Копируем имеющийся перевод в другой язык (если нам прислали переведенный файл)
-OK
-OK
-```
-
-## Пример
-
-```php
 <?php
 
 require_once __DIR__ . '/vendor/autoload.php';
@@ -117,9 +38,9 @@ $config[ 'languages' ] = $languages;
 // $config[ 'lang' ] = null;
 // $config[ 'lang_default' ] = null;
 // $config[ 'logger' ] = null;
-// $config[ 'log_forgotten_group' ] = null;
-// $config[ 'log_missing_key' ] = null;
-// $config[ 'log_wrong_key' ] = null;
+// $config[ 'loggables' ][ \Gzhegow\I18n\I18nInterface::E_FORGOTTEN_GROUP ] = \Psr\Log\LogLevel::WARNING;
+// $config[ 'loggables' ][ \Gzhegow\I18n\I18nInterface::E_MISSING_WORD    ] = \Psr\Log\LogLevel::WARNING;
+// $config[ 'loggables' ][ \Gzhegow\I18n\I18nInterface::E_WRONG_AWORD     ] = \Psr\Log\LogLevel::WARNING;
 
 $i18n = $factory->newI18n($repoJson, $config);
 
@@ -172,9 +93,9 @@ $i18n->setLangDefault('en');
 // $logger = new \Monolog\Logger('lang', [ $rotatingFileHandler ]);
 // $i18n->setLogger($logger);
 // $i18n->setLoggables([
-//     \Gzhegow\I18n\I18nInterface::E_FORGOTTEN_GROUP => \Monolog\Logger::ERROR,
-//     \Gzhegow\I18n\I18nInterface::E_MISSING_WORD    => \Monolog\Logger::ERROR,
-//     \Gzhegow\I18n\I18nInterface::E_WRONG_AWORD     => \Monolog\Logger::ERROR,
+//     \Gzhegow\I18n\I18nInterface::E_FORGOTTEN_GROUP => \Psr\Log\LogLevel::WARNING,
+//     \Gzhegow\I18n\I18nInterface::E_MISSING_WORD    => \Psr\Log\LogLevel::WARNING,
+//     \Gzhegow\I18n\I18nInterface::E_WRONG_AWORD     => \Psr\Log\LogLevel::WARNING,
 // ]);
 
 
@@ -501,5 +422,3 @@ $fnAssert(is_file($langDir . '/by/main.json'));
 $gen = $repoJson->delete($poolItemsCloned);
 $fnAwait($gen);
 $fnAssert(! file_exists($langDir . '/by/main.json'));
-
-```
