@@ -284,13 +284,6 @@ $i18n->setLangDefault('en');
 // > ТЕСТЫ
 
 $fnAssert = function (bool $bool) {
-    $class = new class extends \ErrorException {
-        public function __construct($message = "", $code = 0, $severity = 1, $filename = __FILE__, $line = __LINE__, Throwable $previous = null) { parent::__construct($message, $code, $severity, $filename, $line, $previous); }
-
-        public $file;
-        public $line;
-    };
-
     if (! $bool) {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[ 0 ];
 
