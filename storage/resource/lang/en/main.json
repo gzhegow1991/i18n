@@ -3,7 +3,5 @@
   "main.message.hello_multiline": [ "Hello!\nHow are you?" ],
   "main.message.hello_$": [ "Hello, [:name:]" ],
   "main.message.hello_$$": [ "Hello, [:name1:] and [:name2:]" ],
-  "main.title.plural": [ "Item", "Items" ],
-  "main.title.plural_multiline": [ "Item\nSubitem", "Items\nSubitems" ],
-  "main.choice.apple": [ "[:choice:] apple", "[:choice:] apples" ]
+  "main.title.apple": [ "apple", "apples" ]
 }

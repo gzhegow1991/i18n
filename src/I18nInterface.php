@@ -6,6 +6,7 @@
 
 namespace Gzhegow\I18n;
 
+use Gzhegow\I18n\Pool\PoolInterface;
 use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
 use Gzhegow\I18n\Struct\AwordInterface;
@@ -20,6 +21,9 @@ interface I18nInterface
     const E_WRONG_AWORD     = 1 << 0;
     const E_FORGOTTEN_GROUP = 1 << 1;
     const E_MISSING_WORD    = 1 << 2;
+
+
+    public function getPool() : PoolInterface;
 
 
     /**
@@ -95,6 +99,11 @@ interface I18nInterface
     /**
      * @return static
      */
+    public function resetUses();
+
+    /**
+     * @return static
+     */
     public function useAwords(array $awords, array $groups = null, array $langs = null);
 
     /**
@@ -105,7 +114,7 @@ interface I18nInterface
     /**
      * @return static
      */
-    public function resetLoaded();
+    public function clearUsesLoaded();
 
     /**
      * @return static
@@ -122,6 +131,23 @@ interface I18nInterface
      */
     public function getLangsLoaded(array $groups = null) : array;
 
+
+    public function interpolate(?string $phrase, array $placeholders = null) : ?string;
+
+
+    /**
+     * @param array<AwordInterface|string>      $awords
+     * @param array<string, string>[]|null      $placeholders
+     * @param array<GroupInterface|string>|null $groups
+     * @param array<LangInterface|string>|null  $langs
+     *
+     * @return string[]
+     */
+    public function phrasesOrDefault(
+        array $awords,
+        array $placeholders = null,
+        array $groups = null, array $langs = null
+    ) : array;
 
     /**
      * @param array<AwordInterface|string>      $awords
@@ -140,18 +166,16 @@ interface I18nInterface
     ) : array;
 
     /**
-     * @param array<AwordInterface|string>      $awords
-     * @param array<string, string>[]|null      $placeholders
+     * @param AwordInterface|string             $aword
+     * @param array<string, string>|null        $placeholders
      * @param array<GroupInterface|string>|null $groups
      * @param array<LangInterface|string>|null  $langs
-     *
-     * @return string[]
      */
-    public function phrasesOrDefault(
-        array $awords,
+    public function phraseOrDefault(
+        $aword,
         array $placeholders = null,
         array $groups = null, array $langs = null
-    ) : array;
+    ) : string;
 
     /**
      * @param AwordInterface|string             $aword
@@ -168,18 +192,21 @@ interface I18nInterface
         array $groups = null, array $langs = null
     ) : ?string;
 
+
     /**
-     * @param AwordInterface|string             $aword
-     * @param array<string, string>|null        $placeholders
+     * @param array<int|float|string>           $numbers
+     * @param array<AwordInterface|string>      $awords
+     * @param array<string, string>[]|null      $placeholders
      * @param array<GroupInterface|string>|null $groups
      * @param array<LangInterface|string>|null  $langs
+     *
+     * @return array{0: string, 1: string}[]
      */
-    public function phraseOrDefault(
-        $aword,
+    public function choicesOrDefault(
+        array $numbers, array $awords,
         array $placeholders = null,
         array $groups = null, array $langs = null
-    ) : string;
-
+    ) : array;
 
     /**
      * @param array<int|float|string>           $numbers
@@ -189,7 +216,7 @@ interface I18nInterface
      * @param array<GroupInterface|string>|null $groups
      * @param array<LangInterface|string>|null  $langs
      *
-     * @return (string|null)[]
+     * @return array{0: string, 1: string|null}[]
      * @throws RuntimeException
      */
     public function choices(
@@ -199,16 +226,16 @@ interface I18nInterface
     ) : array;
 
     /**
-     * @param array<int|float|string>           $numbers
-     * @param array<AwordInterface|string>      $awords
-     * @param array<string, string>[]|null      $placeholders
+     * @param int|float|string                  $number
+     * @param AwordInterface|string             $aword
+     * @param array<string, string>|null        $placeholders
      * @param array<GroupInterface|string>|null $groups
      * @param array<LangInterface|string>|null  $langs
      *
-     * @return string[]
+     * @return array{0: string, 1: string}
      */
-    public function choicesOrDefault(
-        array $numbers, array $awords,
+    public function choiceOrDefault(
+        $number, $aword,
         array $placeholders = null,
         array $groups = null, array $langs = null
     ) : array;
@@ -221,26 +248,14 @@ interface I18nInterface
      * @param array<GroupInterface|string>|null $groups
      * @param array<LangInterface|string>|null  $langs
      *
+     * @return array{0: string, 1: string|null}
      * @throws RuntimeException
      */
     public function choice(
         $number, $aword, array $fallback = null,
         array $placeholders = null,
         array $groups = null, array $langs = null
-    ) : ?string;
-
-    /**
-     * @param int|float|string                  $number
-     * @param AwordInterface|string             $aword
-     * @param array<string, string>|null        $placeholders
-     * @param array<GroupInterface|string>|null $groups
-     * @param array<LangInterface|string>|null  $langs
-     */
-    public function choiceOrDefault(
-        $number, $aword,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
-    ) : string;
+    ) : array;
 
 
     /**
@@ -266,7 +281,4 @@ interface I18nInterface
      * }
      */
     public function getOrDefault(array $awords, array $groups = null, array $langs = null) : array;
-
-
-    public function interpolate(?string $phrase, array $placeholders = null) : ?string;
 }

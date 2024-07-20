@@ -70,15 +70,13 @@ class MemoryPool implements PoolInterface
                         $_wordString
                     );
 
-                    if (isset($this->poolItemList[ $index ])) {
-                        $report[] = [
-                            'status' => true,
-                            //
-                            'word'   => $_wordString,
-                            'group'  => $_groupString,
-                            'lang'   => $_langString,
-                        ];
-                    }
+                    $report[] = [
+                        'status' => isset($this->poolItemList[ $index ]),
+                        //
+                        'word'   => $_wordString,
+                        'group'  => $_groupString,
+                        'lang'   => $_langString,
+                    ];
                 }
             }
         }

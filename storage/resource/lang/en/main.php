@@ -17,20 +17,8 @@ How are you?',
         'Hello, [:name1:] and [:name2:]',
     ],
 
-    'main.title.plural' => [
-        'Item',
-        'Items',
-    ],
-
-    'main.title.plural_multiline' => [
-        'Item
-Subitem',
-        'Items
-Subitems',
-    ],
-
-    'main.choice.apple' => [
-        '[:choice:] apple',
-        '[:choice:] apples',
+    'main.title.apple' => [
+        'apple',
+        'apples',
     ],
 ];

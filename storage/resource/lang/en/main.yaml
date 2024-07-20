@@ -6,23 +6,11 @@ main.message.hello_multiline: |-
   How are you?
 
 main.message.hello_$:
-  - Hello, [:name:]
+  - "Hello, [:name:]"
 
 main.message.hello_$$:
-  - Hello, [:name1:] and [:name2:]
+  - "Hello, [:name1:] and [:name2:]"
 
-main.title.plural:
-  - Item
-  - Items
-
-main.title.plural_multiline:
-  - |-
-    Item
-    Subitem
-  - |-
-    Items
-    Subitems
-
-main.choice.apple:
-  - "[:choice:] apple"
-  - "[:choice:] apples"
+main.title.apple:
+  - apple
+  - apples
