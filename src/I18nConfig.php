@@ -1,5 +1,46 @@
-<?php return (static function () {
-    $languages = [
+<?php
+/**
+ * @noinspection PhpUndefinedNamespaceInspection
+ * @noinspection PhpUndefinedClassInspection
+ */
+
+namespace Gzhegow\I18n;
+
+use Gzhegow\Lib\Lib;
+use Gzhegow\Lib\Config\Config;
+use Gzhegow\I18n\Config\AbstractConfig;
+use Gzhegow\I18n\Choice\ChoiceInterface;
+use Gzhegow\I18n\Exception\LogicException;
+
+
+/**
+ * @property array<string, array{
+ *     0: string,
+ *     1: string,
+ *     2: string,
+ *     3: string
+ * }>                                               $languages
+ * @property array<string, ChoiceInterface>         $choices
+ *
+ * @property array<string, array<string, string[]>> $phpLocales
+ *
+ * @property string                                 $lang
+ * @property string                                 $langDefault
+ *
+ * @property \Psr\Log\LoggerInterface               $logger
+ * @property array<int, int>                        $loggables
+ */
+class I18nConfig extends Config
+{
+    /**
+     * @var array<string, array{
+     *      0: string,
+     *      1: string,
+     *      2: string,
+     *      3: string
+     *  }>
+     */
+    protected $languages = [
         'en' => [ 'en_GB', 'Latn', 'English', 'English' ],
         'ru' => [ 'ru_RU', 'Cyrl', 'Russian', 'Русский' ],
 
@@ -295,17 +336,253 @@
         // 'xog'         => [ 'xog', 'Latn', 'Soga', 'Olusoga' ],
         // 'yav'         => [ 'yav', 'Latn', 'Yangben', 'Nuasue' ],
     ];
+    /**
+     * @var array<string, ChoiceInterface>
+     */
+    protected $choices = [
+        'en' => null,
+        'ru' => null,
+    ];
 
-    foreach ( $languages as $lang => $array ) {
-        $languages[ $lang ] = [
-            'lang'         => $lang,
+    /**
+     * @var array<string, array<string, string[]>>
+     */
+    protected $phpLocales = [
+        'ru' => [
+            // > пример
+            // LC_COLLATE  => [ $unix = 'ru_RU.UTF-8', $unix = 'ru_RU', $windows = 'Russian_Russia.1251', $windows = 'ru-RU' ],
             //
-            'locale'       => $array[ 0 ],
-            'script'       => $array[ 1 ],
-            'titleEnglish' => $array[ 2 ],
-            'titleNative'  => $array[ 3 ],
-        ];
+            LC_COLLATE  => [ 'ru_RU.UTF-8', 'ru_RU', 'Russian_Russia.1251', 'ru-RU' ],
+            LC_CTYPE    => [ 'ru_RU.UTF-8', 'ru_RU', 'Russian_Russia.1251', 'ru-RU' ],
+            LC_TIME     => [ 'ru_RU.UTF-8', 'ru_RU', 'Russian_Russia.1251', 'ru-RU' ],
+            LC_MONETARY => [ 'ru_RU.UTF-8', 'ru_RU', 'Russian_Russia.1251', 'ru-RU' ],
+            //
+            // > рекомендую использовать `C` в качестве локали для цифр, иначе можно столкнуться с запятой вместо десятичной точки
+            LC_NUMERIC  => [ 'C' ],
+            //
+            // > если вы скомпилировали PHP с поддержкой `libintl`, можно LC_MESSAGES тоже указать
+            // LC_MESSAGES => [ 'ru_RU.UTF-8', 'ru_RU', 'Russian_Russia.1251', 'ru-RU' ],
+        ],
+        'en' => [
+            LC_COLLATE  => [ 'en_US', 'en-US' ],
+            LC_CTYPE    => [ 'en_US', 'en-US' ],
+            LC_TIME     => [ 'en_US', 'en-US' ],
+            LC_MONETARY => [ 'en_US', 'en-US' ],
+            LC_NUMERIC  => [ 'C' ],
+        ],
+    ];
+
+    /**
+     * @var string
+     */
+    protected $lang;
+    /**
+     * @var string
+     */
+    protected $langDefault;
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger;
+    /**
+     * @see I18nInterface::E_LIST
+     * @see \Psr\Log\LogLevel::WARNING
+     *
+     * @var array<int, int>
+     */
+    protected $loggables = [
+        // \Gzhegow\I18n\I18nInterface::E_FORGOTTEN_GROUP => \Psr\Log\LogLevel::WARNING,
+        // \Gzhegow\I18n\I18nInterface::E_MISSING_WORD    => \Psr\Log\LogLevel::WARNING,
+        // \Gzhegow\I18n\I18nInterface::E_WRONG_AWORD     => \Psr\Log\LogLevel::WARNING,
+    ];
+
+
+    public function __construct()
+    {
+        $defaultChoice = new \Gzhegow\I18n\Choice\DefaultChoice();
+        $ruChoice = new \Gzhegow\I18n\Choice\RuChoice();
+
+        $this->choices[ 'en' ] = $defaultChoice;
+        $this->choices[ 'ru' ] = $ruChoice;
     }
 
-    return $languages;
-})();
+
+    public function validate()
+    {
+        foreach ( $this->languages as $key => $array ) {
+            [
+                $locale,
+                $script,
+                $titleEnglish,
+                $titleNative,
+            ] = $array;
+
+            if (null === Lib::parse_string_not_empty($locale)) {
+                throw new LogicException(
+                    [
+                        'The `locale` should be non-empty string',
+                        $locale,
+                    ]
+                );
+            }
+
+            if (null === Lib::parse_string_not_empty($script)) {
+                throw new LogicException(
+                    [
+                        'The `script` should be non-empty string',
+                        $locale,
+                    ]
+                );
+            }
+
+            if (null === Lib::parse_string_not_empty($titleEnglish)) {
+                throw new LogicException(
+                    [
+                        'The `titleEnglish` should be non-empty string',
+                        $locale,
+                    ]
+                );
+            }
+
+            if (null === Lib::parse_string_not_empty($titleNative)) {
+                throw new LogicException(
+                    [
+                        'The `titleNative` should be non-empty string',
+                        $locale,
+                    ]
+                );
+            }
+
+            $this->languages[ $key ] = [
+                'lang'         => $key,
+                'locale'       => $locale,
+                'script'       => $script,
+                'titleEnglish' => $titleEnglish,
+                'titleNative'  => $titleNative,
+            ];
+        }
+
+        $phpLocalesIndex = [
+            'LC_CTYPE'    => true,
+            'LC_NUMERIC'  => true,
+            'LC_TIME'     => true,
+            'LC_COLLATE'  => true,
+            'LC_MONETARY' => true,
+            'LC_ALL'      => true,
+            'LC_MESSAGES' => true,
+        ];
+        foreach ( $phpLocalesIndex as $constName => $bool ) {
+            unset($phpLocalesIndex[ $constName ]);
+
+            if (defined($constName)) {
+                $phpLocalesIndex[ constant($constName) ] = $bool;
+            }
+        }
+        foreach ( $this->phpLocales as $lang => $arr ) {
+            if (! isset($this->languages[ $lang ])) {
+                throw new LogicException(
+                    [
+                        'The `lang` should be existing language',
+                        $lang,
+                        $this,
+                    ]
+                );
+            }
+
+            foreach ( $arr as $phpLocale => $aarr ) {
+                if (! isset($phpLocalesIndex[ $phpLocale ])) {
+                    throw new LogicException(
+                        [
+                            'The `phpLocale` should be existing PHP locale constant',
+                            $phpLocale,
+                            $this,
+                        ]
+                    );
+                }
+
+                while ( count($aarr) ) {
+                    $phpLocale = array_shift($aarr);
+
+                    if (null === Lib::parse_string_not_empty($phpLocale)) {
+                        throw new LogicException(
+                            [
+                                'The `phpLocale` should be non-empty string',
+                                $phpLocale,
+                                $this,
+                            ]
+                        );
+                    }
+                }
+            }
+        }
+
+        foreach ( $this->choices as $lang => $choiceObject ) {
+            if (! isset($this->languages[ $lang ])) {
+                throw new LogicException(
+                    [
+                        'The `lang` should be existing language',
+                        $lang,
+                        $this,
+                    ]
+                );
+            }
+
+            if (! is_a($choiceObject, ChoiceInterface::class)) {
+                throw new LogicException(
+                    [
+                        'Each of `choices` should be instance of: ' . ChoiceInterface::class,
+                        $lang,
+                        $this,
+                    ]
+                );
+            }
+        }
+
+        if (null !== $this->lang) {
+            if (! isset($this->languages[ $this->lang ])) {
+                throw new LogicException(
+                    [
+                        'The `lang` should be existing language',
+                        $this->lang,
+                        $this,
+                    ]
+                );
+            }
+        }
+
+        if (null !== $this->langDefault) {
+            if (! isset($this->languages[ $this->langDefault ])) {
+                throw new LogicException(
+                    [
+                        'The `lang_default` should be existing language',
+                        $this->langDefault,
+                        $this,
+                    ]
+                );
+            }
+        }
+
+        if (null !== $this->logger) {
+            if (! is_a($this->logger, '\Psr\Log\LoggerInterface')) {
+                throw new LogicException(
+                    [
+                        'The `logger` should be instance of: \Psr\Log\LoggerInterface',
+                        $this,
+                    ]
+                );
+            }
+        }
+
+        foreach ( $this->loggables as $error => $errorLevel ) {
+            if (isset(I18nInterface::E_LIST[ $error ])) {
+                throw new LogicException(
+                    [
+                        'The `logger` should be instance of: \Psr\Log\LoggerInterface',
+                        $this,
+                    ]
+                );
+            }
+        }
+    }
+}

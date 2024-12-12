@@ -1,6 +1,6 @@
 <?php
 
-namespace Gzhegow\I18n\Repo\File\Struct;
+namespace Gzhegow\I18n\Repository\File\Struct;
 
 
 interface FileSourceInterface

@@ -1,6 +1,6 @@
 <?php
 
-namespace Gzhegow\I18n\Repo;
+namespace Gzhegow\I18n\Repository;
 
 use Gzhegow\I18n\Struct\WordInterface;
 use Gzhegow\I18n\Struct\LangInterface;
@@ -8,7 +8,7 @@ use Gzhegow\I18n\Struct\GroupInterface;
 use Gzhegow\I18n\Pool\PoolItemInterface;
 
 
-interface RepoInterface
+interface RepositoryInterface
 {
     public function isInitialized() : bool;
 

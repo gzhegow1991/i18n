@@ -2,9 +2,10 @@
 
 namespace Gzhegow\I18n\Struct;
 
-use Gzhegow\I18n\Lib;
+use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Type\Type;
 use Gzhegow\I18n\Choice\ChoiceInterface;
+use Gzhegow\I18n\Exception\LogicException;
 
 
 class Language implements LanguageInterface
@@ -46,23 +47,46 @@ class Language implements LanguageInterface
     {
     }
 
+
     public static function from($from) : self
     {
-        return static::tryFrom($from);
-    }
-
-    public static function tryFrom($from) : ?self
-    {
-        $instance = null
-            ?? static::tryFromInstance($from)
-            ?? static::tryFromArray($from);
+        $instance = static::tryFrom($from);
 
         return $instance;
     }
 
+    public static function tryFrom($from, \Throwable &$last = null) : ?self
+    {
+        $last = null;
+
+        Lib::php_errors_start($b);
+
+        $instance = null
+            ?? static::tryFromInstance($from)
+            ?? static::tryFromArray($from);
+
+        $errors = Lib::php_errors_end($b);
+
+        if (null === $instance) {
+            foreach ( $errors as $error ) {
+                $last = new LogicException($error, null, $last);
+            }
+        }
+
+        return $instance;
+    }
+
+
     public static function tryFromInstance($from) : ?self
     {
-        if (! is_a($from, static::class)) return null;
+        if (! is_a($from, static::class)) {
+            return Lib::php_error(
+                [
+                    'The `from` should be instance of: ' . static::class,
+                    $from,
+                ]
+            );
+        }
 
         return $from;
     }
@@ -70,7 +94,12 @@ class Language implements LanguageInterface
     public static function tryFromArray($from) : ?self
     {
         if (! is_array($from)) {
-            return null;
+            return Lib::php_error(
+                [
+                    'The `from` should be non-empty string',
+                    $from,
+                ]
+            );
         }
 
         $lang = $from[ 'lang' ];
@@ -86,23 +115,48 @@ class Language implements LanguageInterface
         $titleNative = $titleNative ?? $titleEnglish;
 
         if (null === ($_lang = Type::parseLang($lang))) {
-            return null;
+            return Lib::php_error(
+                [
+                    'The `from[lang]` should be valid `lang`',
+                    $from,
+                ]
+            );
         }
 
-        if (null === ($_locale = Lib::parse_string($locale))) {
-            return null;
+        if (null === ($_locale = Lib::parse_string_not_empty($locale))) {
+            return Lib::php_error(
+                [
+                    'The `from[locale]` should be non-empty string',
+                    $from,
+                ]
+            );
         }
 
-        if (null === ($_script = Lib::parse_string($script))) {
-            return null;
+        if (null === ($_script = Lib::parse_string_not_empty($script))) {
+            return Lib::php_error(
+                [
+                    'The `from[script]` should be non-empty string',
+                    $from,
+                ]
+            );
         }
 
-        if (null === ($_titleEnglish = Lib::parse_string($titleEnglish))) {
-            return null;
+        if (null === ($_titleEnglish = Lib::parse_string_not_empty($titleEnglish))) {
+            return Lib::php_error(
+                [
+                    'The `from[titleEnglish]` should be non-empty string',
+                    $from,
+                ]
+            );
         }
 
-        if (null === ($_titleNative = Lib::parse_string($titleNative))) {
-            return null;
+        if (null === ($_titleNative = Lib::parse_string_not_empty($titleNative))) {
+            return Lib::php_error(
+                [
+                    'The `from[titleNative]` should be non-empty string',
+                    $from,
+                ]
+            );
         }
 
         $_langString = $_lang->getValue();
@@ -117,8 +171,13 @@ class Language implements LanguageInterface
         $instance->titleNative = $_titleNative;
 
         if (null !== $phpLocales) {
-            if (! is_array($phpLocales)) {
-                return null;
+            if (! is_array($phpLocales) || ! $phpLocales) {
+                return Lib::php_error(
+                    [
+                        'The `from[phpLocales]` should be non-empty array',
+                        $from,
+                    ]
+                );
             }
 
             $instance->setPhpLocales($phpLocales);
@@ -126,7 +185,12 @@ class Language implements LanguageInterface
 
         if (null !== $choice) {
             if (! is_a($choice, ChoiceInterface::class)) {
-                return null;
+                return Lib::php_error(
+                    [
+                        'The `from[choice]` should be instance of: ' . ChoiceInterface::class,
+                        $choice,
+                    ]
+                );
             }
 
             $instance->setChoice($choice);
@@ -231,11 +295,5 @@ class Language implements LanguageInterface
     public function setChoice(ChoiceInterface $choice) : void
     {
         $this->choice = $choice;
-    }
-
-
-    public function __debugInfo()
-    {
-        return get_object_vars($this);
     }
 }

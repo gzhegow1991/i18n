@@ -2,9 +2,10 @@
 
 namespace Gzhegow\I18n\Struct;
 
-use Gzhegow\I18n\Lib;
+use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\I18n;
 use Gzhegow\I18n\Type\Type;
+use Gzhegow\I18n\Exception\LogicException;
 
 
 class Aword implements AwordInterface
@@ -33,24 +34,45 @@ class Aword implements AwordInterface
     {
     }
 
+
     public static function from($from) : self
     {
-        return static::tryFrom($from);
-    }
-
-    public static function tryFrom($from) : ?self
-    {
-        $instance = null
-            ?? static::tryFromInstance($from)
-            ?? static::tryFromString($from);
+        $instance = static::tryFrom($from);
 
         return $instance;
     }
 
+    public static function tryFrom($from, \Throwable &$last = null) : ?self
+    {
+        $last = null;
+
+        Lib::php_errors_start($b);
+
+        $instance = null
+            ?? static::tryFromInstance($from)
+            ?? static::tryFromString($from);
+
+        $errors = Lib::php_errors_end($b);
+
+        if (null === $instance) {
+            foreach ( $errors as $error ) {
+                $last = new LogicException($error, null, $last);
+            }
+        }
+
+        return $instance;
+    }
+
+
     public static function tryFromInstance($from) : ?self
     {
         if (! is_a($from, static::class)) {
-            return null;
+            return Lib::php_error(
+                [
+                    'The `from` should be instance of: ' . static::class,
+                    $from,
+                ]
+            );
         }
 
         return $from;
@@ -58,8 +80,13 @@ class Aword implements AwordInterface
 
     public static function tryFromString($from) : ?self
     {
-        if (null === ($string = Lib::parse_string($from))) {
-            return null;
+        if (null === ($string = Lib::parse_string_not_empty($from))) {
+            return Lib::php_error(
+                [
+                    'The `from` should be non-empty string',
+                    $from,
+                ]
+            );
         }
 
         $wordString = null;
@@ -134,11 +161,5 @@ class Aword implements AwordInterface
     public function getPhrase() : string
     {
         return $this->phrase;
-    }
-
-
-    public function __debugInfo()
-    {
-        return get_object_vars($this);
     }
 }

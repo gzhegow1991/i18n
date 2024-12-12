@@ -10,10 +10,10 @@ use Gzhegow\I18n\Pool\PoolInterface;
 use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
 use Gzhegow\I18n\Struct\AwordInterface;
-use Gzhegow\I18n\Choice\ChoiceInterface;
 use Gzhegow\I18n\Pool\PoolItemInterface;
 use Gzhegow\I18n\Struct\LanguageInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
+use Gzhegow\I18n\Repository\RepositoryInterface;
 
 
 interface I18nInterface
@@ -22,6 +22,14 @@ interface I18nInterface
     const E_FORGOTTEN_GROUP = 1 << 1;
     const E_MISSING_WORD    = 1 << 2;
 
+    const E_LIST = [
+        self::E_WRONG_AWORD     => true,
+        self::E_FORGOTTEN_GROUP => true,
+        self::E_MISSING_WORD    => true,
+    ];
+
+
+    public function getRepository() : RepositoryInterface;
 
     public function getPool() : PoolInterface;
 
@@ -73,27 +81,14 @@ interface I18nInterface
     /**
      * @param \Psr\Log\LoggerInterface $logger
      *
-     * @return static
+     * @return \Psr\Log\LoggerInterface|null
      */
     public function setLogger($logger);
 
     /**
      * @param array<int, int> $loggables
-     *
-     * @return static
      */
-    public function setLoggables(array $loggables);
-
-
-    /**
-     * @return static
-     */
-    public function registerPhpLocales(string $lang, array $phpLocales);
-
-    /**
-     * @return static
-     */
-    public function registerChoice(string $lang, ChoiceInterface $choice);
+    public function setLoggables(array $loggables) : array;
 
 
     /**

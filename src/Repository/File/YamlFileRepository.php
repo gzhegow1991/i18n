@@ -1,22 +1,24 @@
 <?php
 /** @noinspection PhpComposerExtensionStubsInspection */
 
-namespace Gzhegow\I18n\Repo\File;
+namespace Gzhegow\I18n\Repository\File;
 
-use Gzhegow\I18n\Lib;
 use Gzhegow\I18n\Type\Type;
 use Gzhegow\I18n\Pool\PoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
-use Gzhegow\I18n\Repo\File\Struct\FileSourceInterface;
+use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
 
 
-class JsonFileRepo extends AbstractFileRepo
+class YamlFileRepository extends AbstractFileRepository
 {
     public function __construct(string $langDir)
     {
-        if (! extension_loaded('json')) {
+        if (! extension_loaded('yaml')) {
             throw new RuntimeException(
-                'Extension `ext-json` is required to use this repository: ' . Lib::php_dump($this)
+                [
+                    'Extension `ext-yaml` is required to use this repository',
+                    $this,
+                ]
             );
         }
 
@@ -29,7 +31,7 @@ class JsonFileRepo extends AbstractFileRepo
         $_lang = Type::theLang($lang);
         $_group = Type::theGroup($group);
 
-        $path = $this->langDir . '/' . $_lang . '/' . $_group . '.json';
+        $path = $this->langDir . '/' . $_lang . '/' . $_group . '.yaml';
 
         $fileSource = Type::theFileSource([
             'path'  => $path,
@@ -53,15 +55,7 @@ class JsonFileRepo extends AbstractFileRepo
         $fileSourceGroup = $fileSource->getGroup();
         $fileSourceRealpath = $fileSource->getRealpath();
 
-        $content = file_get_contents($fileSourceRealpath);
-
-        $choicesArray = json_decode($content, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new RuntimeException(
-                'Invalid JSON in file / ' . json_last_error_msg() . ': ' . $fileSourceRealpath
-            );
-        }
+        $choicesArray = yaml_parse_file($fileSourceRealpath);
 
         foreach ( $choicesArray as $word => $poolItemChoices ) {
             $poolItemPhrase = $poolItemChoices[ 0 ];
@@ -103,9 +97,7 @@ class JsonFileRepo extends AbstractFileRepo
     {
         $fileSourcePath = $fileSource->getValue();
 
-        $content = json_encode($choicesArray);
-
-        $status = file_put_contents($fileSourcePath, $content);
+        $status = yaml_emit_file($fileSourcePath, $choicesArray);
 
         return $status;
     }

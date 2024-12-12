@@ -2,21 +2,18 @@
 
 namespace Gzhegow\I18n;
 
-use Gzhegow\I18n\Repo\RepoInterface;
 use Gzhegow\I18n\Pool\PoolInterface;
-use Gzhegow\I18n\Type\TypeManagerInterface;
+use Gzhegow\I18n\Repository\RepositoryInterface;
 
 
 interface I18nFactoryInterface
 {
     public function newI18n(
-        RepoInterface $repo,
+        RepositoryInterface $repository,
         //
-        array $config
+        I18nConfig $config
     ) : I18nInterface;
 
-
-    public function newTypeManager() : TypeManagerInterface;
 
     public function newPool() : PoolInterface;
 }

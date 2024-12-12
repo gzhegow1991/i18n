@@ -1,21 +1,20 @@
 <?php
 
-namespace Gzhegow\I18n\Repo\File;
+namespace Gzhegow\I18n\Repository\File;
 
-use Gzhegow\I18n\Lib;
 use Gzhegow\I18n\I18n;
 use Gzhegow\I18n\Type\Type;
-use Gzhegow\I18n\Repo\RepoInterface;
 use Gzhegow\I18n\Struct\WordInterface;
 use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
 use Gzhegow\I18n\Pool\PoolItemInterface;
 use Gzhegow\I18n\Exception\LogicException;
 use Gzhegow\I18n\Exception\RuntimeException;
-use Gzhegow\I18n\Repo\File\Struct\FileSourceInterface;
+use Gzhegow\I18n\Repository\RepositoryInterface;
+use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
 
 
-abstract class AbstractFileRepo implements RepoInterface
+abstract class AbstractFileRepository implements RepositoryInterface
 {
     /**
      * @var string
@@ -424,6 +423,10 @@ abstract class AbstractFileRepo implements RepoInterface
      */
     public function loadItemsFromFiles(array $fileSources) : iterable
     {
+        if (! $this->isInitialized()) {
+            $this->initialize();
+        }
+
         foreach ( $fileSources as $fileSource ) {
             if (null === $fileSource->hasRealpath()) {
                 throw new RuntimeException(
@@ -453,6 +456,10 @@ abstract class AbstractFileRepo implements RepoInterface
      */
     public function saveItemsToFile(FileSourceInterface $fileSource, array $poolItems) : array
     {
+        if (! $this->isInitialized()) {
+            $this->initialize();
+        }
+
         $report = [];
 
         $fileSourceGroup = $fileSource->getGroup();
@@ -470,8 +477,10 @@ abstract class AbstractFileRepo implements RepoInterface
             foreach ( $poolItems as $poolItem ) {
                 if (! is_a($poolItem, PoolItemInterface::class)) {
                     throw new LogicException(
-                        'Each of `words` should be `false` or instance of: ' . PoolItemInterface::class
-                        . ' / ' . Lib::php_dump($poolItem)
+                        [
+                            'Each of `words` should be `false` or instance of: ' . PoolItemInterface::class,
+                            $poolItem,
+                        ]
                     );
                 }
             }
@@ -528,6 +537,10 @@ abstract class AbstractFileRepo implements RepoInterface
      */
     public function deleteItemsFromFile(FileSourceInterface $fileSource, array $poolItems) : array
     {
+        if (! $this->isInitialized()) {
+            $this->initialize();
+        }
+
         $report = [];
 
         $fileSourcePath = $fileSource->getValue();
@@ -544,8 +557,10 @@ abstract class AbstractFileRepo implements RepoInterface
             foreach ( $poolItems as $poolItem ) {
                 if (! is_a($poolItem, PoolItemInterface::class)) {
                     throw new LogicException(
-                        'Each of `words` should be `false` or instance of: ' . PoolItemInterface::class
-                        . ' / ' . Lib::php_dump($poolItem)
+                        [
+                            'Each of `words` should be `false` or instance of: ' . PoolItemInterface::class,
+                            $poolItem,
+                        ]
                     );
                 }
             }

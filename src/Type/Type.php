@@ -8,7 +8,7 @@ use Gzhegow\I18n\Struct\GroupInterface;
 use Gzhegow\I18n\Struct\AwordInterface;
 use Gzhegow\I18n\Pool\PoolItemInterface;
 use Gzhegow\I18n\Struct\LanguageInterface;
-use Gzhegow\I18n\Repo\File\Struct\FileSourceInterface;
+use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
 
 
 class Type

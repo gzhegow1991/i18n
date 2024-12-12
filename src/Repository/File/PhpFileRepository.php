@@ -1,15 +1,14 @@
 <?php
 
-namespace Gzhegow\I18n\Repo\File;
+namespace Gzhegow\I18n\Repository\File;
 
-use Gzhegow\I18n\Lib;
 use Gzhegow\I18n\Type\Type;
 use Gzhegow\I18n\Pool\PoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
-use Gzhegow\I18n\Repo\File\Struct\FileSourceInterface;
+use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
 
 
-class PhpFileRepo extends AbstractFileRepo
+class PhpFileRepository extends AbstractFileRepository
 {
     public function buildFileSource(string $lang, string $group) : FileSourceInterface
     {
@@ -44,8 +43,10 @@ class PhpFileRepo extends AbstractFileRepo
 
         if (! is_array($choicesArray)) {
             throw new RuntimeException(
-                'Invalid PHP array in file: ' . $fileSourceRealpath
-                . ' / ' . Lib::php_dump($choicesArray)
+                [
+                    'Invalid PHP array in file: ' . $fileSourceRealpath,
+                    $choicesArray,
+                ]
             );
         }
 

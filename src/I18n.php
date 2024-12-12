@@ -6,18 +6,17 @@
 
 namespace Gzhegow\I18n;
 
+use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Type\Type;
 use Gzhegow\I18n\Pool\PoolInterface;
-use Gzhegow\I18n\Repo\RepoInterface;
-use Gzhegow\I18n\Choice\DefaultChoice;
 use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
 use Gzhegow\I18n\Struct\AwordInterface;
-use Gzhegow\I18n\Choice\ChoiceInterface;
 use Gzhegow\I18n\Pool\PoolItemInterface;
 use Gzhegow\I18n\Exception\LogicException;
 use Gzhegow\I18n\Struct\LanguageInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
+use Gzhegow\I18n\Repository\RepositoryInterface;
 
 
 class I18n implements I18nInterface
@@ -32,9 +31,14 @@ class I18n implements I18nInterface
      */
     protected $factory;
     /**
-     * @var RepoInterface
+     * @var RepositoryInterface
      */
-    protected $repo;
+    protected $repository;
+    /**
+     * @var I18nConfig
+     */
+    protected $config;
+
     /**
      * @var PoolInterface
      */
@@ -91,47 +95,50 @@ class I18n implements I18nInterface
 
     public function __construct(
         I18nFactoryInterface $factory,
-        RepoInterface $repo,
         //
-        array $config
+        RepositoryInterface $repository,
+        //
+        I18nConfig $config
     )
     {
         $this->factory = $factory;
-        $this->repo = $repo;
+        $this->repository = $repository;
+
+        $this->config = $config;
+        $this->config->validate();
 
         $this->pool = $this->factory->newPool();
 
-        $this->setConfig($config);
-
-        if (! $this->repo->isInitialized()) {
-            $this->repo->initialize();
-        }
+        $this->initializeConfig();
     }
 
 
     /**
      * @return static
      */
-    protected function setConfig(array $config) // : static
+    protected function initializeConfig() // : static
     {
-        $languages = $config[ 'languages' ] ?? [];
+        $languages = $this->config->languages ?? [];
+        $choices = $this->config->choices ?? [];
+        $phpLocales = $this->config->phpLocales ?? [];
 
-        $lang = $config[ 'lang' ] ?? null;
-        $langDefault = $config[ 'lang_default' ] ?? null;
+        $lang = $this->config->lang ?? null;
+        $langDefault = $this->config->langDefault ?? null;
 
-        $logger = $config[ 'logger' ] ?? null;
+        $logger = $this->config->logger ?? null;
+
         $loggables = [];
-        $loggables[ I18nInterface::E_FORGOTTEN_GROUP ] = $config[ 'loggables' ][ I18nInterface::E_FORGOTTEN_GROUP ] ?? null;
-        $loggables[ I18nInterface::E_MISSING_WORD ] = $config[ 'loggables' ][ I18nInterface::E_MISSING_WORD ] ?? null;
-        $loggables[ I18nInterface::E_WRONG_AWORD ] = $config[ 'loggables' ][ I18nInterface::E_WRONG_AWORD ] ?? null;
-
-        $choiceDefault = new DefaultChoice();
+        $loggables[ I18nInterface::E_FORGOTTEN_GROUP ] = $this->config->loggables[ I18nInterface::E_FORGOTTEN_GROUP ] ?? null;
+        $loggables[ I18nInterface::E_MISSING_WORD ] = $this->config->loggables[ I18nInterface::E_MISSING_WORD ] ?? null;
+        $loggables[ I18nInterface::E_WRONG_AWORD ] = $this->config->loggables[ I18nInterface::E_WRONG_AWORD ] ?? null;
 
         foreach ( $languages as $languageItem ) {
             $language = Type::theLanguage($languageItem);
-            $language->setChoice($choiceDefault);
 
             $langString = $language->getLang();
+
+            $language->setPhpLocales($phpLocales[ $langString ]);
+            $language->setChoice($choices[ $langString ]);
 
             $this->languages[ $langString ] = $language;
         }
@@ -155,6 +162,11 @@ class I18n implements I18nInterface
         return $this;
     }
 
+
+    public function getRepository() : RepositoryInterface
+    {
+        return $this->repository;
+    }
 
     public function getPool() : PoolInterface
     {
@@ -278,7 +290,10 @@ class I18n implements I18nInterface
                     }
 
                     throw new LogicException(
-                        'Missing locales in your OS: ' . $map[ $category ] . ' / ' . Lib::php_dump($locales)
+                        [
+                            'Missing locales in your OS: ' . $map[ $category ],
+                            $locales,
+                        ]
                     );
                 }
             }
@@ -325,7 +340,10 @@ class I18n implements I18nInterface
 
         if (! isset($this->languages[ $lang ])) {
             throw new RuntimeException(
-                'Language not found: ' . Lib::php_dump($lang)
+                [
+                    'Language not found',
+                    $lang,
+                ]
             );
         }
 
@@ -358,9 +376,9 @@ class I18n implements I18nInterface
     /**
      * @param \Psr\Log\LoggerInterface $logger
      *
-     * @return static
+     * @return \Psr\Log\LoggerInterface|null
      */
-    public function setLogger($logger) // : static
+    public function setLogger($logger) // : \Psr\Log\LoggerInterface|null
     {
         if (null !== $logger) {
             if (! is_a($logger, $class = '\Psr\Log\LoggerInterface')) {
@@ -370,48 +388,26 @@ class I18n implements I18nInterface
             }
         }
 
+        $loggerCurrent = $this->logger;
+
         $this->logger = $logger;
 
-        return $this;
+        return $loggerCurrent;
     }
 
     /**
      * @param array<int, int> $loggables
-     *
-     * @return static
      */
-    public function setLoggables(array $loggables) // : static
+    public function setLoggables(array $loggables) : array
     {
+        $loggablesCurrent = $this->loggables;
+
+        $this->loggables = [];
         $this->loggables[ I18nInterface::E_FORGOTTEN_GROUP ] = $loggables[ I18nInterface::E_FORGOTTEN_GROUP ] ?? null;
         $this->loggables[ I18nInterface::E_MISSING_WORD ] = $loggables[ I18nInterface::E_MISSING_WORD ] ?? null;
         $this->loggables[ I18nInterface::E_WRONG_AWORD ] = $loggables[ I18nInterface::E_WRONG_AWORD ] ?? null;
 
-        return $this;
-    }
-
-
-    /**
-     * @return static
-     */
-    public function registerPhpLocales(string $lang, array $phpLocales) // : static
-    {
-        $language = $this->getLanguageFor($lang);
-
-        $language->setPhpLocales($phpLocales);
-
-        return $this;
-    }
-
-    /**
-     * @return static
-     */
-    public function registerChoice(string $lang, ChoiceInterface $choice) // : static
-    {
-        $language = $this->getLanguageFor($lang);
-
-        $language->setChoice($choice);
-
-        return $this;
+        return $loggablesCurrent;
     }
 
 
@@ -433,7 +429,10 @@ class I18n implements I18nInterface
     {
         if (! $awords) {
             throw new LogicException(
-                'The `words` should be not empty: ' . Lib::php_dump($awords)
+                [
+                    'The `words` should be not empty',
+                    $awords,
+                ]
             );
         }
 
@@ -449,7 +448,10 @@ class I18n implements I18nInterface
     {
         if (! $groups) {
             throw new LogicException(
-                'The `groups` should be not empty: ' . Lib::php_dump($groups)
+                [
+                    'The `groups` should be not empty',
+                    $groups,
+                ]
             );
         }
 
@@ -457,6 +459,7 @@ class I18n implements I18nInterface
 
         return $this;
     }
+
 
     /**
      * @return static
@@ -503,7 +506,7 @@ class I18n implements I18nInterface
             }
 
             if ($groups) {
-                $it = $this->repo->getGroups(
+                $it = $this->repository->getGroups(
                     $groups,
                     [ $lang ]
                 );
@@ -547,7 +550,7 @@ class I18n implements I18nInterface
                 $words[ $ii ] = $_aword->getWord();
             }
 
-            $it = $this->repo->getWords(
+            $it = $this->repository->getWords(
                 $words,
                 $groups,
                 $langs
@@ -887,7 +890,10 @@ class I18n implements I18nInterface
         foreach ( $numbers as $i => $number ) {
             if (null === ($_number = Lib::parse_numeric($number))) {
                 throw new LogicException(
-                    'Each of `numbers` should be valid number or number-string: ' . Lib::php_dump($number)
+                    [
+                        'Each of `numbers` should be valid number or number-string',
+                        $number,
+                    ]
                 );
             }
 
@@ -996,7 +1002,10 @@ class I18n implements I18nInterface
         foreach ( $numbers as $i => $number ) {
             if (null === ($_number = Lib::parse_numeric($number))) {
                 throw new LogicException(
-                    'Each of `numbers` should be valid number or number-string: ' . Lib::php_dump($number)
+                    [
+                        'Each of `numbers` should be valid number or number-string',
+                        $number,
+                    ]
                 );
             }
 
@@ -1164,7 +1173,7 @@ class I18n implements I18nInterface
                 $errstr = 'Each `aword` should begin with `aword_prefix` symbol to be translated: [:aword_prefix:] / [:dump:]';
                 $errdata = [
                     'aword_prefix' => I18n::AWORD_PREFIX,
-                    'dump'         => Lib::php_dump($aword),
+                    'dump'         => Lib::debug_value($aword),
                 ];
 
                 $errors[ $i ] = [ $errno, $errstr, $errdata ];
@@ -1190,7 +1199,7 @@ class I18n implements I18nInterface
                 $errdata = [
                     'groups'    => '( ' . implode(', ', $_groups) . ' )',
                     'languages' => '( ' . implode(', ', $_langs) . ' )',
-                    'dump'      => Lib::php_dump($aword),
+                    'dump'      => Lib::debug_value($aword),
                 ];
 
                 $errors[ $i ] = [ $errno, $errstr, $errdata ];
@@ -1212,7 +1221,7 @@ class I18n implements I18nInterface
                 $errdata = [
                     'word'      => $word,
                     'languages' => '( ' . implode(', ', $_langs) . ' )',
-                    'dump'      => Lib::php_dump($aword),
+                    'dump'      => Lib::debug_value($aword),
                 ];
 
                 $errors[ $i ] = [ $errno, $errstr, $errdata ];

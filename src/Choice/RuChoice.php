@@ -2,7 +2,7 @@
 
 namespace Gzhegow\I18n\Choice;
 
-use Gzhegow\I18n\Lib;
+use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Exception\LogicException;
 
 
@@ -12,7 +12,10 @@ class RuChoice implements ChoiceInterface
     {
         if (null === ($_number = Lib::parse_numeric($number))) {
             throw new LogicException(
-                'The `number` should be valid number: ' . Lib::php_dump($number)
+                [
+                    'The `number` should be valid number',
+                    $number,
+                ]
             );
         }
 

@@ -2,8 +2,9 @@
 
 namespace Gzhegow\I18n\Pool;
 
-use Gzhegow\I18n\Lib;
+use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Type\Type;
+use Gzhegow\I18n\Exception\LogicException;
 
 
 class PoolItem implements PoolItemInterface
@@ -36,24 +37,45 @@ class PoolItem implements PoolItemInterface
     {
     }
 
+
     public static function from($from) : self
     {
-        return static::tryFrom($from);
-    }
-
-    public static function tryFrom($from) : ?self
-    {
-        $instance = null
-            ?? static::tryFromInstance($from)
-            ?? static::tryFromArray($from);
+        $instance = static::tryFrom($from);
 
         return $instance;
     }
 
+    public static function tryFrom($from, \Throwable &$last = null) : ?self
+    {
+        $last = null;
+
+        Lib::php_errors_start($b);
+
+        $instance = null
+            ?? static::tryFromInstance($from)
+            ?? static::tryFromArray($from);
+
+        $errors = Lib::php_errors_end($b);
+
+        if (null === $instance) {
+            foreach ( $errors as $error ) {
+                $last = new LogicException($error, null, $last);
+            }
+        }
+
+        return $instance;
+    }
+
+
     public static function tryFromInstance($from) : ?self
     {
         if (! is_a($from, static::class)) {
-            return null;
+            return Lib::php_error(
+                [
+                    'The `from` should be instance of: ' . static::class,
+                    $from,
+                ]
+            );
         }
 
         return $from;
@@ -62,7 +84,12 @@ class PoolItem implements PoolItemInterface
     public static function tryFromArray($from) : ?self
     {
         if (! is_array($from)) {
-            return null;
+            return Lib::php_error(
+                [
+                    'The `from` should be array',
+                    $from,
+                ]
+            );
         }
 
         $word = $from[ 'word' ];
@@ -71,15 +98,30 @@ class PoolItem implements PoolItemInterface
         $choices = $from[ 'choices' ];
 
         if (null === ($_word = Type::parseWord($word))) {
-            return null;
+            return Lib::php_error(
+                [
+                    'The `from[word]` should be valid word',
+                    $from,
+                ]
+            );
         }
 
         if (null === ($_lang = Type::parseLang($lang))) {
-            return null;
+            return Lib::php_error(
+                [
+                    'The `from[lang]` should be valid lang',
+                    $from,
+                ]
+            );
         }
 
-        if (null === ($_phrase = Lib::parse_string($phrase))) {
-            return null;
+        if (null === ($_phrase = Lib::parse_string_not_empty($phrase))) {
+            return Lib::php_error(
+                [
+                    'The `from[phrase]` should be non-empty string',
+                    $from,
+                ]
+            );
         }
 
         $_choices = null;
@@ -88,8 +130,15 @@ class PoolItem implements PoolItemInterface
 
         } else {
             foreach ( $choices as $i => $choice ) {
-                if (null === ($_choice = Lib::parse_string($choice))) {
-                    return null;
+                if (null === ($_choice = Lib::parse_string_not_empty($choice))) {
+                    return Lib::php_error(
+                        [
+                            'Each of `from[choices]` should be non-empty string',
+                            $from,
+                            $choice,
+                            $i,
+                        ]
+                    );
                 }
 
                 $_choices[ $i ] = $_choice;
@@ -146,11 +195,5 @@ class PoolItem implements PoolItemInterface
     public function getChoices() : array
     {
         return $this->choices;
-    }
-
-
-    public function __debugInfo()
-    {
-        return get_object_vars($this);
     }
 }
