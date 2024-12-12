@@ -198,7 +198,11 @@ $config->configure(function (\Gzhegow\I18n\I18nConfig $config) {
 });
 
 // > создаем основной модуль
-$i18n = $factory->newI18n($repositoryPhp, $config);
+$i18n = new \Gzhegow\I18n\I18n(
+    $factory,
+    $repositoryPhp,
+    $config
+);
 
 
 // > TEST
