@@ -42,15 +42,28 @@ set_exception_handler(function (\Throwable $e) {
 // > добавляем несколько функция для тестирования
 function _dump(...$values) : void
 {
-    echo implode(' | ', array_map([ \Gzhegow\Lib\Lib::class, 'debug_value' ], $values));
+    $lines = [];
+    foreach ( $values as $value ) {
+        $lines[] = \Gzhegow\Lib\Lib::debug_value($value);
+    }
+
+    echo implode(' | ', $lines) . PHP_EOL;
 }
 
-function _dump_ln(...$values) : void
+function _debug($value, ...$values) : void
 {
-    echo implode(' | ', array_map([ \Gzhegow\Lib\Lib::class, 'debug_value' ], $values)) . PHP_EOL;
+    $lines = [];
+    foreach ( $values as $value ) {
+        $lines[] = \Gzhegow\Lib\Lib::debug_type_id($value);
+    }
+
+    echo implode(' | ', $lines) . PHP_EOL;
 }
 
-function _assert_call(\Closure $fn, array $expectResult = [], string $expectOutput = null) : void
+function _assert_call(
+    \Closure $fn,
+    array $expectResult = [], string $expectOutput = null, float $expectMicrotime = null
+) : void
 {
     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
 
@@ -64,10 +77,14 @@ function _assert_call(\Closure $fn, array $expectResult = [], string $expectOutp
         $expect->output = $expectOutput;
     }
 
+    if (null !== $expectMicrotime) {
+        $expect->microtime = $expectMicrotime;
+    }
+
     $status = \Gzhegow\Lib\Lib::assert_call($trace, $fn, $expect, $error, STDOUT);
 
     if (! $status) {
-        throw new \Gzhegow\I18n\Exception\LogicException();
+        throw new \Gzhegow\Lib\Exception\LogicException();
     }
 }
 
@@ -160,21 +177,21 @@ $i18n = new \Gzhegow\I18n\I18n(
 // > TEST
 // > Получаем часть пути, который подставляется при генерации URL, для языка по-умолчанию должен быть NULL
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 1');
+    _dump('TEST 1');
 
     $before = $i18n->getLangDefault();
 
     $i18n->setLangDefault('en');
 
     $result = $i18n->getLangForUrl('en');
-    _dump_ln($result);
+    _dump($result);
 
     $result = $i18n->getLangForUrl('ru');
-    _dump_ln($result);
+    _dump($result);
 
     $i18n->setLangDefault($before);
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 1"
@@ -188,19 +205,19 @@ HEREDOC
 // > TEST
 // > Строим регулярное выражение, которое подключается в роутер для SEO оптимизации
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 2');
+    _dump('TEST 2');
 
     $result = $i18n->getLangsRegexForRoute();
-    _dump_ln($result);
+    _dump($result);
 
     $result = $i18n->getLangsRegexForRoute(
         $regexGroupName = 'lang',
         $regexBraces = '/',
         $regexFlags = 'iu'
     );
-    _dump_ln($result);
+    _dump($result);
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 2"
@@ -214,15 +231,15 @@ HEREDOC
 // > TEST
 // > Интерполяция (подстановка) строк
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 3');
+    _dump('TEST 3');
 
     $result = $i18n->interpolate(
         $phrase = "Здесь был [:name:]. И ниже кто-то дописал: [:name2:]",
         $placeholders = [ 'name' => 'Вася', 'name2' => 'сосед' ]
     );
-    _dump_ln($result);
+    _dump($result);
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 3"
@@ -235,7 +252,7 @@ HEREDOC
 // > TEST
 // > Получаем фразу (обратите внимание, что фраза до перевода начинаются с `@`, чтобы избежать повторного перевода)
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 4');
+    _dump('TEST 4');
 
     $langBefore = $i18n->getLang();
 
@@ -245,25 +262,25 @@ $fn = function () use ($i18n) {
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->phrase('@main.message.hello');
-    _dump_ln($result);
+    _dump($result);
 
     $result = $i18n->phrase('@main.message.missing', $fallback = [ null ]);
-    _dump_ln($result);
+    _dump($result);
 
     $result = $i18n->phrase('@main.message.missing', $fallback = [ 123 ]);
-    _dump_ln($result);
+    _dump($result);
 
     try {
         // throws exception
         $i18n->phrase('@main.message.missing', $fallback = []);
     }
     catch ( \Throwable $e ) {
-        _dump_ln($e);
+        _dump($e);
     }
 
     $i18n->setLang($langBefore);
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 4"
@@ -279,7 +296,7 @@ HEREDOC
 // > TEST
 // > Получаем из памяти переводы (несколько) и подставляем в них аргументы (рекомендую в имени ключа указывать число аргументов)
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 5');
+    _dump('TEST 5');
 
     $langBefore = $i18n->getLang();
 
@@ -299,11 +316,11 @@ $fn = function () use ($i18n) {
             [ 'name1' => 'Вася', 'name2' => 'Валера' ],
         ]
     );
-    _dump_ln($result);
+    _dump($result);
 
     $i18n->setLang($langBefore);
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 5"
@@ -316,7 +333,7 @@ HEREDOC
 // > TEST
 // > Проверка фразы, которая есть только в русском языке (ещё не переведена переводчиком)
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 6');
+    _dump('TEST 6');
 
     $langBefore = $i18n->getLang();
     $langDefaultBefore = $i18n->getLangDefault();
@@ -328,15 +345,15 @@ $fn = function () use ($i18n) {
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->phrase('@main.title.apple_only_russian', [ null ]);
-    _dump_ln($result);
+    _dump($result);
 
     $result = $i18n->phraseOrDefault('@main.title.apple_only_russian');
-    _dump_ln($result);
+    _dump($result);
 
     $i18n->setLangDefault($langDefaultBefore);
     $i18n->setLang($langBefore);
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 6"
@@ -350,7 +367,7 @@ HEREDOC
 // > TEST
 // > Проверка выбора фразы по количеству / EN
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 7');
+    _dump('TEST 7');
 
     $langBefore = $i18n->getLang();
 
@@ -360,13 +377,13 @@ $fn = function () use ($i18n) {
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->choice(1, '@main.title.apple');
-    _dump_ln($result);
+    _dump($result);
 
     $result = $i18n->choice(2, '@main.title.apple');
-    _dump_ln($result);
+    _dump($result);
 
     $result = $i18n->choice(1.5, '@main.title.apple');
-    _dump_ln($result);
+    _dump($result);
 
     $result = $i18n->choices(
         $numbers = [ 1, 2, 1.5, '1', '2', '1.5' ],
@@ -376,7 +393,7 @@ $fn = function () use ($i18n) {
 
     $i18n->setLang($langBefore);
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 7"
@@ -417,7 +434,7 @@ HEREDOC
 // > TEST
 // > Проверка выбора фразы по количеству / RU
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 8');
+    _dump('TEST 8');
 
     $langBefore = $i18n->getLang();
 
@@ -427,13 +444,13 @@ $fn = function () use ($i18n) {
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->choice(1, '@main.title.apple');
-    _dump_ln($result);
+    _dump($result);
 
     $result = $i18n->choice(2, '@main.title.apple');
-    _dump_ln($result);
+    _dump($result);
 
     $result = $i18n->choice(5, '@main.title.apple');
-    _dump_ln($result);
+    _dump($result);
 
     $result = $i18n->choices(
         $numbers = [ 1, 2, 5, 11, 21, 1.5, '1', '2', '5', '11', '21', '1.5' ],
@@ -443,7 +460,7 @@ $fn = function () use ($i18n) {
 
     $i18n->setLang($langBefore);
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 8"
@@ -508,7 +525,7 @@ HEREDOC
 // > TEST
 // > Проверяем наличие переводов в памяти без запроса в репозиторий
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 9');
+    _dump('TEST 9');
 
     $words = [
         'main.title.apple',
@@ -530,7 +547,7 @@ $fn = function () use ($i18n) {
 
     $i18n->setLang($langBefore);
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 9"
@@ -556,7 +573,7 @@ HEREDOC
 // > TEST
 // > Получаем переводы из памяти без запроса в репозиторий
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 10');
+    _dump('TEST 10');
 
     $words = [
         'main.title.apple',
@@ -582,7 +599,7 @@ $fn = function () use ($i18n) {
 
     $i18n->setLang($langBefore);
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 10"
@@ -595,7 +612,7 @@ HEREDOC
 // > TEST
 // > Проверяем наличие групп напрямую в репозитории
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 11');
+    _dump('TEST 11');
 
     $repository = $i18n->getRepository();
 
@@ -605,7 +622,7 @@ $fn = function () use ($i18n) {
     );
     echo \Gzhegow\Lib\Lib::debug_array($result) . PHP_EOL;
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 11"
@@ -618,7 +635,7 @@ HEREDOC
 // > TEST
 // > Проверяем наличие переводов в репозитории
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 12');
+    _dump('TEST 12');
 
     $repository = $i18n->getRepository();
 
@@ -634,7 +651,7 @@ $fn = function () use ($i18n) {
     );
     echo \Gzhegow\Lib\Lib::debug_array_multiline($result) . PHP_EOL;
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 12"
@@ -660,7 +677,7 @@ HEREDOC
 // > TEST
 // > Получаем переводы напрямую из репозитория
 $fn = function () use ($i18n) {
-    _dump_ln('TEST 13');
+    _dump('TEST 13');
 
     $repository = $i18n->getRepository();
 
@@ -683,7 +700,7 @@ $fn = function () use ($i18n) {
     }
     echo \Gzhegow\Lib\Lib::debug_array($result) . PHP_EOL;
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 13"
@@ -696,7 +713,7 @@ HEREDOC
 // > TEST
 // > Копируем имеющийся перевод в другой язык (если нам прислали переведенный файл)
 $fn = function () use ($i18n, $langDir) {
-    _dump_ln('TEST 14');
+    _dump('TEST 14');
 
     $repository = $i18n->getRepository();
 
@@ -729,16 +746,16 @@ $fn = function () use ($i18n, $langDir) {
     while ( $gen->valid() ) {
         $gen->next();
     }
-    _dump_ln(is_file($langDir . '/by/main.php'));
+    _dump(is_file($langDir . '/by/main.php'));
 
     /** @var \Generator $gen */
     $gen = $repository->delete($poolItemsCloned);
     while ( $gen->valid() ) {
         $gen->next();
     }
-    _dump_ln(! file_exists($langDir . '/by/main.php'));
+    _dump(! file_exists($langDir . '/by/main.php'));
 
-    _dump('');
+    echo '';
 };
 _assert_call($fn, [], <<<HEREDOC
 "TEST 14"
