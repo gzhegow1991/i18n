@@ -108,32 +108,14 @@ function _debug(...$values) : void
     echo implode(' | ', $lines) . PHP_EOL;
 }
 
-function _assert_call(
-    \Closure $fn,
-    array $expectResult = [], string $expectOutput = null, float $expectMicrotime = null
+function _assert_output(
+    \Closure $fn, string $expect = null
 ) : void
 {
     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
 
-    $expect = (object) [];
-
-    if (count($expectResult)) {
-        $expect->result = $expectResult[ 0 ];
-    }
-
-    if (null !== $expectOutput) {
-        $expect->output = $expectOutput;
-    }
-
-    if (null !== $expectMicrotime) {
-        $expect->microtime = $expectMicrotime;
-    }
-
-    $status = \Gzhegow\Lib\Lib::assert_call($trace, $fn, $expect, $error, STDOUT);
-
-    if (! $status) {
-        throw new \Gzhegow\Lib\Exception\LogicException();
-    }
+    \Gzhegow\Lib\Lib::assert_stdout([ STDOUT ]);
+    \Gzhegow\Lib\Lib::assert_output($trace, $fn, $expect);
 }
 
 
@@ -241,7 +223,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 1"
 NULL
 "ru"
@@ -267,7 +249,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 2"
 "/(\/|en\/|ru\/)/"
 "/(?<lang>\/|en\/|ru\/)/iu"
@@ -289,7 +271,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 3"
 "Здесь был Вася. И ниже кто-то дописал: сосед"
 ""
@@ -330,7 +312,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 4"
 "Привет"
 NULL
@@ -370,7 +352,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 5"
 [ "Привет, Андрей", "Привет, Вася и Валера" ]
 ""
@@ -403,7 +385,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 6"
 NULL
 "яблоко"
@@ -443,7 +425,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 7"
 [ "1", "apple" ]
 [ "2", "apples" ]
@@ -510,7 +492,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 8"
 [ "1", "яблоко" ]
 [ "2", "яблока" ]
@@ -597,7 +579,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 9"
 [
   [
@@ -649,7 +631,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 10"
 [ [ "apple", "apples" ] ]
 ""
@@ -672,7 +654,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 11"
 [ [ "status" => TRUE, "group" => "main", "lang" => "en" ] ]
 ""
@@ -701,7 +683,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 12"
 [
   [
@@ -750,7 +732,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 13"
 [ [ "apple", "apples" ] ]
 ""
@@ -805,7 +787,7 @@ $fn = function () use ($i18n, $langDir) {
 
     echo '';
 };
-_assert_call($fn, [], <<<HEREDOC
+_assert_output($fn, <<<HEREDOC
 "TEST 14"
 TRUE
 TRUE
