@@ -4,7 +4,7 @@ namespace Gzhegow\I18n\Struct;
 
 use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\I18n;
-use Gzhegow\I18n\Type\Type;
+use Gzhegow\I18n\Type\I18nType;
 use Gzhegow\I18n\Exception\LogicException;
 
 
@@ -97,7 +97,7 @@ class Aword implements AwordInterface
         $groupString = null;
         if ($string[ 0 ] === I18n::AWORD_PREFIX) {
             $word = substr($string, 1);
-            $word = Type::parseWord($word);
+            $word = I18nType::parseWord($word);
 
             if ($word) {
                 $wordString = $word->getValue();

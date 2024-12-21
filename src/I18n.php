@@ -7,7 +7,7 @@
 namespace Gzhegow\I18n;
 
 use Gzhegow\Lib\Lib;
-use Gzhegow\I18n\Type\Type;
+use Gzhegow\I18n\Type\I18nType;
 use Gzhegow\I18n\Pool\I18nPoolInterface;
 use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
@@ -133,7 +133,7 @@ class I18n implements I18nInterface
         $loggables[ I18nInterface::E_WRONG_AWORD ] = $this->config->loggables[ I18nInterface::E_WRONG_AWORD ] ?? null;
 
         foreach ( $languages as $languageItem ) {
-            $language = Type::theLanguage($languageItem);
+            $language = I18nType::theLanguage($languageItem);
 
             $langString = $language->getLang();
 
@@ -543,7 +543,7 @@ class I18n implements I18nInterface
                 $this->getLanguageFor($lang);
             }
 
-            $_awords = Type::theAwordList($awords);
+            $_awords = I18nType::theAwordList($awords);
 
             $words = [];
             foreach ( $_awords as $ii => $_aword ) {
@@ -583,7 +583,7 @@ class I18n implements I18nInterface
             $groups = [];
 
             foreach ( $langs as $lang ) {
-                $_lang = Type::theLang($lang);
+                $_lang = I18nType::theLang($lang);
                 $_langString = $_lang->getValue();
 
                 $groups += $this->loadedLangGroupIndex[ $_langString ] ?? [];
@@ -609,7 +609,7 @@ class I18n implements I18nInterface
             $langs = [];
 
             foreach ( $groups as $group ) {
-                $_group = Type::theGroup($group);
+                $_group = I18nType::theGroup($group);
                 $_groupString = $_group->getValue();
 
                 $langs += $this->loadedGroupLangIndex[ $_groupString ] ?? [];
@@ -674,7 +674,7 @@ class I18n implements I18nInterface
 
         $placeholders = $placeholders ?? [];
 
-        $_awords = Type::theAwordList($awords);
+        $_awords = I18nType::theAwordList($awords);
 
         [
             $errors,
@@ -900,7 +900,7 @@ class I18n implements I18nInterface
             $_numbers[ $i ] = $_number;
         }
 
-        $_awords = Type::theAwordList($awords);
+        $_awords = I18nType::theAwordList($awords);
 
         [
             $errors,
@@ -1157,9 +1157,9 @@ class I18n implements I18nInterface
 
         $groups = $groups ?? $this->getGroupsLoaded($langs);
 
-        $_awords = Type::theAwordList($awords);
-        $_groups = Type::theGroupList($groups);
-        $_langs = Type::theLangList($langs);
+        $_awords = I18nType::theAwordList($awords);
+        $_groups = I18nType::theGroupList($groups);
+        $_langs = I18nType::theLangList($langs);
 
         $errors = [];
         $items = [];

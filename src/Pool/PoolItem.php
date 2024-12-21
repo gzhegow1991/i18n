@@ -3,7 +3,7 @@
 namespace Gzhegow\I18n\Pool;
 
 use Gzhegow\Lib\Lib;
-use Gzhegow\I18n\Type\Type;
+use Gzhegow\I18n\Type\I18nType;
 use Gzhegow\I18n\Exception\LogicException;
 
 
@@ -101,7 +101,7 @@ class PoolItem implements I18nPoolItemInterface
         $phrase = $from[ 'phrase' ];
         $choices = $from[ 'choices' ];
 
-        if (null === ($_word = Type::parseWord($word))) {
+        if (null === ($_word = I18nType::parseWord($word))) {
             return Lib::php_error(
                 [
                     'The `from[word]` should be valid word',
@@ -110,7 +110,7 @@ class PoolItem implements I18nPoolItemInterface
             );
         }
 
-        if (null === ($_lang = Type::parseLang($lang))) {
+        if (null === ($_lang = I18nType::parseLang($lang))) {
             return Lib::php_error(
                 [
                     'The `from[lang]` should be valid lang',

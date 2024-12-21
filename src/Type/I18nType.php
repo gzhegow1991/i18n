@@ -11,7 +11,7 @@ use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
 
 
-class Type
+class I18nType
 {
     public static function parseLanguage($value) : ?LanguageInterface
     {
@@ -300,7 +300,7 @@ class Type
     }
 
 
-    public static function setInstance(TypeManagerInterface $typeManager) : ?TypeManagerInterface
+    public static function setInstance(I18nTypeManagerInterface $typeManager) : ?I18nTypeManagerInterface
     {
         $last = static::$manager;
 
@@ -310,7 +310,7 @@ class Type
     }
 
     /**
-     * @var TypeManagerInterface
+     * @var I18nTypeManagerInterface
      */
     protected static $manager;
 }

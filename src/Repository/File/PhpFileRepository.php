@@ -2,7 +2,7 @@
 
 namespace Gzhegow\I18n\Repository\File;
 
-use Gzhegow\I18n\Type\Type;
+use Gzhegow\I18n\Type\I18nType;
 use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
 use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
@@ -12,12 +12,12 @@ class PhpFileRepository extends AbstractI18nFileRepository
 {
     public function buildFileSource(string $lang, string $group) : FileSourceInterface
     {
-        $_lang = Type::theLang($lang);
-        $_group = Type::theGroup($group);
+        $_lang = I18nType::theLang($lang);
+        $_group = I18nType::theGroup($group);
 
         $path = $this->langDir . '/' . $_lang . '/' . $_group . '.php';
 
-        $fileSource = Type::theFileSource([
+        $fileSource = I18nType::theFileSource([
             'path'  => $path,
             //
             'lang'  => $_lang,
@@ -51,7 +51,7 @@ class PhpFileRepository extends AbstractI18nFileRepository
         }
 
         foreach ( $choicesArray as $word => $poolItemChoices ) {
-            $poolItemWord = Type::theWord($word);
+            $poolItemWord = I18nType::theWord($word);
 
             $poolItemPhrase = $poolItemChoices[ 0 ];
 
@@ -65,7 +65,7 @@ class PhpFileRepository extends AbstractI18nFileRepository
                 );
             }
 
-            $poolItem = Type::thePoolItem([
+            $poolItem = I18nType::thePoolItem([
                 'word'    => $poolItemWord,
                 //
                 'lang'    => $fileSourceLang,

@@ -3,7 +3,7 @@
 namespace Gzhegow\I18n\Struct;
 
 use Gzhegow\Lib\Lib;
-use Gzhegow\I18n\Type\Type;
+use Gzhegow\I18n\Type\I18nType;
 use Gzhegow\I18n\Choice\I18nChoiceInterface;
 use Gzhegow\I18n\Exception\LogicException;
 
@@ -118,7 +118,7 @@ class Language implements LanguageInterface
 
         $titleNative = $titleNative ?? $titleEnglish;
 
-        if (null === ($_lang = Type::parseLang($lang))) {
+        if (null === ($_lang = I18nType::parseLang($lang))) {
             return Lib::php_error(
                 [
                     'The `from[lang]` should be valid `lang`',

@@ -3,7 +3,7 @@
 namespace Gzhegow\I18n\Repository\File\Struct;
 
 use Gzhegow\Lib\Lib;
-use Gzhegow\I18n\Type\Type;
+use Gzhegow\I18n\Type\I18nType;
 use Gzhegow\I18n\Exception\LogicException;
 
 
@@ -100,8 +100,8 @@ class FileSource implements FileSourceInterface
             return null;
         }
 
-        $lang = Type::theLang($lang);
-        $group = Type::theGroup($group);
+        $lang = I18nType::theLang($lang);
+        $group = I18nType::theGroup($group);
 
         $realpath = null;
         if (is_file($_path)) {

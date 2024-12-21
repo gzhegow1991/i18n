@@ -18,7 +18,7 @@ use Gzhegow\I18n\Repository\File\Struct\FileSource;
 use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
 
 
-class TypeManager implements TypeManagerInterface
+class I18nTypeManager implements I18nTypeManagerInterface
 {
     public function parsePoolItem($poolItem) : ?I18nPoolItemInterface
     {

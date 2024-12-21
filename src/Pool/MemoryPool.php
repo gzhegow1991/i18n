@@ -2,7 +2,7 @@
 
 namespace Gzhegow\I18n\Pool;
 
-use Gzhegow\I18n\Type\Type;
+use Gzhegow\I18n\Type\I18nType;
 use Gzhegow\I18n\Struct\WordInterface;
 use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
@@ -56,9 +56,9 @@ class MemoryPool implements I18nPoolInterface
         foreach ( $andLangsIn as $lang ) {
             foreach ( $andGroupsIn as $group ) {
                 foreach ( $andWordsIn as $word ) {
-                    $_lang = Type::theLang($lang);
-                    $_group = Type::theGroup($group);
-                    $_word = Type::theWord($word);
+                    $_lang = I18nType::theLang($lang);
+                    $_group = I18nType::theGroup($group);
+                    $_word = I18nType::theWord($word);
 
                     $_langString = $_lang->getValue();
                     $_groupString = $_group->getValue();
@@ -123,9 +123,9 @@ class MemoryPool implements I18nPoolInterface
                         continue;
                     }
 
-                    $_lang = Type::theLang($lang);
-                    $_group = Type::theGroup($group);
-                    $_word = Type::theWord($word);
+                    $_lang = I18nType::theLang($lang);
+                    $_group = I18nType::theGroup($group);
+                    $_word = I18nType::theWord($word);
 
                     $_langString = $_lang->getValue();
                     $_groupString = $_group->getValue();

@@ -135,8 +135,8 @@ $repositoryPhp = new \Gzhegow\I18n\Repository\File\PhpFileRepository($langDir = 
 // $repositoryYaml = new \Gzhegow\I18n\Repo\File\YamlFileRepository($langDir = __DIR__ . '/storage/resource/lang');
 
 // создаем и регистрируем менеджер типов (он определяет синтаксис для ключевых слов, отличие групп от слов, компоновку их в виде строки и так далее)
-$typeManager = new \Gzhegow\I18n\Type\TypeManager();
-\Gzhegow\I18n\Type\Type::setInstance($typeManager);
+$typeManager = new \Gzhegow\I18n\Type\I18nTypeManager();
+\Gzhegow\I18n\Type\I18nType::setInstance($typeManager);
 
 // > создаем конфигурацию
 $config = new \Gzhegow\I18n\I18nConfig();

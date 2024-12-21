@@ -3,7 +3,7 @@
 namespace Gzhegow\I18n\Struct;
 
 use Gzhegow\Lib\Lib;
-use Gzhegow\I18n\Type\Type;
+use Gzhegow\I18n\Type\I18nType;
 use Gzhegow\I18n\Exception\LogicException;
 
 
@@ -96,7 +96,7 @@ class Word implements WordInterface
 
         [ $group ] = explode('.', $string, 2);
 
-        if (null === ($group = Type::parseGroup($group))) {
+        if (null === ($group = I18nType::parseGroup($group))) {
             return Lib::php_error(
                 [
                     'The `from` should contain valid group',

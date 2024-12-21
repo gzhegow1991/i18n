@@ -3,7 +3,7 @@
 namespace Gzhegow\I18n\Repository\File;
 
 use Gzhegow\I18n\I18n;
-use Gzhegow\I18n\Type\Type;
+use Gzhegow\I18n\Type\I18nType;
 use Gzhegow\I18n\Struct\WordInterface;
 use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
@@ -287,7 +287,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
      */
     public function save(array $poolItems) : iterable
     {
-        $_poolItems = Type::thePoolItemList($poolItems);
+        $_poolItems = I18nType::thePoolItemList($poolItems);
 
         $fileSources = [];
         $poolItemsByFileSource = [];
@@ -321,7 +321,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
      */
     public function delete(array $poolItems) : iterable
     {
-        $_poolItems = Type::thePoolItemList($poolItems);
+        $_poolItems = I18nType::thePoolItemList($poolItems);
 
         $fileSources = [];
         $poolItemsByFileSource = [];
