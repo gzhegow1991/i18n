@@ -25,7 +25,10 @@ class Word implements WordInterface
     }
 
 
-    public static function from($from) : self
+    /**
+     * @return static
+     */
+    public static function from($from) // : static
     {
         $instance = static::tryFrom($from, $error);
 
@@ -36,7 +39,10 @@ class Word implements WordInterface
         return $instance;
     }
 
-    public static function tryFrom($from, \Throwable &$last = null) : ?self
+    /**
+     * @return static|null
+     */
+    public static function tryFrom($from, \Throwable &$last = null) // : ?static
     {
         $last = null;
 
@@ -58,7 +64,10 @@ class Word implements WordInterface
     }
 
 
-    public static function tryFromInstance($from) : ?self
+    /**
+     * @return static|null
+     */
+    public static function tryFromInstance($from) // : ?static
     {
         if (! is_a($from, static::class)) {
             return Lib::php_error(
@@ -72,7 +81,10 @@ class Word implements WordInterface
         return $from;
     }
 
-    public static function tryFromString($from)
+    /**
+     * @return static|null
+     */
+    public static function tryFromString($from) // : ?static
     {
         if (null === ($string = Lib::parse_string_not_empty($from))) {
             return Lib::php_error(

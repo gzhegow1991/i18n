@@ -38,7 +38,10 @@ class PoolItem implements I18nPoolItemInterface
     }
 
 
-    public static function from($from) : self
+    /**
+     * @return static
+     */
+    public static function from($from) // : static
     {
         $instance = static::tryFrom($from, $error);
 
@@ -49,7 +52,10 @@ class PoolItem implements I18nPoolItemInterface
         return $instance;
     }
 
-    public static function tryFrom($from, \Throwable &$last = null) : ?self
+    /**
+     * @return static|null
+     */
+    public static function tryFrom($from, \Throwable &$last = null) // : ?static
     {
         $last = null;
 
@@ -71,7 +77,10 @@ class PoolItem implements I18nPoolItemInterface
     }
 
 
-    public static function tryFromInstance($from) : ?self
+    /**
+     * @return static|null
+     */
+    public static function tryFromInstance($from) // : ?static
     {
         if (! is_a($from, static::class)) {
             return Lib::php_error(
@@ -85,7 +94,10 @@ class PoolItem implements I18nPoolItemInterface
         return $from;
     }
 
-    public static function tryFromArray($from) : ?self
+    /**
+     * @return static|null
+     */
+    public static function tryFromArray($from) // : ?static
     {
         if (! is_array($from)) {
             return Lib::php_error(
