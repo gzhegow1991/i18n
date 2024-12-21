@@ -9,7 +9,7 @@ namespace Gzhegow\I18n;
 use Gzhegow\Lib\Lib;
 use Gzhegow\Lib\Config\Config;
 use Gzhegow\I18n\Config\AbstractConfig;
-use Gzhegow\I18n\Choice\ChoiceInterface;
+use Gzhegow\I18n\Choice\I18nChoiceInterface;
 use Gzhegow\I18n\Exception\LogicException;
 
 
@@ -20,7 +20,7 @@ use Gzhegow\I18n\Exception\LogicException;
  *     2: string,
  *     3: string
  * }>                                               $languages
- * @property array<string, ChoiceInterface>         $choices
+ * @property array<string, I18nChoiceInterface>     $choices
  *
  * @property array<string, array<string, string[]>> $phpLocales
  *
@@ -337,7 +337,7 @@ class I18nConfig extends Config
         // 'yav'         => [ 'yav', 'Latn', 'Yangben', 'Nuasue' ],
     ];
     /**
-     * @var array<string, ChoiceInterface>
+     * @var array<string, I18nChoiceInterface>
      */
     protected $choices = [
         'en' => null,
@@ -528,10 +528,10 @@ class I18nConfig extends Config
                 );
             }
 
-            if (! is_a($choiceObject, ChoiceInterface::class)) {
+            if (! is_a($choiceObject, I18nChoiceInterface::class)) {
                 throw new LogicException(
                     [
-                        'Each of `choices` should be instance of: ' . ChoiceInterface::class,
+                        'Each of `choices` should be instance of: ' . I18nChoiceInterface::class,
                         $lang,
                         $this,
                     ]

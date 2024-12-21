@@ -2,7 +2,7 @@
 
 namespace Gzhegow\I18n\Struct;
 
-use Gzhegow\I18n\Choice\ChoiceInterface;
+use Gzhegow\I18n\Choice\I18nChoiceInterface;
 
 
 interface LanguageInterface
@@ -56,7 +56,7 @@ interface LanguageInterface
     public function setPhpLocales(array $phpLocales) : void;
 
 
-    public function getChoice() : ChoiceInterface;
+    public function getChoice() : I18nChoiceInterface;
 
-    public function setChoice(ChoiceInterface $choice) : void;
+    public function setChoice(I18nChoiceInterface $choice) : void;
 }

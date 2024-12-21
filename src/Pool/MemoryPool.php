@@ -9,10 +9,10 @@ use Gzhegow\I18n\Struct\GroupInterface;
 use Gzhegow\I18n\Exception\LogicException;
 
 
-class MemoryPool implements PoolInterface
+class MemoryPool implements I18nPoolInterface
 {
     /**
-     * @var PoolItemInterface[]
+     * @var I18nPoolItemInterface[]
      */
     protected $poolItemList = [];
 
@@ -89,7 +89,7 @@ class MemoryPool implements PoolInterface
      * @param (GroupInterface|string)[]|null $andGroupsIn
      * @param (LangInterface|string)[]|null  $andLangsIn
      *
-     * @return PoolItemInterface[]
+     * @return I18nPoolItemInterface[]
      */
     public function get(
         array $andWordsIn,
@@ -153,16 +153,16 @@ class MemoryPool implements PoolInterface
 
 
     /**
-     * @param PoolItemInterface[] $poolItems
+     * @param I18nPoolItemInterface[] $poolItems
      *
      * @return static
      */
     public function set(array $poolItems) // : static
     {
         foreach ( $poolItems as $poolItem ) {
-            if (! is_a($poolItem, PoolItemInterface::class)) {
+            if (! is_a($poolItem, I18nPoolItemInterface::class)) {
                 throw new LogicException(
-                    'Each of `words` should be instance of: ' . PoolItemInterface::class
+                    'Each of `words` should be instance of: ' . I18nPoolItemInterface::class
                 );
             }
 

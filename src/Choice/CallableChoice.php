@@ -6,7 +6,7 @@ use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Exception\LogicException;
 
 
-class CallableChoice implements ChoiceInterface
+class CallableChoice implements I18nChoiceInterface
 {
     /**
      * @var callable

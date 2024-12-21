@@ -4,7 +4,7 @@ namespace Gzhegow\I18n\Struct;
 
 use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Type\Type;
-use Gzhegow\I18n\Choice\ChoiceInterface;
+use Gzhegow\I18n\Choice\I18nChoiceInterface;
 use Gzhegow\I18n\Exception\LogicException;
 
 
@@ -38,7 +38,7 @@ class Language implements LanguageInterface
     protected $phpLocales;
 
     /**
-     * @var ChoiceInterface
+     * @var I18nChoiceInterface
      */
     protected $choice;
 
@@ -50,7 +50,11 @@ class Language implements LanguageInterface
 
     public static function from($from) : self
     {
-        $instance = static::tryFrom($from);
+        $instance = static::tryFrom($from, $error);
+
+        if (null === $instance) {
+            throw $error;
+        }
 
         return $instance;
     }
@@ -184,10 +188,10 @@ class Language implements LanguageInterface
         }
 
         if (null !== $choice) {
-            if (! is_a($choice, ChoiceInterface::class)) {
+            if (! is_a($choice, I18nChoiceInterface::class)) {
                 return Lib::php_error(
                     [
-                        'The `from[choice]` should be instance of: ' . ChoiceInterface::class,
+                        'The `from[choice]` should be instance of: ' . I18nChoiceInterface::class,
                         $choice,
                     ]
                 );
@@ -287,12 +291,12 @@ class Language implements LanguageInterface
     }
 
 
-    public function getChoice() : ChoiceInterface
+    public function getChoice() : I18nChoiceInterface
     {
         return $this->choice;
     }
 
-    public function setChoice(ChoiceInterface $choice) : void
+    public function setChoice(I18nChoiceInterface $choice) : void
     {
         $this->choice = $choice;
     }

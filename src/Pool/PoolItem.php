@@ -7,7 +7,7 @@ use Gzhegow\I18n\Type\Type;
 use Gzhegow\I18n\Exception\LogicException;
 
 
-class PoolItem implements PoolItemInterface
+class PoolItem implements I18nPoolItemInterface
 {
     /**
      * @var string
@@ -40,7 +40,11 @@ class PoolItem implements PoolItemInterface
 
     public static function from($from) : self
     {
-        $instance = static::tryFrom($from);
+        $instance = static::tryFrom($from, $error);
+
+        if (null === $instance) {
+            throw $error;
+        }
 
         return $instance;
     }

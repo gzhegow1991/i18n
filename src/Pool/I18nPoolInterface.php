@@ -8,7 +8,7 @@ use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
 
 
-interface PoolInterface
+interface I18nPoolInterface
 {
     /**
      * @param (WordInterface|string)[]       $andWordsIn
@@ -33,7 +33,7 @@ interface PoolInterface
      * @param (GroupInterface|string)[]|null $andGroupsIn
      * @param (LangInterface|string)[]|null  $andLangsIn
      *
-     * @return PoolItemInterface[]
+     * @return I18nPoolItemInterface[]
      */
     public function get(
         array $andWordsIn,
@@ -46,7 +46,7 @@ interface PoolInterface
 
 
     /**
-     * @param PoolItemInterface[] $poolItems
+     * @param I18nPoolItemInterface[] $poolItems
      *
      * @return static
      */

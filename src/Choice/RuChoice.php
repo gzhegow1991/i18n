@@ -6,7 +6,7 @@ use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Exception\LogicException;
 
 
-class RuChoice implements ChoiceInterface
+class RuChoice implements I18nChoiceInterface
 {
     public function choice($number) : int
     {

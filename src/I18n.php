@@ -8,15 +8,15 @@ namespace Gzhegow\I18n;
 
 use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Type\Type;
-use Gzhegow\I18n\Pool\PoolInterface;
+use Gzhegow\I18n\Pool\I18nPoolInterface;
 use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
 use Gzhegow\I18n\Struct\AwordInterface;
-use Gzhegow\I18n\Pool\PoolItemInterface;
+use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\LogicException;
 use Gzhegow\I18n\Struct\LanguageInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
-use Gzhegow\I18n\Repository\RepositoryInterface;
+use Gzhegow\I18n\Repository\I18nRepositoryInterface;
 
 
 class I18n implements I18nInterface
@@ -31,7 +31,7 @@ class I18n implements I18nInterface
      */
     protected $factory;
     /**
-     * @var RepositoryInterface
+     * @var I18nRepositoryInterface
      */
     protected $repository;
     /**
@@ -40,7 +40,7 @@ class I18n implements I18nInterface
     protected $config;
 
     /**
-     * @var PoolInterface
+     * @var I18nPoolInterface
      */
     protected $pool;
 
@@ -96,7 +96,7 @@ class I18n implements I18nInterface
     public function __construct(
         I18nFactoryInterface $factory,
         //
-        RepositoryInterface $repository,
+        I18nRepositoryInterface $repository,
         //
         I18nConfig $config
     )
@@ -163,12 +163,12 @@ class I18n implements I18nInterface
     }
 
 
-    public function getRepository() : RepositoryInterface
+    public function getRepository() : I18nRepositoryInterface
     {
         return $this->repository;
     }
 
-    public function getPool() : PoolInterface
+    public function getPool() : I18nPoolInterface
     {
         return $this->pool;
     }
@@ -938,7 +938,7 @@ class I18n implements I18nInterface
         }
 
         foreach ( $poolItems as $i => $poolItem ) {
-            /** @var PoolItemInterface $poolItem */
+            /** @var I18nPoolItemInterface $poolItem */
 
             $number = $_numbers[ $i ];
 
@@ -1052,7 +1052,7 @@ class I18n implements I18nInterface
         }
 
         foreach ( $poolItems as $i => $poolItem ) {
-            /** @var PoolItemInterface $poolItem */
+            /** @var I18nPoolItemInterface $poolItem */
 
             $number = $_numbers[ $i ];
 
@@ -1142,7 +1142,7 @@ class I18n implements I18nInterface
      *
      * @return array{
      *     0: array{0: int, 1: string, 2?: array}[],
-     *     1: PoolItemInterface[]
+     *     1: I18nPoolItemInterface[]
      * }
      */
     public function get(array $awords, array $groups = null, array $langs = null) : array
@@ -1238,7 +1238,7 @@ class I18n implements I18nInterface
      *
      * @return array{
      *     0: array{0: int, 1: string, 2?: array}[],
-     *     1: PoolItemInterface[]
+     *     1: I18nPoolItemInterface[]
      * }
      */
     public function getOrDefault(array $awords, array $groups = null, array $langs = null) : array

@@ -12,23 +12,23 @@ use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\WordInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
 use Gzhegow\I18n\Struct\AwordInterface;
-use Gzhegow\I18n\Pool\PoolItemInterface;
 use Gzhegow\I18n\Struct\LanguageInterface;
+use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Repository\File\Struct\FileSource;
 use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
 
 
 class TypeManager implements TypeManagerInterface
 {
-    public function parseLanguage($language) : ?LanguageInterface
+    public function parsePoolItem($poolItem) : ?I18nPoolItemInterface
     {
-        return Language::tryFrom($language);
+        return PoolItem::tryFrom($poolItem);
     }
 
 
-    public function parsePoolItem($poolItem) : ?PoolItemInterface
+    public function parseLanguage($language) : ?LanguageInterface
     {
-        return PoolItem::tryFrom($poolItem);
+        return Language::tryFrom($language);
     }
 
 

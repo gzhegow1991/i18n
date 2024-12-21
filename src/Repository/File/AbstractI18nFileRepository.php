@@ -7,14 +7,14 @@ use Gzhegow\I18n\Type\Type;
 use Gzhegow\I18n\Struct\WordInterface;
 use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
-use Gzhegow\I18n\Pool\PoolItemInterface;
+use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\LogicException;
 use Gzhegow\I18n\Exception\RuntimeException;
-use Gzhegow\I18n\Repository\RepositoryInterface;
+use Gzhegow\I18n\Repository\I18nRepositoryInterface;
 use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
 
 
-abstract class AbstractFileRepository implements RepositoryInterface
+abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
 {
     /**
      * @var string
@@ -154,7 +154,7 @@ abstract class AbstractFileRepository implements RepositoryInterface
      * @param (GroupInterface|string)[]|null $andGroupsIn
      * @param (LangInterface|string)[]|null  $andLangsIn
      *
-     * @return iterable<PoolItemInterface[]>
+     * @return iterable<I18nPoolItemInterface[]>
      */
     public function getGroups(
         array $andGroupsIn = null,
@@ -215,7 +215,7 @@ abstract class AbstractFileRepository implements RepositoryInterface
      * @param (GroupInterface|string)[]|null $andGroupsIn
      * @param (LangInterface|string)[]|null  $andLangsIn
      *
-     * @return iterable<PoolItemInterface[]>
+     * @return iterable<I18nPoolItemInterface[]>
      */
     public function getWords(
         array $andWordsIn = null,
@@ -281,7 +281,7 @@ abstract class AbstractFileRepository implements RepositoryInterface
 
 
     /**
-     * @param PoolItemInterface[] $poolItems
+     * @param I18nPoolItemInterface[] $poolItems
      *
      * @return iterable<bool[]>
      */
@@ -315,7 +315,7 @@ abstract class AbstractFileRepository implements RepositoryInterface
     }
 
     /**
-     * @param PoolItemInterface[] $poolItems
+     * @param I18nPoolItemInterface[] $poolItems
      *
      * @return iterable<bool[]>
      */
@@ -418,7 +418,7 @@ abstract class AbstractFileRepository implements RepositoryInterface
      *
      * @return \Traversable<array{
      *     fileSource: FileSourceInterface,
-     *     items: array<string, PoolItemInterface>
+     *     items: array<string, I18nPoolItemInterface>
      * }>
      */
     public function loadItemsFromFiles(array $fileSources) : iterable
@@ -444,13 +444,13 @@ abstract class AbstractFileRepository implements RepositoryInterface
     }
 
     /**
-     * @return array<string, PoolItemInterface>
+     * @return array<string, I18nPoolItemInterface>
      */
     abstract public function loadItemsFromFile(FileSourceInterface $fileSource) : array;
 
 
     /**
-     * @param PoolItemInterface[] $poolItems
+     * @param I18nPoolItemInterface[] $poolItems
      *
      * @return bool[]
      */
@@ -475,10 +475,10 @@ abstract class AbstractFileRepository implements RepositoryInterface
 
         if ($poolItems) {
             foreach ( $poolItems as $poolItem ) {
-                if (! is_a($poolItem, PoolItemInterface::class)) {
+                if (! is_a($poolItem, I18nPoolItemInterface::class)) {
                     throw new LogicException(
                         [
-                            'Each of `words` should be `false` or instance of: ' . PoolItemInterface::class,
+                            'Each of `words` should be `false` or instance of: ' . I18nPoolItemInterface::class,
                             $poolItem,
                         ]
                     );
@@ -531,7 +531,7 @@ abstract class AbstractFileRepository implements RepositoryInterface
     }
 
     /**
-     * @param PoolItemInterface[] $poolItems
+     * @param I18nPoolItemInterface[] $poolItems
      *
      * @return bool[]
      */
@@ -555,10 +555,10 @@ abstract class AbstractFileRepository implements RepositoryInterface
 
         if ($poolItems) {
             foreach ( $poolItems as $poolItem ) {
-                if (! is_a($poolItem, PoolItemInterface::class)) {
+                if (! is_a($poolItem, I18nPoolItemInterface::class)) {
                     throw new LogicException(
                         [
-                            'Each of `words` should be `false` or instance of: ' . PoolItemInterface::class,
+                            'Each of `words` should be `false` or instance of: ' . I18nPoolItemInterface::class,
                             $poolItem,
                         ]
                     );

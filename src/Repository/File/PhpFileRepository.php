@@ -3,12 +3,12 @@
 namespace Gzhegow\I18n\Repository\File;
 
 use Gzhegow\I18n\Type\Type;
-use Gzhegow\I18n\Pool\PoolItemInterface;
+use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
 use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
 
 
-class PhpFileRepository extends AbstractFileRepository
+class PhpFileRepository extends AbstractI18nFileRepository
 {
     public function buildFileSource(string $lang, string $group) : FileSourceInterface
     {
@@ -29,7 +29,7 @@ class PhpFileRepository extends AbstractFileRepository
 
 
     /**
-     * @return array<string, PoolItemInterface>
+     * @return array<string, I18nPoolItemInterface>
      */
     public function loadItemsFromFile(FileSourceInterface $fileSource) : array
     {

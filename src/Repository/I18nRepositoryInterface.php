@@ -5,10 +5,10 @@ namespace Gzhegow\I18n\Repository;
 use Gzhegow\I18n\Struct\WordInterface;
 use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
-use Gzhegow\I18n\Pool\PoolItemInterface;
+use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 
 
-interface RepositoryInterface
+interface I18nRepositoryInterface
 {
     public function isInitialized() : bool;
 
@@ -53,7 +53,7 @@ interface RepositoryInterface
      * @param (GroupInterface|string)[]|null $andGroupsIn
      * @param (LangInterface|string)[]|null  $andLangsIn
      *
-     * @return iterable<PoolItemInterface[]>
+     * @return iterable<I18nPoolItemInterface[]>
      */
     public function getGroups(
         array $andGroupsIn = null,
@@ -68,7 +68,7 @@ interface RepositoryInterface
      * @param (GroupInterface|string)[]|null $andGroupsIn
      * @param (LangInterface|string)[]|null  $andLangsIn
      *
-     * @return iterable<PoolItemInterface[]>
+     * @return iterable<I18nPoolItemInterface[]>
      */
     public function getWords(
         array $andWordsIn = null,
@@ -81,14 +81,14 @@ interface RepositoryInterface
 
 
     /**
-     * @param PoolItemInterface[] $poolItems
+     * @param I18nPoolItemInterface[] $poolItems
      *
      * @return iterable<bool[]>
      */
     public function save(array $poolItems) : iterable;
 
     /**
-     * @param PoolItemInterface[] $poolItems
+     * @param I18nPoolItemInterface[] $poolItems
      *
      * @return iterable<bool[]>
      */

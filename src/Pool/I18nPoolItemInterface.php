@@ -3,7 +3,7 @@
 namespace Gzhegow\I18n\Pool;
 
 
-interface PoolItemInterface
+interface I18nPoolItemInterface
 {
     public function getWord() : string;
 

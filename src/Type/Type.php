@@ -6,8 +6,8 @@ use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\WordInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
 use Gzhegow\I18n\Struct\AwordInterface;
-use Gzhegow\I18n\Pool\PoolItemInterface;
 use Gzhegow\I18n\Struct\LanguageInterface;
+use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
 
 
@@ -15,7 +15,7 @@ class Type
 {
     public static function parseLanguage($value) : ?LanguageInterface
     {
-        return static::$instance->parseLanguage($value);
+        return static::$manager->parseLanguage($value);
     }
 
     /**
@@ -54,13 +54,13 @@ class Type
     }
 
 
-    public static function parsePoolItem($value) : ?PoolItemInterface
+    public static function parsePoolItem($value) : ?I18nPoolItemInterface
     {
-        return static::$instance->parsePoolItem($value);
+        return static::$manager->parsePoolItem($value);
     }
 
     /**
-     * @return PoolItemInterface[]|null
+     * @return I18nPoolItemInterface[]|null
      */
     public static function parsePoolItemList($values) : ?array
     {
@@ -81,13 +81,13 @@ class Type
         return $list;
     }
 
-    public static function thePoolItem($value) : PoolItemInterface
+    public static function thePoolItem($value) : I18nPoolItemInterface
     {
         return static::parsePoolItem($value);
     }
 
     /**
-     * @return PoolItemInterface[]
+     * @return I18nPoolItemInterface[]
      */
     public static function thePoolItemList($values) : array
     {
@@ -97,7 +97,7 @@ class Type
 
     public static function parseLang($value) : ?LangInterface
     {
-        return static::$instance->parseLang($value);
+        return static::$manager->parseLang($value);
     }
 
     /**
@@ -138,7 +138,7 @@ class Type
 
     public static function parseGroup($group) : ?GroupInterface
     {
-        return static::$instance->parseGroup($group);
+        return static::$manager->parseGroup($group);
     }
 
     /**
@@ -179,7 +179,7 @@ class Type
 
     public static function parseAword($value) : ?AwordInterface
     {
-        return static::$instance->parseAword($value);
+        return static::$manager->parseAword($value);
     }
 
     /**
@@ -220,7 +220,7 @@ class Type
 
     public static function parseWord($value) : ?WordInterface
     {
-        return static::$instance->parseWord($value);
+        return static::$manager->parseWord($value);
     }
 
     /**
@@ -261,7 +261,7 @@ class Type
 
     public static function parseFileSource($value) : ?FileSourceInterface
     {
-        return static::$instance->parseFileSource($value);
+        return static::$manager->parseFileSource($value);
     }
 
     /**
@@ -300,22 +300,17 @@ class Type
     }
 
 
-    public static function getInstance() : TypeManagerInterface
-    {
-        return static::$instance;
-    }
-
     public static function setInstance(TypeManagerInterface $typeManager) : ?TypeManagerInterface
     {
-        $current = static::$instance;
+        $last = static::$manager;
 
-        static::$instance = $typeManager;
+        static::$manager = $typeManager;
 
-        return $current;
+        return $last;
     }
 
     /**
      * @var TypeManagerInterface
      */
-    protected static $instance;
+    protected static $manager;
 }

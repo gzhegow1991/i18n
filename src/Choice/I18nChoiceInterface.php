@@ -2,7 +2,7 @@
 
 namespace Gzhegow\I18n\Choice;
 
-interface ChoiceInterface
+interface I18nChoiceInterface
 {
     public function choice($number) : int;
 }

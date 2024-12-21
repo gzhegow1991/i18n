@@ -21,7 +21,11 @@ class Lang implements LangInterface
 
     public static function from($from) : self
     {
-        $instance = static::tryFrom($from);
+        $instance = static::tryFrom($from, $error);
+
+        if (null === $instance) {
+            throw $error;
+        }
 
         return $instance;
     }

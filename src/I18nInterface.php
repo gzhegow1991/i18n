@@ -6,14 +6,14 @@
 
 namespace Gzhegow\I18n;
 
-use Gzhegow\I18n\Pool\PoolInterface;
 use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
 use Gzhegow\I18n\Struct\AwordInterface;
-use Gzhegow\I18n\Pool\PoolItemInterface;
+use Gzhegow\I18n\Pool\I18nPoolInterface;
 use Gzhegow\I18n\Struct\LanguageInterface;
+use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
-use Gzhegow\I18n\Repository\RepositoryInterface;
+use Gzhegow\I18n\Repository\I18nRepositoryInterface;
 
 
 interface I18nInterface
@@ -29,9 +29,9 @@ interface I18nInterface
     ];
 
 
-    public function getRepository() : RepositoryInterface;
+    public function getRepository() : I18nRepositoryInterface;
 
-    public function getPool() : PoolInterface;
+    public function getPool() : I18nPoolInterface;
 
 
     /**
@@ -260,7 +260,7 @@ interface I18nInterface
      *
      * @return array{
      *     0: array{0: int, 1: string, 2?: array}[],
-     *     1: PoolItemInterface[]
+     *     1: I18nPoolItemInterface[]
      * }
      */
     public function get(array $awords, array $groups = null, array $langs = null) : array;
@@ -272,7 +272,7 @@ interface I18nInterface
      *
      * @return array{
      *     0: array{0: int, 1: string, 2?: array}[],
-     *     1: PoolItemInterface[]
+     *     1: I18nPoolItemInterface[]
      * }
      */
     public function getOrDefault(array $awords, array $groups = null, array $langs = null) : array;
