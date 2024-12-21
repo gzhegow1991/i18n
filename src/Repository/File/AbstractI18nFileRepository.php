@@ -356,11 +356,13 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
     {
         $result = null;
 
-        if (null === $words) return null;
+        if (null === $words) {
+            return null;
+        }
 
         $groups = $groups ?? [];
 
-        $wordsUnique = array_unique($words ?? []);
+        $wordsUnique = array_unique($words);
 
         $groupsUnique = null;
         foreach ( $wordsUnique as $word ) {

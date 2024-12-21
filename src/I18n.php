@@ -1162,7 +1162,6 @@ class I18n implements I18nInterface
         $_langs = I18nType::theLangList($langs);
 
         $errors = [];
-        $items = [];
 
         $_words = [];
         foreach ( $_awords as $i => $aword ) {
