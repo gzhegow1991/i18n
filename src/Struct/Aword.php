@@ -56,13 +56,13 @@ class Aword implements AwordInterface
     {
         $last = null;
 
-        Lib::php_errors_start($b);
+        Lib::php()->errors_start($b);
 
         $instance = null
             ?? static::tryFromInstance($from)
             ?? static::tryFromString($from);
 
-        $errors = Lib::php_errors_end($b);
+        $errors = Lib::php()->errors_end($b);
 
         if (null === $instance) {
             foreach ( $errors as $error ) {
@@ -80,7 +80,7 @@ class Aword implements AwordInterface
     public static function tryFromInstance($from) // : ?static
     {
         if (! is_a($from, static::class)) {
-            return Lib::php_error(
+            return Lib::php()->error(
                 [
                     'The `from` should be instance of: ' . static::class,
                     $from,
@@ -96,8 +96,8 @@ class Aword implements AwordInterface
      */
     public static function tryFromString($from) // : ?static
     {
-        if (null === ($string = Lib::parse_string_not_empty($from))) {
-            return Lib::php_error(
+        if (null === ($string = Lib::parse()->string_not_empty($from))) {
+            return Lib::php()->error(
                 [
                     'The `from` should be non-empty string',
                     $from,

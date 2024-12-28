@@ -56,39 +56,11 @@ ini_set('memory_limit', '32M');
 
 
 // > настраиваем обработку ошибок
-error_reporting(E_ALL);
-set_error_handler(function ($errno, $errstr, $errfile, $errline) {
-    if (error_reporting() & $errno) {
-        throw new \ErrorException($errstr, -1, $errno, $errfile, $errline);
-    }
-});
-set_exception_handler(function (\Throwable $e) {
-    // require_once getenv('COMPOSER_HOME') . '/vendor/autoload.php';
-    // dd($e);
-
-    $current = $e;
-    do {
-        echo "\n";
-
-        echo \Gzhegow\Lib\Lib::debug_var_dump($current) . PHP_EOL;
-        echo $current->getMessage() . PHP_EOL;
-
-        $file = $current->getFile() ?? '{file}';
-        $line = $current->getLine() ?? '{line}';
-        echo "{$file} : {$line}" . PHP_EOL;
-
-        foreach ( $e->getTrace() as $traceItem ) {
-            $file = $traceItem[ 'file' ] ?? '{file}';
-            $line = $traceItem[ 'line' ] ?? '{line}';
-
-            echo "{$file} : {$line}" . PHP_EOL;
-        }
-
-        echo PHP_EOL;
-    } while ( $current = $current->getPrevious() );
-
-    die();
-});
+(new \Gzhegow\Lib\Exception\ErrorHandler())
+    ->useErrorReporting()
+    ->useErrorHandler()
+    ->useExceptionHandler()
+;
 
 
 // > добавляем несколько функция для тестирования
@@ -96,7 +68,7 @@ function _debug(...$values) : void
 {
     $lines = [];
     foreach ( $values as $value ) {
-        $lines[] = \Gzhegow\Lib\Lib::debug_type_id($value);
+        $lines[] = \Gzhegow\Lib\Lib::debug()->type_id($value);
     }
 
     echo implode(' | ', $lines) . PHP_EOL;
@@ -106,7 +78,7 @@ function _dump(...$values) : void
 {
     $lines = [];
     foreach ( $values as $value ) {
-        $lines[] = \Gzhegow\Lib\Lib::debug_value($value);
+        $lines[] = \Gzhegow\Lib\Lib::debug()->value($value);
     }
 
     echo implode(' | ', $lines) . PHP_EOL;
@@ -115,8 +87,8 @@ function _dump(...$values) : void
 function _dump_array($value, int $maxLevel = null, bool $multiline = false) : void
 {
     $content = $multiline
-        ? \Gzhegow\Lib\Lib::debug_array_multiline($value, $maxLevel)
-        : \Gzhegow\Lib\Lib::debug_array($value, $maxLevel);
+        ? \Gzhegow\Lib\Lib::debug()->array_multiline($value, $maxLevel)
+        : \Gzhegow\Lib\Lib::debug()->array($value, $maxLevel);
 
     echo $content . PHP_EOL;
 }
@@ -127,8 +99,8 @@ function _assert_output(
 {
     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
 
-    \Gzhegow\Lib\Lib::assert_resource_static(STDOUT);
-    \Gzhegow\Lib\Lib::assert_output($trace, $fn, $expect);
+    \Gzhegow\Lib\Lib::assert()->resource_static(STDOUT);
+    \Gzhegow\Lib\Lib::assert()->output($trace, $fn, $expect);
 }
 
 
@@ -432,7 +404,7 @@ $fn = function () use ($i18n) {
         $numbers = [ 1, 2, 1.5, '1', '2', '1.5' ],
         $awords = array_fill(0, count($numbers), '@main.title.apple')
     );
-    echo \Gzhegow\Lib\Lib::debug_array_multiline($result) . PHP_EOL;
+    _dump_array($result, 2, true);
 
     $i18n->setLang($langBefore);
 
@@ -499,7 +471,7 @@ $fn = function () use ($i18n) {
         $numbers = [ 1, 2, 5, 11, 21, 1.5, '1', '2', '5', '11', '21', '1.5' ],
         $awords = array_fill(0, count($numbers), '@main.title.apple')
     );
-    echo \Gzhegow\Lib\Lib::debug_array_multiline($result) . PHP_EOL;
+    _dump_array($result, 2, true);
 
     $i18n->setLang($langBefore);
 
@@ -586,7 +558,7 @@ $fn = function () use ($i18n) {
     $pool = $i18n->getPool();
 
     $result = $pool->has($words);
-    echo \Gzhegow\Lib\Lib::debug_array_multiline($result) . PHP_EOL;
+    _dump_array($result, 2, true);
 
     $i18n->setLang($langBefore);
 
@@ -638,7 +610,7 @@ $fn = function () use ($i18n) {
     foreach ( $poolItems as $i => $poolItem ) {
         $result[ $i ] = $poolItem->getChoices();
     }
-    echo \Gzhegow\Lib\Lib::debug_array($result) . PHP_EOL;
+    _dump_array($result, 2);
 
     $i18n->setLang($langBefore);
 
@@ -663,7 +635,7 @@ $fn = function () use ($i18n) {
         $andGroupsIn = [ 'main' ],
         $andLangsIn = [ 'en' ]
     );
-    echo \Gzhegow\Lib\Lib::debug_array($result) . PHP_EOL;
+    _dump_array($result, 2);
 
     echo '';
 };
@@ -692,7 +664,7 @@ $fn = function () use ($i18n) {
         $andGroupsIn = [ 'main' ],
         $andLangsIn = [ 'en' ]
     );
-    echo \Gzhegow\Lib\Lib::debug_array_multiline($result) . PHP_EOL;
+    _dump_array($result, 2, true);
 
     echo '';
 };
@@ -741,7 +713,7 @@ $fn = function () use ($i18n) {
             $result[] = $poolItem->getChoices();
         }
     }
-    echo \Gzhegow\Lib\Lib::debug_array($result) . PHP_EOL;
+    _dump_array($result, 2);
 
     echo '';
 };

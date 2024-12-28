@@ -10,7 +10,7 @@ class DefaultChoice implements I18nChoiceInterface
 {
     public function choice($number) : int
     {
-        if (null === ($_number = Lib::parse_numeric($number))) {
+        if (null === ($_number = Lib::parse()->numeric($number))) {
             throw new LogicException(
                 [
                     'The `number` should be valid number',

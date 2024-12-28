@@ -69,13 +69,13 @@ class Language implements LanguageInterface
     {
         $last = null;
 
-        Lib::php_errors_start($b);
+        Lib::php()->errors_start($b);
 
         $instance = null
             ?? static::tryFromInstance($from)
             ?? static::tryFromArray($from);
 
-        $errors = Lib::php_errors_end($b);
+        $errors = Lib::php()->errors_end($b);
 
         if (null === $instance) {
             foreach ( $errors as $error ) {
@@ -93,7 +93,7 @@ class Language implements LanguageInterface
     public static function tryFromInstance($from) // : ?static
     {
         if (! is_a($from, static::class)) {
-            return Lib::php_error(
+            return Lib::php()->error(
                 [
                     'The `from` should be instance of: ' . static::class,
                     $from,
@@ -110,7 +110,7 @@ class Language implements LanguageInterface
     public static function tryFromArray($from) // : ?static
     {
         if (! is_array($from)) {
-            return Lib::php_error(
+            return Lib::php()->error(
                 [
                     'The `from` should be non-empty string',
                     $from,
@@ -131,7 +131,7 @@ class Language implements LanguageInterface
         $titleNative = $titleNative ?? $titleEnglish;
 
         if (null === ($_lang = I18nType::parseLang($lang))) {
-            return Lib::php_error(
+            return Lib::php()->error(
                 [
                     'The `from[lang]` should be valid `lang`',
                     $from,
@@ -139,8 +139,8 @@ class Language implements LanguageInterface
             );
         }
 
-        if (null === ($_locale = Lib::parse_string_not_empty($locale))) {
-            return Lib::php_error(
+        if (null === ($_locale = Lib::parse()->string_not_empty($locale))) {
+            return Lib::php()->error(
                 [
                     'The `from[locale]` should be non-empty string',
                     $from,
@@ -148,8 +148,8 @@ class Language implements LanguageInterface
             );
         }
 
-        if (null === ($_script = Lib::parse_string_not_empty($script))) {
-            return Lib::php_error(
+        if (null === ($_script = Lib::parse()->string_not_empty($script))) {
+            return Lib::php()->error(
                 [
                     'The `from[script]` should be non-empty string',
                     $from,
@@ -157,8 +157,8 @@ class Language implements LanguageInterface
             );
         }
 
-        if (null === ($_titleEnglish = Lib::parse_string_not_empty($titleEnglish))) {
-            return Lib::php_error(
+        if (null === ($_titleEnglish = Lib::parse()->string_not_empty($titleEnglish))) {
+            return Lib::php()->error(
                 [
                     'The `from[titleEnglish]` should be non-empty string',
                     $from,
@@ -166,8 +166,8 @@ class Language implements LanguageInterface
             );
         }
 
-        if (null === ($_titleNative = Lib::parse_string_not_empty($titleNative))) {
-            return Lib::php_error(
+        if (null === ($_titleNative = Lib::parse()->string_not_empty($titleNative))) {
+            return Lib::php()->error(
                 [
                     'The `from[titleNative]` should be non-empty string',
                     $from,
@@ -188,7 +188,7 @@ class Language implements LanguageInterface
 
         if (null !== $phpLocales) {
             if (! is_array($phpLocales) || ! $phpLocales) {
-                return Lib::php_error(
+                return Lib::php()->error(
                     [
                         'The `from[phpLocales]` should be non-empty array',
                         $from,
@@ -201,7 +201,7 @@ class Language implements LanguageInterface
 
         if (null !== $choice) {
             if (! is_a($choice, I18nChoiceInterface::class)) {
-                return Lib::php_error(
+                return Lib::php()->error(
                     [
                         'The `from[choice]` should be instance of: ' . I18nChoiceInterface::class,
                         $choice,

@@ -9,8 +9,8 @@ namespace Gzhegow\I18n;
 use Gzhegow\Lib\Lib;
 use Gzhegow\Lib\Config\Config;
 use Gzhegow\I18n\Config\AbstractConfig;
-use Gzhegow\I18n\Choice\I18nChoiceInterface;
 use Gzhegow\I18n\Exception\LogicException;
+use Gzhegow\I18n\Choice\I18nChoiceInterface;
 
 
 /**
@@ -418,7 +418,7 @@ class I18nConfig extends Config
                 $titleNative,
             ] = $array;
 
-            if (null === Lib::parse_string_not_empty($locale)) {
+            if (null === Lib::parse()->string_not_empty($locale)) {
                 throw new LogicException(
                     [
                         'The `locale` should be non-empty string',
@@ -427,7 +427,7 @@ class I18nConfig extends Config
                 );
             }
 
-            if (null === Lib::parse_string_not_empty($script)) {
+            if (null === Lib::parse()->string_not_empty($script)) {
                 throw new LogicException(
                     [
                         'The `script` should be non-empty string',
@@ -436,7 +436,7 @@ class I18nConfig extends Config
                 );
             }
 
-            if (null === Lib::parse_string_not_empty($titleEnglish)) {
+            if (null === Lib::parse()->string_not_empty($titleEnglish)) {
                 throw new LogicException(
                     [
                         'The `titleEnglish` should be non-empty string',
@@ -445,7 +445,7 @@ class I18nConfig extends Config
                 );
             }
 
-            if (null === Lib::parse_string_not_empty($titleNative)) {
+            if (null === Lib::parse()->string_not_empty($titleNative)) {
                 throw new LogicException(
                     [
                         'The `titleNative` should be non-empty string',
@@ -504,7 +504,7 @@ class I18nConfig extends Config
                 while ( count($aarr) ) {
                     $phpLocale = array_shift($aarr);
 
-                    if (null === Lib::parse_string_not_empty($phpLocale)) {
+                    if (null === Lib::parse()->string_not_empty($phpLocale)) {
                         throw new LogicException(
                             [
                                 'The `phpLocale` should be non-empty string',

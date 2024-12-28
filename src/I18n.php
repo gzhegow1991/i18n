@@ -715,7 +715,7 @@ class I18n implements I18nInterface
             $phrases[ $i ] = $poolItem->getPhrase();
         }
 
-        [ $args, $kwargs ] = Lib::array_kwargs($placeholders);
+        [ $args, $kwargs ] = Lib::arr()->kwargs($placeholders);
         $placeholdersList = $args;
         $placeholdersAll = $kwargs;
 
@@ -800,7 +800,7 @@ class I18n implements I18nInterface
             $phrases[ $i ] = $poolItem->getPhrase();
         }
 
-        [ $args, $kwargs ] = Lib::array_kwargs($placeholders);
+        [ $args, $kwargs ] = Lib::arr()->kwargs($placeholders);
         $placeholdersList = $args;
         $placeholdersAll = $kwargs;
 
@@ -888,7 +888,7 @@ class I18n implements I18nInterface
 
         $_numbers = [];
         foreach ( $numbers as $i => $number ) {
-            if (null === ($_number = Lib::parse_numeric($number))) {
+            if (null === ($_number = Lib::parse()->numeric($number))) {
                 throw new LogicException(
                     [
                         'Each of `numbers` should be valid number or number-string',
@@ -953,7 +953,7 @@ class I18n implements I18nInterface
             $phrases[ $i ] = $phrase;
         }
 
-        [ $args, $kwargs ] = Lib::array_kwargs($placeholders);
+        [ $args, $kwargs ] = Lib::arr()->kwargs($placeholders);
         $placeholdersList = $args;
         $placeholdersAll = $kwargs;
 
@@ -1000,7 +1000,7 @@ class I18n implements I18nInterface
 
         $_numbers = [];
         foreach ( $numbers as $i => $number ) {
-            if (null === ($_number = Lib::parse_numeric($number))) {
+            if (null === ($_number = Lib::parse()->numeric($number))) {
                 throw new LogicException(
                     [
                         'Each of `numbers` should be valid number or number-string',
@@ -1067,7 +1067,7 @@ class I18n implements I18nInterface
             $phrases[ $i ] = $phrase;
         }
 
-        [ $args, $kwargs ] = Lib::array_kwargs($placeholders);
+        [ $args, $kwargs ] = Lib::arr()->kwargs($placeholders);
         $placeholdersList = $args;
         $placeholdersAll = $kwargs;
 
@@ -1172,7 +1172,7 @@ class I18n implements I18nInterface
                 $errstr = 'Each `aword` should begin with `aword_prefix` symbol to be translated: [:aword_prefix:] / [:dump:]';
                 $errdata = [
                     'aword_prefix' => I18n::AWORD_PREFIX,
-                    'dump'         => Lib::debug_value($aword),
+                    'dump'         => Lib::debug()->value($aword),
                 ];
 
                 $errors[ $i ] = [ $errno, $errstr, $errdata ];
@@ -1198,7 +1198,7 @@ class I18n implements I18nInterface
                 $errdata = [
                     'groups'    => '( ' . implode(', ', $_groups) . ' )',
                     'languages' => '( ' . implode(', ', $_langs) . ' )',
-                    'dump'      => Lib::debug_value($aword),
+                    'dump'      => Lib::debug()->value($aword),
                 ];
 
                 $errors[ $i ] = [ $errno, $errstr, $errdata ];
@@ -1220,7 +1220,7 @@ class I18n implements I18nInterface
                 $errdata = [
                     'word'      => $word,
                     'languages' => '( ' . implode(', ', $_langs) . ' )',
-                    'dump'      => Lib::debug_value($aword),
+                    'dump'      => Lib::debug()->value($aword),
                 ];
 
                 $errors[ $i ] = [ $errno, $errstr, $errdata ];
