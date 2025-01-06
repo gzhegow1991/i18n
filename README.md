@@ -64,33 +64,45 @@ ini_set('memory_limit', '32M');
 
 
 // > добавляем несколько функция для тестирования
-function _debug(...$values) : void
+function _debug(...$values) : string
 {
     $lines = [];
     foreach ( $values as $value ) {
         $lines[] = \Gzhegow\Lib\Lib::debug()->type_id($value);
     }
 
-    echo implode(' | ', $lines) . PHP_EOL;
+    $ret = implode(' | ', $lines) . PHP_EOL;
+
+    echo $ret;
+
+    return $ret;
 }
 
-function _dump(...$values) : void
+function _dump(...$values) : string
 {
     $lines = [];
     foreach ( $values as $value ) {
         $lines[] = \Gzhegow\Lib\Lib::debug()->value($value);
     }
 
-    echo implode(' | ', $lines) . PHP_EOL;
+    $ret = implode(' | ', $lines) . PHP_EOL;
+
+    echo $ret;
+
+    return $ret;
 }
 
-function _dump_array($value, int $maxLevel = null, bool $multiline = false) : void
+function _dump_array($value, int $maxLevel = null, bool $multiline = false) : string
 {
     $content = $multiline
         ? \Gzhegow\Lib\Lib::debug()->array_multiline($value, $maxLevel)
         : \Gzhegow\Lib\Lib::debug()->array($value, $maxLevel);
 
-    echo $content . PHP_EOL;
+    $ret = $content . PHP_EOL;
+
+    echo $ret;
+
+    return $ret;
 }
 
 function _assert_output(
@@ -99,8 +111,16 @@ function _assert_output(
 {
     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
 
-    \Gzhegow\Lib\Lib::assert()->resource_static(STDOUT);
     \Gzhegow\Lib\Lib::assert()->output($trace, $fn, $expect);
+}
+
+function _assert_microtime(
+    \Closure $fn, float $expectMax = null, float $expectMin = null
+) : void
+{
+    $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
+
+    \Gzhegow\Lib\Lib::assert()->microtime($trace, $fn, $expectMax, $expectMin);
 }
 
 
@@ -208,13 +228,11 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 1"
 NULL
 "ru"
-""
-HEREDOC
-);
+');
 
 
 // > TEST
@@ -234,13 +252,11 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 2"
 "/(\/|en\/|ru\/)/"
 "/(?<lang>\/|en\/|ru\/)/iu"
-""
-HEREDOC
-);
+');
 
 
 // > TEST
@@ -256,12 +272,10 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 3"
 "Здесь был Вася. И ниже кто-то дописал: сосед"
-""
-HEREDOC
-);
+');
 
 
 // > TEST
@@ -290,22 +304,20 @@ $fn = function () use ($i18n) {
         $i18n->phrase('@main.message.missing', $fallback = []);
     }
     catch ( \Throwable $e ) {
-        _dump($e);
     }
+    _dump('[ CATCH ] ' . $e->getMessage());
 
     $i18n->setLang($langBefore);
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 4"
 "Привет"
 NULL
-123
-{ object # Gzhegow\I18n\Exception\RuntimeException }
-""
-HEREDOC
-);
+"123"
+"[ CATCH ] [ D:\OpenServer\.org\@gzhegow\_1_\_1_i18n\test.php: 256 ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\Aword # \"@main.message.missing\" }"
+');
 
 
 // > TEST
@@ -337,12 +349,10 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 5"
 [ "Привет, Андрей", "Привет, Вася и Валера" ]
-""
-HEREDOC
-);
+');
 
 
 // > TEST
@@ -370,13 +380,11 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 6"
 NULL
 "яблоко"
-""
-HEREDOC
-);
+');
 
 
 // > TEST
@@ -410,7 +418,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 7"
 [ "1", "apple" ]
 [ "2", "apples" ]
@@ -441,9 +449,7 @@ _assert_output($fn, <<<HEREDOC
     "apples"
   ]
 ]
-""
-HEREDOC
-);
+');
 
 
 // > TEST
@@ -477,7 +483,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 8"
 [ "1", "яблоко" ]
 [ "2", "яблока" ]
@@ -532,9 +538,7 @@ _assert_output($fn, <<<HEREDOC
     "яблока"
   ]
 ]
-""
-HEREDOC
-);
+');
 
 
 // > TEST
@@ -564,7 +568,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 9"
 [
   [
@@ -580,9 +584,7 @@ _assert_output($fn, <<<HEREDOC
     "lang" => "en"
   ]
 ]
-""
-HEREDOC
-);
+');
 
 
 // > TEST
@@ -616,12 +618,10 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 10"
 [ [ "apple", "apples" ] ]
-""
-HEREDOC
-);
+');
 
 
 // > TEST
@@ -639,12 +639,10 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 11"
 [ [ "status" => TRUE, "group" => "main", "lang" => "en" ] ]
-""
-HEREDOC
-);
+');
 
 
 // > TEST
@@ -668,7 +666,7 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 12"
 [
   [
@@ -684,9 +682,7 @@ _assert_output($fn, <<<HEREDOC
     "lang" => "en"
   ]
 ]
-""
-HEREDOC
-);
+');
 
 
 // > TEST
@@ -717,12 +713,10 @@ $fn = function () use ($i18n) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 13"
 [ [ "apple", "apples" ] ]
-""
-HEREDOC
-);
+');
 
 
 // > TEST
@@ -772,11 +766,9 @@ $fn = function () use ($i18n, $langDir) {
 
     echo '';
 };
-_assert_output($fn, <<<HEREDOC
+_assert_output($fn, '
 "TEST 14"
 TRUE
 TRUE
-""
-HEREDOC
-);
+');
 ```

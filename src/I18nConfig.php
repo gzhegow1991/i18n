@@ -7,8 +7,7 @@
 namespace Gzhegow\I18n;
 
 use Gzhegow\Lib\Lib;
-use Gzhegow\Lib\Config\Config;
-use Gzhegow\I18n\Config\AbstractConfig;
+use Gzhegow\Lib\Config\AbstractConfig;
 use Gzhegow\I18n\Exception\LogicException;
 use Gzhegow\I18n\Choice\I18nChoiceInterface;
 
@@ -30,7 +29,7 @@ use Gzhegow\I18n\Choice\I18nChoiceInterface;
  * @property \Psr\Log\LoggerInterface               $logger
  * @property array<int, int>                        $loggables
  */
-class I18nConfig extends Config
+class I18nConfig extends AbstractConfig
 {
     /**
      * @var array<string, array{
