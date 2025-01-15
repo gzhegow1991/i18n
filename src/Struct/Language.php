@@ -79,7 +79,7 @@ class Language implements LanguageInterface
 
         if (null === $instance) {
             foreach ( $errors as $error ) {
-                $last = new LogicException($error, null, $last);
+                $last = new LogicException($error, $last);
             }
         }
 
@@ -94,10 +94,7 @@ class Language implements LanguageInterface
     {
         if (! is_a($from, static::class)) {
             return Lib::php()->error(
-                [
-                    'The `from` should be instance of: ' . static::class,
-                    $from,
-                ]
+                [ 'The `from` should be instance of: ' . static::class, $from ]
             );
         }
 
@@ -111,10 +108,7 @@ class Language implements LanguageInterface
     {
         if (! is_array($from)) {
             return Lib::php()->error(
-                [
-                    'The `from` should be non-empty string',
-                    $from,
-                ]
+                [ 'The `from` should be non-empty string', $from ]
             );
         }
 
@@ -132,46 +126,31 @@ class Language implements LanguageInterface
 
         if (null === ($_lang = I18nType::parseLang($lang))) {
             return Lib::php()->error(
-                [
-                    'The `from[lang]` should be valid `lang`',
-                    $from,
-                ]
+                [ 'The `from[lang]` should be valid `lang`', $from ]
             );
         }
 
         if (null === ($_locale = Lib::parse()->string_not_empty($locale))) {
             return Lib::php()->error(
-                [
-                    'The `from[locale]` should be non-empty string',
-                    $from,
-                ]
+                [ 'The `from[locale]` should be non-empty string', $from ]
             );
         }
 
         if (null === ($_script = Lib::parse()->string_not_empty($script))) {
             return Lib::php()->error(
-                [
-                    'The `from[script]` should be non-empty string',
-                    $from,
-                ]
+                [ 'The `from[script]` should be non-empty string', $from ]
             );
         }
 
         if (null === ($_titleEnglish = Lib::parse()->string_not_empty($titleEnglish))) {
             return Lib::php()->error(
-                [
-                    'The `from[titleEnglish]` should be non-empty string',
-                    $from,
-                ]
+                [ 'The `from[titleEnglish]` should be non-empty string', $from ]
             );
         }
 
         if (null === ($_titleNative = Lib::parse()->string_not_empty($titleNative))) {
             return Lib::php()->error(
-                [
-                    'The `from[titleNative]` should be non-empty string',
-                    $from,
-                ]
+                [ 'The `from[titleNative]` should be non-empty string', $from ]
             );
         }
 
@@ -189,10 +168,7 @@ class Language implements LanguageInterface
         if (null !== $phpLocales) {
             if (! is_array($phpLocales) || ! $phpLocales) {
                 return Lib::php()->error(
-                    [
-                        'The `from[phpLocales]` should be non-empty array',
-                        $from,
-                    ]
+                    [ 'The `from[phpLocales]` should be non-empty array', $from ]
                 );
             }
 
@@ -202,10 +178,7 @@ class Language implements LanguageInterface
         if (null !== $choice) {
             if (! is_a($choice, I18nChoiceInterface::class)) {
                 return Lib::php()->error(
-                    [
-                        'The `from[choice]` should be instance of: ' . I18nChoiceInterface::class,
-                        $choice,
-                    ]
+                    [ 'The `from[choice]` should be instance of: ' . I18nChoiceInterface::class, $choice ]
                 );
             }
 

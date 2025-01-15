@@ -69,7 +69,7 @@ class PoolItem implements I18nPoolItemInterface
 
         if (null === $instance) {
             foreach ( $errors as $error ) {
-                $last = new LogicException($error, null, $last);
+                $last = new LogicException($error, $last);
             }
         }
 
@@ -84,10 +84,7 @@ class PoolItem implements I18nPoolItemInterface
     {
         if (! is_a($from, static::class)) {
             return Lib::php()->error(
-                [
-                    'The `from` should be instance of: ' . static::class,
-                    $from,
-                ]
+                [ 'The `from` should be instance of: ' . static::class, $from ]
             );
         }
 
@@ -101,10 +98,7 @@ class PoolItem implements I18nPoolItemInterface
     {
         if (! is_array($from)) {
             return Lib::php()->error(
-                [
-                    'The `from` should be array',
-                    $from,
-                ]
+                [ 'The `from` should be array', $from ]
             );
         }
 
@@ -115,28 +109,19 @@ class PoolItem implements I18nPoolItemInterface
 
         if (null === ($_word = I18nType::parseWord($word))) {
             return Lib::php()->error(
-                [
-                    'The `from[word]` should be valid word',
-                    $from,
-                ]
+                [ 'The `from[word]` should be valid word', $from ]
             );
         }
 
         if (null === ($_lang = I18nType::parseLang($lang))) {
             return Lib::php()->error(
-                [
-                    'The `from[lang]` should be valid lang',
-                    $from,
-                ]
+                [ 'The `from[lang]` should be valid lang', $from ]
             );
         }
 
         if (null === ($_phrase = Lib::parse()->string_not_empty($phrase))) {
             return Lib::php()->error(
-                [
-                    'The `from[phrase]` should be non-empty string',
-                    $from,
-                ]
+                [ 'The `from[phrase]` should be non-empty string', $from ]
             );
         }
 
@@ -148,12 +133,7 @@ class PoolItem implements I18nPoolItemInterface
             foreach ( $choices as $i => $choice ) {
                 if (null === ($_choice = Lib::parse()->string_not_empty($choice))) {
                     return Lib::php()->error(
-                        [
-                            'Each of `from[choices]` should be non-empty string',
-                            $from,
-                            $choice,
-                            $i,
-                        ]
+                        [ 'Each of `from[choices]` should be non-empty string', $from, $choice, $i ]
                     );
                 }
 

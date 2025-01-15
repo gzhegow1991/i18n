@@ -56,7 +56,7 @@ class Word implements WordInterface
 
         if (null === $instance) {
             foreach ( $errors as $error ) {
-                $last = new LogicException($error, null, $last);
+                $last = new LogicException($error, $last);
             }
         }
 
@@ -71,10 +71,7 @@ class Word implements WordInterface
     {
         if (! is_a($from, static::class)) {
             return Lib::php()->error(
-                [
-                    'The `from` should be instance of: ' . static::class,
-                    $from,
-                ]
+                [ 'The `from` should be instance of: ' . static::class, $from ]
             );
         }
 
@@ -88,10 +85,7 @@ class Word implements WordInterface
     {
         if (null === ($string = Lib::parse()->string_not_empty($from))) {
             return Lib::php()->error(
-                [
-                    'The `from` should be non-empty string',
-                    $from,
-                ]
+                [ 'The `from` should be non-empty string', $from ]
             );
         }
 
@@ -99,10 +93,7 @@ class Word implements WordInterface
 
         if (! preg_match($regex = "/^{$regexPart}[.]{$regexPart}[.]{$regexPart}([_][\$]*)?$/", $string)) {
             return Lib::php()->error(
-                [
-                    'The `from` should be string that match regex: ' . $regex,
-                    $from,
-                ]
+                [ 'The `from` should be string that match regex: ' . $regex, $from ]
             );
         }
 
@@ -110,10 +101,7 @@ class Word implements WordInterface
 
         if (null === ($group = I18nType::parseGroup($group))) {
             return Lib::php()->error(
-                [
-                    'The `from` should contain valid group',
-                    $from,
-                ]
+                [ 'The `from` should contain valid group', $from ]
             );
         }
 

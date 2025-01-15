@@ -50,7 +50,7 @@ class Group implements GroupInterface
 
         if (null === $instance) {
             foreach ( $errors as $error ) {
-                $last = new LogicException($error, null, $last);
+                $last = new LogicException($error, $last);
             }
         }
 
@@ -65,10 +65,7 @@ class Group implements GroupInterface
     {
         if (! is_a($from, static::class)) {
             return Lib::php()->error(
-                [
-                    'The `from` should be instance of: ' . static::class,
-                    $from,
-                ]
+                [ 'The `from` should be instance of: ' . static::class, $from ]
             );
         }
 
@@ -82,19 +79,13 @@ class Group implements GroupInterface
     {
         if (null === ($string = Lib::parse()->string_not_empty($from))) {
             return Lib::php()->error(
-                [
-                    'The `from` should be non-empty string',
-                    $from,
-                ]
+                [ 'The `from` should be non-empty string', $from ]
             );
         }
 
         if (! preg_match($regex = '/^[a-z][a-z0-9_-]*[a-z0-9]$/i', $string)) {
             return Lib::php()->error(
-                [
-                    'The `from` should be string that is match regex: ' . $regex,
-                    $from,
-                ]
+                [ 'The `from` should be string that is match regex: ' . $regex, $from ]
             );
         }
 

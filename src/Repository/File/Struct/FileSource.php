@@ -65,7 +65,7 @@ class FileSource implements FileSourceInterface
 
         if (null === $instance) {
             foreach ( $errors as $error ) {
-                $last = new LogicException($error, null, $last);
+                $last = new LogicException($error, $last);
             }
         }
 
@@ -80,10 +80,7 @@ class FileSource implements FileSourceInterface
     {
         if (! is_a($from, static::class)) {
             return Lib::php()->error(
-                [
-                    'The `from` should be instance of: ' . static::class,
-                    $from,
-                ]
+                [ 'The `from` should be instance of: ' . static::class, $from ]
             );
         }
 
@@ -97,10 +94,7 @@ class FileSource implements FileSourceInterface
     {
         if (! is_array($from)) {
             return Lib::php()->error(
-                [
-                    'The `from` should be array',
-                    $from,
-                ]
+                [ 'The `from` should be array', $from ]
             );
         }
 
