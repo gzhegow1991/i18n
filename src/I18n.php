@@ -765,20 +765,14 @@ class I18n implements I18nInterface
         $phrases = [];
 
         if ($errors) {
-            $trace = []
-                + (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[ 1 ] ?? [])
-                + [ 'file' => '[:file:]', 'line' => '[:line:]' ];
-
-            [
-                'file' => $file,
-                'line' => $line,
-            ] = $trace;
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+            $traceFile = $trace[ 1 ][ 'file' ] ?? '{file}';
+            $traceLine = $trace[ 1 ][ 'line' ] ?? '{line}';
 
             foreach ( $errors as $i => [ $errno, $errstr, $errdata ] ) {
                 $errLevel = $this->loggables[ $errno ] ?? 0;
 
                 $errMessage = [];
-                $errMessage[] = '[ ' . "{$file}: {$line}" . ' ]';
                 $errMessage[] = $errstr;
                 $errMessage = implode(' ', $errMessage);
 
@@ -789,7 +783,11 @@ class I18n implements I18nInterface
                 }
 
                 if (! array_key_exists($i, $fallbacks)) {
-                    throw new RuntimeException($errMessage);
+                    $e = new RuntimeException($errMessage);
+                    $e->file = $traceFile;
+                    $e->line = $traceLine;
+
+                    throw $e;
                 }
 
                 $phrases[ $i ] = $fallbacks[ $i ];
