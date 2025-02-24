@@ -408,7 +408,7 @@ _assert_stdout($fn, [], '
 [ "1", "apple" ]
 [ "2", "apples" ]
 [ "1.5", "apples" ]
-```
+###
 [
   [
     "1",
@@ -435,7 +435,7 @@ _assert_stdout($fn, [], '
     "apples"
   ]
 ]
-```
+###
 ');
 
 
@@ -475,7 +475,7 @@ _assert_stdout($fn, [], '
 [ "1", "яблоко" ]
 [ "2", "яблока" ]
 [ "5", "яблок" ]
-```
+###
 [
   [
     "1",
@@ -526,7 +526,7 @@ _assert_stdout($fn, [], '
     "яблока"
   ]
 ]
-```
+###
 ');
 
 
@@ -559,7 +559,7 @@ $fn = function () use ($i18n) {
 _assert_stdout($fn, [], '
 "TEST 9"
 
-```
+###
 [
   [
     "status" => TRUE,
@@ -574,7 +574,7 @@ _assert_stdout($fn, [], '
     "lang" => "en"
   ]
 ]
-```
+###
 ');
 
 
@@ -659,7 +659,7 @@ $fn = function () use ($i18n) {
 _assert_stdout($fn, [], '
 "TEST 12"
 
-```
+###
 [
   [
     "status" => TRUE,
@@ -674,7 +674,7 @@ _assert_stdout($fn, [], '
     "lang" => "en"
   ]
 ]
-```
+###
 ');
 
 
