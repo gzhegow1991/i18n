@@ -767,7 +767,7 @@ class I18n implements I18nInterface
         if ($errors) {
             $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
             $traceFile = $trace[ 1 ][ 'file' ] ?? '{file}';
-            $traceLine = $trace[ 1 ][ 'line' ] ?? '{line}';
+            $traceLine = $trace[ 1 ][ 'line' ] ?? 0;
 
             foreach ( $errors as $i => [ $errno, $errstr, $errdata ] ) {
                 $errLevel = $this->loggables[ $errno ] ?? 0;
@@ -784,8 +784,8 @@ class I18n implements I18nInterface
 
                 if (! array_key_exists($i, $fallbacks)) {
                     $e = new RuntimeException($errMessage);
-                    $e->file = $traceFile;
-                    $e->line = $traceLine;
+                    $e->setFile($traceFile);
+                    $e->setLine($traceLine);
 
                     throw $e;
                 }
