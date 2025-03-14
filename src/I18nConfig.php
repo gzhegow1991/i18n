@@ -406,7 +406,7 @@ class I18nConfig extends AbstractConfig
     }
 
 
-    protected function validation(array $context = []) : bool
+    protected function validation(array &$context = []) : bool
     {
         foreach ( $this->languages as $array ) {
             [
