@@ -43,11 +43,12 @@ Tasks:
 > composer require gzhegow/i18n
 ```
 
-## Пример / The Example
+## Примеры и тесты / Examples and tests
 
 ```php
 <?php
 
+require_once getenv('COMPOSER_HOME') . '/vendor/autoload.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
 
@@ -301,7 +302,7 @@ _assert_stdout($fn, [], '
 "Привет"
 NULL
 "123"
-"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\Aword }" | "test.php" | 242
+"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\Aword }" | "test.php" | 243
 ');
 
 

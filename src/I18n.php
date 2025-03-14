@@ -8,13 +8,13 @@ namespace Gzhegow\I18n;
 
 use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Type\I18nType;
-use Gzhegow\I18n\Pool\I18nPoolInterface;
 use Gzhegow\I18n\Struct\LangInterface;
 use Gzhegow\I18n\Struct\GroupInterface;
 use Gzhegow\I18n\Struct\AwordInterface;
-use Gzhegow\I18n\Pool\I18nPoolItemInterface;
+use Gzhegow\I18n\Pool\I18nPoolInterface;
 use Gzhegow\I18n\Exception\LogicException;
 use Gzhegow\I18n\Struct\LanguageInterface;
+use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
 use Gzhegow\I18n\Repository\I18nRepositoryInterface;
 
@@ -132,8 +132,16 @@ class I18n implements I18nInterface
         $loggables[ I18nInterface::E_MISSING_WORD ] = $this->config->loggables[ I18nInterface::E_MISSING_WORD ] ?? null;
         $loggables[ I18nInterface::E_WRONG_AWORD ] = $this->config->loggables[ I18nInterface::E_WRONG_AWORD ] ?? null;
 
-        foreach ( $languages as $languageItem ) {
-            $language = I18nType::theLanguage($languageItem);
+        foreach ( $languages as $key => $languageArray ) {
+            $_languageArray = [
+                'lang'         => $key,
+                'locale'       => $languageArray[ 0 ],
+                'script'       => $languageArray[ 1 ],
+                'titleEnglish' => $languageArray[ 2 ],
+                'titleNative'  => $languageArray[ 3 ],
+            ];
+
+            $language = I18nType::theLanguage($_languageArray);
 
             $langString = $language->getLang();
 

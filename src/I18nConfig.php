@@ -399,17 +399,16 @@ class I18nConfig extends AbstractConfig
 
     public function __construct()
     {
-        $defaultChoice = new \Gzhegow\I18n\Choice\DefaultChoice();
-        $ruChoice = new \Gzhegow\I18n\Choice\RuChoice();
+        $this->choices[ 'en' ] = new \Gzhegow\I18n\Choice\DefaultChoice();
+        $this->choices[ 'ru' ] = new \Gzhegow\I18n\Choice\RuChoice();
 
-        $this->choices[ 'en' ] = $defaultChoice;
-        $this->choices[ 'ru' ] = $ruChoice;
+        parent::__construct();
     }
 
 
-    public function validate()
+    protected function validation(array $context = []) : bool
     {
-        foreach ( $this->languages as $key => $array ) {
+        foreach ( $this->languages as $array ) {
             [
                 $locale,
                 $script,
@@ -452,14 +451,6 @@ class I18nConfig extends AbstractConfig
                     ]
                 );
             }
-
-            $this->languages[ $key ] = [
-                'lang'         => $key,
-                'locale'       => $locale,
-                'script'       => $script,
-                'titleEnglish' => $titleEnglish,
-                'titleNative'  => $titleNative,
-            ];
         }
 
         $phpLocalesIndex = [
@@ -489,7 +480,7 @@ class I18nConfig extends AbstractConfig
                 );
             }
 
-            foreach ( $arr as $phpLocale => $aarr ) {
+            foreach ( $arr as $phpLocale => $phpLocaleArr ) {
                 if (! isset($phpLocalesIndex[ $phpLocale ])) {
                     throw new LogicException(
                         [
@@ -500,8 +491,8 @@ class I18nConfig extends AbstractConfig
                     );
                 }
 
-                while ( count($aarr) ) {
-                    $phpLocale = array_shift($aarr);
+                while ( count($phpLocaleArr) ) {
+                    $phpLocale = array_shift($phpLocaleArr);
 
                     if (null === Lib::parse()->string_not_empty($phpLocale)) {
                         throw new LogicException(
@@ -583,5 +574,7 @@ class I18nConfig extends AbstractConfig
                 );
             }
         }
+
+        return true;
     }
 }
