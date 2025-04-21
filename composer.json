@@ -11,6 +11,9 @@
     }
   ],
 
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+
   "require": {
     "php": "^7.3|^8.0",
 
@@ -23,11 +26,16 @@
   "autoload": {
     "psr-4": {
       "Gzhegow\\I18n\\": "src/"
+    },
+    "exclude-from-classmap": [
+      "tests/"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Gzhegow\\I18n\\Tests\\": "tests/src/"
     }
   },
-
-  "minimum-stability": "dev",
-  "prefer-stable": true,
 
   "config": {
     "optimize-autoloader": true,

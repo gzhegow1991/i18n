@@ -1,57 +1,3 @@
-# I18n
-
-## Что это? / What's this?
-
-### RU
-
-```
-Языковой пакет для установки на чистый PHP (без фреймворков).
-
-Задачи:
-
-- языковые URL и маршруты (роуты)
-- интерполяция (подстановка) параметров в строки
-- получение переводов из различных источников (файлы, БД и другие)
-- сохранение переводов в различные источники
-- получение переводов (в том числе несколько ключей за запрос)
-- использование ключей из оперативной памяти без постоянных запросов в источник
-- применение ->choice(), чтобы изменять форму множественного числа под языки
-- использование "языка по-умолчанию", чтобы выводить ещё не переведенную фразу на главном языке
-```
-
-### EN
-
-```
-
-Language package for plain PHP (without frameworks)
-
-Tasks:
-
-- Language URLs and routes
-- Interpolation (substitution) of parameters in strings
-- Retrieving translations from various sources (files, databases, and others)
-- Saving translations to various sources
-- Retrieving translations (including multiple keys per request)
-- Using keys from memory without constant source queries
-- Applying ->choice() to change the plural form according to number and language
-- Using a "default language" to display untranslated phrases in the main language
-```
-
-## Установить
-
-```
-composer require gzhegow/i18n
-```
-
-## Запустить тесты
-
-```
-php test.php
-```
-
-## Примеры и тесты
-
-```php
 <?php
 
 define('__ROOT__', __DIR__ . '/..');
@@ -777,5 +723,3 @@ _assert_stdout($fn, [], '
 TRUE
 TRUE
 ');
-```
-
