@@ -1,8 +1,6 @@
 <?php
 
-define('__ROOT__', __DIR__ . '/..');
-
-require_once __ROOT__ . '/vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 
 // > настраиваем PHP
@@ -19,6 +17,12 @@ ini_set('memory_limit', '32M');
 
 // > добавляем несколько функция для тестирования
 $ffn = new class {
+    function root() : string
+    {
+        return realpath(__DIR__ . '/..');
+    }
+
+
     function value_array($value, int $maxLevel = null, array $options = []) : string
     {
         return \Gzhegow\Lib\Lib::debug()->value_array($value, $maxLevel, $options);
@@ -75,9 +79,9 @@ $factory = new \Gzhegow\I18n\I18nFactory();
 
 // > создаем репозиторий, который будет получать переводы из удаленного источника
 // > в пакете поставляются несколько готовых репозиториев: JSON, PHP, YAML, и всегда можно написать свой собственный
-$repositoryPhp = new \Gzhegow\I18n\Repository\File\PhpFileRepository($langDir = __ROOT__ . '/storage/resource/lang');
-// $repositoryJson = new \Gzhegow\I18n\Repo\File\JsonFileRepository($langDir = __ROOT__ . '/storage/resource/lang');
-// $repositoryYaml = new \Gzhegow\I18n\Repo\File\YamlFileRepository($langDir = __ROOT__ . '/storage/resource/lang');
+$repositoryPhp = new \Gzhegow\I18n\Repository\File\PhpFileRepository($langDir = $ffn->root() . '/storage/resource/lang');
+// $repositoryJson = new \Gzhegow\I18n\Repo\File\JsonFileRepository($langDir = $ffn->root() . '/storage/resource/lang');
+// $repositoryYaml = new \Gzhegow\I18n\Repo\File\YamlFileRepository($langDir = $ffn->root() . '/storage/resource/lang');
 
 // создаем и регистрируем менеджер типов (он определяет синтаксис для ключевых слов, отличие групп от слов, компоновку их в виде строки и так далее)
 $typeManager = new \Gzhegow\I18n\Type\I18nTypeManager();
@@ -132,7 +136,7 @@ $config->configure(function (\Gzhegow\I18n\I18nConfig $config) {
     $config->langDefault = 'en';
 
     // > можно (и желательно) установить логгер, чтобы вовремя исправлять проблемы с отсутствием переводов и неверными переводами в группах
-    // $rotatingFileHandler = new \Monolog\Handler\RotatingFileHandler(__ROOT__ . '/var/log/lang.log', 0);
+    // $rotatingFileHandler = new \Monolog\Handler\RotatingFileHandler($ffn->root() . '/var/log/lang.log', 0);
     // $rotatingFileHandler->setFilenameFormat('{date}-{filename}', 'Y/m/d');
     // $logger = new \Monolog\Logger('lang', [ $rotatingFileHandler ]);
     // $config->logger = $logger;
@@ -251,7 +255,7 @@ $fn = function () use ($i18n, $ffn) {
     catch ( \Gzhegow\I18n\Exception\RuntimeException $e ) {
         $ffn->print(
             '[ CATCH ] ' . $e->getMessage(),
-            $e->getFileOverride(__ROOT__),
+            $e->getFileOverride($ffn->root()),
             $e->getLine()
         );
     }
@@ -264,7 +268,7 @@ $ffn->assert_stdout($fn, [], '
 "Привет"
 NULL
 "123"
-"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\Aword }" | "tests/test.php" | 249
+"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\Aword }" | "tests/test.php" | 253
 ');
 
 
