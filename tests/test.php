@@ -18,50 +18,54 @@ ini_set('memory_limit', '32M');
 
 
 // > добавляем несколько функция для тестирования
-function _values($separator = null, ...$values) : string
-{
-    return \Gzhegow\Lib\Lib::debug()->values($separator, [], ...$values);
-}
+$ffn = new class {
+    function array($value, int $maxLevel = null, array $options = []) : string
+    {
+        return \Gzhegow\Lib\Lib::debug()->value_array($value, $maxLevel, $options);
+    }
 
-function _array($value, int $maxLevel = null, array $options = []) : string
-{
-    return \Gzhegow\Lib\Lib::debug()->value_array($value, $maxLevel, $options);
-}
+    function array_multiline($value, int $maxLevel = null, array $options = []) : string
+    {
+        return \Gzhegow\Lib\Lib::debug()->value_array_multiline($value, $maxLevel, $options);
+    }
 
-function _array_multiline($value, int $maxLevel = null, array $options = []) : string
-{
-    return \Gzhegow\Lib\Lib::debug()->value_array_multiline($value, $maxLevel, $options);
-}
 
-function _print(...$values) : void
-{
-    echo _values(' | ', ...$values) . PHP_EOL;
-}
+    function values($separator = null, ...$values) : string
+    {
+        return \Gzhegow\Lib\Lib::debug()->values([], $separator, ...$values);
+    }
 
-function _print_array($value, int $maxLevel = null, array $options = [])
-{
-    echo _array($value, $maxLevel, $options) . PHP_EOL;
-}
 
-function _print_array_multiline($value, int $maxLevel = null, array $options = [])
-{
-    echo _array_multiline($value, $maxLevel, $options) . PHP_EOL;
-}
+    function print(...$values) : void
+    {
+        echo $this->values(' | ', ...$values) . PHP_EOL;
+    }
 
-function _assert_stdout(
-    \Closure $fn, array $fnArgs = [],
-    string $expectedStdout = null
-) : void
-{
-    $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
+    function print_array($value, int $maxLevel = null, array $options = []) : void
+    {
+        echo $this->array($value, $maxLevel, $options) . PHP_EOL;
+    }
 
-    \Gzhegow\Lib\Lib::test()->assertStdout(
-        $trace,
-        $fn, $fnArgs,
-        $expectedStdout
-    );
-}
+    function print_array_multiline($value, int $maxLevel = null, array $options = []) : void
+    {
+        echo $this->array_multiline($value, $maxLevel, $options) . PHP_EOL;
+    }
 
+
+    function assert_stdout(
+        \Closure $fn, array $fnArgs = [],
+        string $expectedStdout = null
+    ) : void
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
+
+        \Gzhegow\Lib\Lib::test()->assertStdout(
+            $trace,
+            $fn, $fnArgs,
+            $expectedStdout
+        );
+    }
+};
 
 
 // >>> ЗАПУСКАЕМ!
@@ -151,8 +155,8 @@ $i18n = new \Gzhegow\I18n\I18n(
 
 // > TEST
 // > Получаем часть пути, который подставляется при генерации URL, для языка по-умолчанию должен быть NULL
-$fn = function () use ($i18n) {
-    _print('TEST 1');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 1');
     echo PHP_EOL;
 
     $before = $i18n->getLangDefault();
@@ -160,14 +164,14 @@ $fn = function () use ($i18n) {
     $i18n->setLangDefault('en');
 
     $result = $i18n->getLangForUrl('en');
-    _print($result);
+    $ffn->print($result);
 
     $result = $i18n->getLangForUrl('ru');
-    _print($result);
+    $ffn->print($result);
 
     $i18n->setLangDefault($before);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 1"
 
 NULL
@@ -177,21 +181,21 @@ NULL
 
 // > TEST
 // > Строим регулярное выражение, которое подключается в роутер для SEO оптимизации
-$fn = function () use ($i18n) {
-    _print('TEST 2');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 2');
     echo PHP_EOL;
 
     $result = $i18n->getLangsRegexForRoute();
-    _print($result);
+    $ffn->print($result);
 
     $result = $i18n->getLangsRegexForRoute(
         $regexGroupName = 'lang',
         $regexBraces = '/',
         $regexFlags = 'iu'
     );
-    _print($result);
+    $ffn->print($result);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 2"
 
 "/(\/|en\/|ru\/)/"
@@ -201,17 +205,17 @@ _assert_stdout($fn, [], '
 
 // > TEST
 // > Интерполяция (подстановка) строк
-$fn = function () use ($i18n) {
-    _print('TEST 3');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 3');
     echo PHP_EOL;
 
     $result = $i18n->interpolate(
         $phrase = "Здесь был [:name:]. И ниже кто-то дописал: [:name2:]",
         $placeholders = [ 'name' => 'Вася', 'name2' => 'сосед' ]
     );
-    _print($result);
+    $ffn->print($result);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 3"
 
 "Здесь был Вася. И ниже кто-то дописал: сосед"
@@ -220,8 +224,8 @@ _assert_stdout($fn, [], '
 
 // > TEST
 // > Получаем фразу (обратите внимание, что фраза до перевода начинаются с `@`, чтобы избежать повторного перевода)
-$fn = function () use ($i18n) {
-    _print('TEST 4');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 4');
     echo PHP_EOL;
 
     $langBefore = $i18n->getLang();
@@ -232,20 +236,20 @@ $fn = function () use ($i18n) {
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->phrase('@main.message.hello');
-    _print($result);
+    $ffn->print($result);
 
     $result = $i18n->phrase('@main.message.missing', $fallback = [ null ]);
-    _print($result);
+    $ffn->print($result);
 
     $result = $i18n->phrase('@main.message.missing', $fallback = [ 123 ]);
-    _print($result);
+    $ffn->print($result);
 
     try {
         // throws exception
         $i18n->phrase('@main.message.missing', $fallback = []);
     }
     catch ( \Gzhegow\I18n\Exception\RuntimeException $e ) {
-        _print(
+        $ffn->print(
             '[ CATCH ] ' . $e->getMessage(),
             $e->getFileOverride(__ROOT__),
             $e->getLine()
@@ -254,20 +258,20 @@ $fn = function () use ($i18n) {
 
     $i18n->setLang($langBefore);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 4"
 
 "Привет"
 NULL
 "123"
-"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\Aword }" | "tests/test.php" | 244
+"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\Aword }" | "tests/test.php" | 249
 ');
 
 
 // > TEST
 // > Получаем из памяти переводы (несколько) и подставляем в них аргументы (рекомендую в имени ключа указывать число аргументов)
-$fn = function () use ($i18n) {
-    _print('TEST 5');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 5');
     echo PHP_EOL;
 
     $langBefore = $i18n->getLang();
@@ -288,11 +292,11 @@ $fn = function () use ($i18n) {
             [ 'name1' => 'Вася', 'name2' => 'Валера' ],
         ]
     );
-    _print($result);
+    $ffn->print($result);
 
     $i18n->setLang($langBefore);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 5"
 
 [ "Привет, Андрей", "Привет, Вася и Валера" ]
@@ -301,8 +305,8 @@ _assert_stdout($fn, [], '
 
 // > TEST
 // > Проверка фразы, которая есть только в русском языке (ещё не переведена переводчиком)
-$fn = function () use ($i18n) {
-    _print('TEST 6');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 6');
     echo PHP_EOL;
 
     $langBefore = $i18n->getLang();
@@ -315,15 +319,15 @@ $fn = function () use ($i18n) {
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->phrase('@main.title.apple_only_russian', [ null ]);
-    _print($result);
+    $ffn->print($result);
 
     $result = $i18n->phraseOrDefault('@main.title.apple_only_russian');
-    _print($result);
+    $ffn->print($result);
 
     $i18n->setLangDefault($langDefaultBefore);
     $i18n->setLang($langBefore);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 6"
 
 NULL
@@ -333,8 +337,8 @@ NULL
 
 // > TEST
 // > Проверка выбора фразы по количеству / EN
-$fn = function () use ($i18n) {
-    _print('TEST 7');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 7');
     echo PHP_EOL;
 
     $langBefore = $i18n->getLang();
@@ -345,23 +349,23 @@ $fn = function () use ($i18n) {
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->choice(1, '@main.title.apple');
-    _print($result);
+    $ffn->print($result);
 
     $result = $i18n->choice(2, '@main.title.apple');
-    _print($result);
+    $ffn->print($result);
 
     $result = $i18n->choice(1.5, '@main.title.apple');
-    _print($result);
+    $ffn->print($result);
 
     $result = $i18n->choices(
         $numbers = [ 1, 2, 1.5, '1', '2', '1.5' ],
         $awords = array_fill(0, count($numbers), '@main.title.apple')
     );
-    _print_array_multiline($result, 2);
+    $ffn->print_array_multiline($result, 2);
 
     $i18n->setLang($langBefore);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 7"
 
 [ "1", "apple" ]
@@ -400,8 +404,8 @@ _assert_stdout($fn, [], '
 
 // > TEST
 // > Проверка выбора фразы по количеству / RU
-$fn = function () use ($i18n) {
-    _print('TEST 8');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 8');
     echo PHP_EOL;
 
     $langBefore = $i18n->getLang();
@@ -412,23 +416,23 @@ $fn = function () use ($i18n) {
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->choice(1, '@main.title.apple');
-    _print($result);
+    $ffn->print($result);
 
     $result = $i18n->choice(2, '@main.title.apple');
-    _print($result);
+    $ffn->print($result);
 
     $result = $i18n->choice(5, '@main.title.apple');
-    _print($result);
+    $ffn->print($result);
 
     $result = $i18n->choices(
         $numbers = [ 1, 2, 5, 11, 21, 1.5, '1', '2', '5', '11', '21', '1.5' ],
         $awords = array_fill(0, count($numbers), '@main.title.apple')
     );
-    _print_array_multiline($result, 2);
+    $ffn->print_array_multiline($result, 2);
 
     $i18n->setLang($langBefore);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 8"
 
 [ "1", "яблоко" ]
@@ -491,8 +495,8 @@ _assert_stdout($fn, [], '
 
 // > TEST
 // > Проверяем наличие переводов в памяти без запроса в репозиторий
-$fn = function () use ($i18n) {
-    _print('TEST 9');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 9');
     echo PHP_EOL;
 
     $words = [
@@ -511,11 +515,11 @@ $fn = function () use ($i18n) {
     $pool = $i18n->getPool();
 
     $result = $pool->has($words);
-    _print_array_multiline($result, 2);
+    $ffn->print_array_multiline($result, 2);
 
     $i18n->setLang($langBefore);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 9"
 
 ###
@@ -539,8 +543,8 @@ _assert_stdout($fn, [], '
 
 // > TEST
 // > Получаем переводы из памяти без запроса в репозиторий
-$fn = function () use ($i18n) {
-    _print('TEST 10');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 10');
     echo PHP_EOL;
 
     $words = [
@@ -563,11 +567,11 @@ $fn = function () use ($i18n) {
     foreach ( $poolItems as $i => $poolItem ) {
         $result[ $i ] = $poolItem->getChoices();
     }
-    _print_array($result, 2);
+    $ffn->print_array($result, 2);
 
     $i18n->setLang($langBefore);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 10"
 
 [ [ "apple", "apples" ] ]
@@ -576,8 +580,8 @@ _assert_stdout($fn, [], '
 
 // > TEST
 // > Проверяем наличие групп напрямую в репозитории
-$fn = function () use ($i18n) {
-    _print('TEST 11');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 11');
     echo PHP_EOL;
 
     $repository = $i18n->getRepository();
@@ -586,9 +590,9 @@ $fn = function () use ($i18n) {
         $andGroupsIn = [ 'main' ],
         $andLangsIn = [ 'en' ]
     );
-    _print_array($result, 2);
+    $ffn->print_array($result, 2);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 11"
 
 [ [ "status" => TRUE, "group" => "main", "lang" => "en" ] ]
@@ -597,8 +601,8 @@ _assert_stdout($fn, [], '
 
 // > TEST
 // > Проверяем наличие переводов в репозитории
-$fn = function () use ($i18n) {
-    _print('TEST 12');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 12');
     echo PHP_EOL;
 
     $repository = $i18n->getRepository();
@@ -613,9 +617,9 @@ $fn = function () use ($i18n) {
         $andGroupsIn = [ 'main' ],
         $andLangsIn = [ 'en' ]
     );
-    _print_array_multiline($result, 2);
+    $ffn->print_array_multiline($result, 2);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 12"
 
 ###
@@ -639,8 +643,8 @@ _assert_stdout($fn, [], '
 
 // > TEST
 // > Получаем переводы напрямую из репозитория
-$fn = function () use ($i18n) {
-    _print('TEST 13');
+$fn = function () use ($i18n, $ffn) {
+    $ffn->print('TEST 13');
     echo PHP_EOL;
 
     $repository = $i18n->getRepository();
@@ -662,9 +666,9 @@ $fn = function () use ($i18n) {
             $result[] = $poolItem->getChoices();
         }
     }
-    _print_array($result, 2);
+    $ffn->print_array($result, 2);
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 13"
 
 [ [ "apple", "apples" ] ]
@@ -673,8 +677,8 @@ _assert_stdout($fn, [], '
 
 // > TEST
 // > Копируем имеющийся перевод в другой язык (если нам прислали переведенный файл)
-$fn = function () use ($i18n, $langDir) {
-    _print('TEST 14');
+$fn = function () use ($i18n, $langDir, $ffn) {
+    $ffn->print('TEST 14');
     echo PHP_EOL;
 
     $repository = $i18n->getRepository();
@@ -708,16 +712,16 @@ $fn = function () use ($i18n, $langDir) {
     while ( $gen->valid() ) {
         $gen->next();
     }
-    _print(is_file($langDir . '/by/main.php'));
+    $ffn->print(is_file($langDir . '/by/main.php'));
 
     /** @var \Generator $gen */
     $gen = $repository->delete($poolItemsCloned);
     while ( $gen->valid() ) {
         $gen->next();
     }
-    _print(! file_exists($langDir . '/by/main.php'));
+    $ffn->print(! file_exists($langDir . '/by/main.php'));
 };
-_assert_stdout($fn, [], '
+$ffn->assert_stdout($fn, [], '
 "TEST 14"
 
 TRUE
