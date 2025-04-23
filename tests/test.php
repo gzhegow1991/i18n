@@ -19,12 +19,12 @@ ini_set('memory_limit', '32M');
 
 // > добавляем несколько функция для тестирования
 $ffn = new class {
-    function array($value, int $maxLevel = null, array $options = []) : string
+    function value_array($value, int $maxLevel = null, array $options = []) : string
     {
         return \Gzhegow\Lib\Lib::debug()->value_array($value, $maxLevel, $options);
     }
 
-    function array_multiline($value, int $maxLevel = null, array $options = []) : string
+    function value_array_multiline($value, int $maxLevel = null, array $options = []) : string
     {
         return \Gzhegow\Lib\Lib::debug()->value_array_multiline($value, $maxLevel, $options);
     }
@@ -43,12 +43,12 @@ $ffn = new class {
 
     function print_array($value, int $maxLevel = null, array $options = []) : void
     {
-        echo $this->array($value, $maxLevel, $options) . PHP_EOL;
+        echo $this->value_array($value, $maxLevel, $options) . PHP_EOL;
     }
 
     function print_array_multiline($value, int $maxLevel = null, array $options = []) : void
     {
-        echo $this->array_multiline($value, $maxLevel, $options) . PHP_EOL;
+        echo $this->value_array_multiline($value, $maxLevel, $options) . PHP_EOL;
     }
 
 
