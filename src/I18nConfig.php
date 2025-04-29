@@ -7,7 +7,9 @@
 namespace Gzhegow\I18n;
 
 use Gzhegow\Lib\Lib;
+use Gzhegow\I18n\Choice\RuChoice;
 use Gzhegow\Lib\Config\AbstractConfig;
+use Gzhegow\I18n\Choice\DefaultChoice;
 use Gzhegow\I18n\Exception\LogicException;
 use Gzhegow\I18n\Choice\I18nChoiceInterface;
 
@@ -399,8 +401,8 @@ class I18nConfig extends AbstractConfig
 
     public function __construct()
     {
-        $this->choices[ 'en' ] = new \Gzhegow\I18n\Choice\DefaultChoice();
-        $this->choices[ 'ru' ] = new \Gzhegow\I18n\Choice\RuChoice();
+        $this->choices[ 'en' ] = new DefaultChoice();
+        $this->choices[ 'ru' ] = new RuChoice();
 
         parent::__construct();
     }
