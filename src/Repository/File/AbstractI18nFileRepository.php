@@ -3,15 +3,15 @@
 namespace Gzhegow\I18n\Repository\File;
 
 use Gzhegow\I18n\I18n;
-use Gzhegow\I18n\Type\I18nType;
-use Gzhegow\I18n\Struct\WordInterface;
-use Gzhegow\I18n\Struct\LangInterface;
-use Gzhegow\I18n\Struct\GroupInterface;
-use Gzhegow\I18n\Pool\I18nPoolItemInterface;
+use Gzhegow\I18n\Pool\I18nPoolItem;
+use Gzhegow\I18n\Struct\I18nWordInterface;
+use Gzhegow\I18n\Struct\I18nLangInterface;
+use Gzhegow\I18n\Struct\I18nGroupInterface;
 use Gzhegow\I18n\Exception\LogicException;
+use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
 use Gzhegow\I18n\Repository\I18nRepositoryInterface;
-use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
+use Gzhegow\I18n\Repository\File\FileSource\I18nFileSourceInterface;
 
 
 abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
@@ -46,8 +46,8 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
 
 
     /**
-     * @param (GroupInterface|string)[]|null $andGroupsIn
-     * @param (LangInterface|string)[]|null  $andLangsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
      *
      * @return array{
      *     status: bool,
@@ -60,7 +60,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
         array $andLangsIn = null
     ) : array
     {
-        if (! ($andLangsIn && $andGroupsIn)) {
+        if (! ($andLangsIn || $andGroupsIn)) {
             // > @gzhegow, file repository cannot select by keys, so the languages and groups is required
 
             return [];
@@ -86,15 +86,15 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
     }
 
     /**
-     * @param (WordInterface|string)[]|null  $andWordsIn
-     * @param (GroupInterface|string)[]|null $andGroupsIn
-     * @param (LangInterface|string)[]|null  $andLangsIn
+     * @param (I18nWordInterface|string)[]|null  $andWordsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
      *
      * @return array{
      *     status: bool,
-     *     word: WordInterface,
-     *     group: GroupInterface,
-     *     lang: LangInterface
+     *     word: I18nWordInterface,
+     *     group: I18nGroupInterface,
+     *     lang: I18nLangInterface
      * }[]
      */
     public function hasWords(
@@ -103,7 +103,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
         array $andLangsIn = null
     ) : array
     {
-        if (! ($andWordsIn && $andGroupsIn && $andLangsIn)) {
+        if (! ($andWordsIn || $andGroupsIn || $andLangsIn)) {
             // > @gzhegow, file repository cannot select by keys, so the languages and groups is required
 
             return [];
@@ -119,7 +119,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
 
         $fileSources = $this->buildFileSources($andLangsIn, $andGroupsIn);
 
-        $generator = $this->loadItemsFromFiles($fileSources);
+        $generator = $this->loadItemsFromFilesIt($fileSources);
 
         $i = 0;
         foreach ( $generator as $data ) {
@@ -151,12 +151,43 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
 
 
     /**
-     * @param (GroupInterface|string)[]|null $andGroupsIn
-     * @param (LangInterface|string)[]|null  $andLangsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
+     *
+     * @return I18nPoolItemInterface[]
+     */
+    public function getGroups(
+        array $andGroupsIn = null,
+        array $andLangsIn = null,
+        //
+        int $limit = null,
+        int $offset = 0
+    ) : array
+    {
+        $gen = $this->getGroupsIt(
+            $andGroupsIn, $andLangsIn,
+            $limit, $offset
+        );
+
+        $poolItemsList = [];
+
+        foreach ( $gen as $poolItemsChunk ) {
+            $poolItemsList = array_merge(
+                $poolItemsList,
+                $poolItemsChunk
+            );
+        }
+
+        return $poolItemsList;
+    }
+
+    /**
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
      *
      * @return iterable<I18nPoolItemInterface[]>
      */
-    public function getGroups(
+    public function getGroupsIt(
         array $andGroupsIn = null,
         array $andLangsIn = null,
         //
@@ -180,7 +211,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
 
         $fileSources = $this->buildFileSources($andLangsIn, $andGroupsIn);
 
-        $generator = $this->loadItemsFromFiles($fileSources);
+        $generator = $this->loadItemsFromFilesIt($fileSources);
 
         $poolItems = [];
         foreach ( $generator as $data ) {
@@ -210,14 +241,48 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
         }
     }
 
+
     /**
-     * @param (WordInterface|string)[]|null  $andWordsIn
-     * @param (GroupInterface|string)[]|null $andGroupsIn
-     * @param (LangInterface|string)[]|null  $andLangsIn
+     * @param (I18nWordInterface|string)[]|null  $andWordsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
+     *
+     * @return I18nPoolItemInterface[]
+     */
+    public function getWords(
+        array $andWordsIn = null,
+        array $andGroupsIn = null,
+        array $andLangsIn = null,
+        //
+        int $limit = null,
+        int $offset = 0
+    ) : array
+    {
+        $gen = $this->getWordsIt(
+            $andWordsIn, $andGroupsIn, $andLangsIn,
+            $limit, $offset
+        );
+
+        $poolItemsList = [];
+
+        foreach ( $gen as $poolItemsChunk ) {
+            $poolItemsList = array_merge(
+                $poolItemsList,
+                $poolItemsChunk
+            );
+        }
+
+        return $poolItemsList;
+    }
+
+    /**
+     * @param (I18nWordInterface|string)[]|null  $andWordsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
      *
      * @return iterable<I18nPoolItemInterface[]>
      */
-    public function getWords(
+    public function getWordsIt(
         array $andWordsIn = null,
         array $andGroupsIn = null,
         array $andLangsIn = null,
@@ -245,7 +310,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
 
         $fileSources = $this->buildFileSources($andLangsIn, $andGroupsIn);
 
-        $generator = $this->loadItemsFromFiles($fileSources);
+        $generator = $this->loadItemsFromFilesIt($fileSources);
 
         $poolItems = [];
         foreach ( $generator as $data ) {
@@ -285,13 +350,34 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
      *
      * @return iterable<bool[]>
      */
-    public function save(array $poolItems) : iterable
+    public function save(array $poolItems) : array
     {
-        $_poolItems = I18nType::thePoolItemList($poolItems);
+        $gen = $this->saveIt($poolItems);
+
+        $reportTotal = [];
+
+        foreach ( $gen as $report ) {
+            $reportTotal += $report;
+        }
+
+        return $reportTotal;
+    }
+
+    /**
+     * @param I18nPoolItemInterface[] $poolItems
+     *
+     * @return bool[]
+     */
+    public function saveIt(array $poolItems) : iterable
+    {
+        $poolItemList = [];
+        foreach ( $poolItems as $i => $poolItem ) {
+            $poolItemList[ $i ] = I18nPoolItem::from($poolItem);
+        }
 
         $fileSources = [];
         $poolItemsByFileSource = [];
-        foreach ( $_poolItems as $i => $poolItem ) {
+        foreach ( $poolItemList as $i => $poolItem ) {
             $poolItemLang = $poolItem->getLang();
             $poolItemGroup = $poolItem->getGroup();
 
@@ -314,18 +400,40 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
         }
     }
 
+
+    /**
+     * @param I18nPoolItemInterface[] $poolItems
+     *
+     * @return bool[]
+     */
+    public function delete(array $poolItems) : array
+    {
+        $gen = $this->deleteIt($poolItems);
+
+        $reportTotal = [];
+
+        foreach ( $gen as $report ) {
+            $reportTotal += $report;
+        }
+
+        return $reportTotal;
+    }
+
     /**
      * @param I18nPoolItemInterface[] $poolItems
      *
      * @return iterable<bool[]>
      */
-    public function delete(array $poolItems) : iterable
+    public function deleteIt(array $poolItems) : iterable
     {
-        $_poolItems = I18nType::thePoolItemList($poolItems);
+        $poolItemList = [];
+        foreach ( $poolItems as $i => $poolItem ) {
+            $poolItemList[ $i ] = I18nPoolItem::from($poolItem);
+        }
 
         $fileSources = [];
         $poolItemsByFileSource = [];
-        foreach ( $_poolItems as $i => $poolItem ) {
+        foreach ( $poolItemList as $i => $poolItem ) {
             $poolItemLang = $poolItem->getLang();
             $poolItemGroup = $poolItem->getGroup();
 
@@ -394,7 +502,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
 
 
     /**
-     * @return FileSourceInterface[]
+     * @return I18nFileSourceInterface[]
      */
     public function buildFileSources(array $langs, array $groups) : array
     {
@@ -412,18 +520,18 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
         return $fileSources;
     }
 
-    abstract public function buildFileSource(string $lang, string $group) : FileSourceInterface;
+    abstract public function buildFileSource(string $lang, string $group) : I18nFileSourceInterface;
 
 
     /**
-     * @param FileSourceInterface[] $fileSources
+     * @param I18nFileSourceInterface[] $fileSources
      *
      * @return \Traversable<array{
-     *     fileSource: FileSourceInterface,
+     *     fileSource: I18nFileSourceInterface,
      *     items: array<string, I18nPoolItemInterface>
      * }>
      */
-    public function loadItemsFromFiles(array $fileSources) : iterable
+    public function loadItemsFromFilesIt(array $fileSources) : iterable
     {
         if (! $this->isInitialized()) {
             $this->initialize();
@@ -448,7 +556,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
     /**
      * @return array<string, I18nPoolItemInterface>
      */
-    abstract public function loadItemsFromFile(FileSourceInterface $fileSource) : array;
+    abstract public function loadItemsFromFile(I18nFileSourceInterface $fileSource) : array;
 
 
     /**
@@ -456,7 +564,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
      *
      * @return bool[]
      */
-    public function saveItemsToFile(FileSourceInterface $fileSource, array $poolItems) : array
+    public function saveItemsToFile(I18nFileSourceInterface $fileSource, array $poolItems) : array
     {
         if (! $this->isInitialized()) {
             $this->initialize();
@@ -537,7 +645,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
      *
      * @return bool[]
      */
-    public function deleteItemsFromFile(FileSourceInterface $fileSource, array $poolItems) : array
+    public function deleteItemsFromFile(I18nFileSourceInterface $fileSource, array $poolItems) : array
     {
         if (! $this->isInitialized()) {
             $this->initialize();
@@ -621,5 +729,5 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
     /**
      * @param array<string, string[]> $choicesArray
      */
-    abstract public static function saveChoicesArrayToFile(FileSourceInterface $fileSource, array $choicesArray) : bool;
+    abstract public static function saveChoicesArrayToFile(I18nFileSourceInterface $fileSource, array $choicesArray) : bool;
 }

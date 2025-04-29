@@ -2,7 +2,10 @@
 
 namespace Gzhegow\I18n\Struct;
 
-interface LangInterface
+interface I18nWordInterface
 {
     public function getValue() : string;
+
+
+    public function getGroup() : string;
 }

@@ -1,14 +1,14 @@
 <?php
 
-namespace Gzhegow\I18n\Struct;
+namespace Gzhegow\I18n\Language;
 
 use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Type\I18nType;
+use Gzhegow\Lib\Modules\Php\Result\Result;
 use Gzhegow\I18n\Choice\I18nChoiceInterface;
-use Gzhegow\I18n\Exception\LogicException;
 
 
-class Language implements LanguageInterface
+class I18nLanguage implements I18nLanguageInterface
 {
     /**
      * @var string
@@ -49,68 +49,53 @@ class Language implements LanguageInterface
 
 
     /**
-     * @return static
+     * @return static|bool|null
      */
-    public static function from($from) // : static
+    public static function from($from, $ctx = null)
     {
-        $instance = static::tryFrom($from, $error);
-
-        if (null === $instance) {
-            throw $error;
-        }
-
-        return $instance;
-    }
-
-    /**
-     * @return static|null
-     */
-    public static function tryFrom($from, \Throwable &$last = null) // : ?static
-    {
-        $last = null;
-
-        Lib::php()->errors_start($b);
+        Result::parse($cur);
 
         $instance = null
-            ?? static::tryFromInstance($from)
-            ?? static::tryFromArray($from);
+            ?? static::fromStatic($from, $cur)
+            ?? static::fromArray($from, $cur);
 
-        $errors = Lib::php()->errors_end($b);
-
-        if (null === $instance) {
-            foreach ( $errors as $error ) {
-                $last = new LogicException($error, $last);
-            }
+        if ($cur->isErr()) {
+            return Result::err($ctx, $cur);
         }
 
-        return $instance;
+        return Result::ok($ctx, $instance);
     }
 
-
     /**
-     * @return static|null
+     * @return static|bool|null
      */
-    public static function tryFromInstance($from) // : ?static
+    public static function fromStatic($from, $ctx = null)
     {
-        if (! is_a($from, static::class)) {
-            return Lib::php()->error(
-                [ 'The `from` should be instance of: ' . static::class, $from ]
-            );
+        if ($from instanceof static) {
+            return Result::ok($ctx, $from);
         }
 
-        return $from;
+        return Result::err(
+            $ctx,
+            [ 'The `from` should be instance of: ' . static::class, $from ],
+            [ __FILE__, __LINE__ ]
+        );
     }
 
     /**
-     * @return static|null
+     * @return static|bool|null
      */
-    public static function tryFromArray($from) // : ?static
+    public static function fromArray($from, $ctx = null)
     {
         if (! is_array($from)) {
-            return Lib::php()->error(
-                [ 'The `from` should be non-empty string', $from ]
+            return Result::err(
+                $ctx,
+                [ 'The `from` should be non-empty string', $from ],
+                [ __FILE__, __LINE__ ]
             );
         }
+
+        $theType = Lib::type();
 
         $lang = $from[ 'lang' ];
 
@@ -124,51 +109,55 @@ class Language implements LanguageInterface
 
         $titleNative = $titleNative ?? $titleEnglish;
 
-        if (null === ($_lang = I18nType::parseLang($lang))) {
-            return Lib::php()->error(
-                [ 'The `from[lang]` should be valid `lang`', $from ]
+        $langObject = I18nType::lang($lang);
+
+        if (! $theType->string_not_empty($localeString, $locale)) {
+            return Result::err(
+                $ctx,
+                [ 'The `from[locale]` should be non-empty string', $from ],
+                [ __FILE__, __LINE__ ]
             );
         }
 
-        if (null === ($_locale = Lib::parse()->string_not_empty($locale))) {
-            return Lib::php()->error(
-                [ 'The `from[locale]` should be non-empty string', $from ]
+        if (! $theType->string_not_empty($scriptString, $script)) {
+            return Result::err(
+                $ctx,
+                [ 'The `from[script]` should be non-empty string', $from ],
+                [ __FILE__, __LINE__ ]
             );
         }
 
-        if (null === ($_script = Lib::parse()->string_not_empty($script))) {
-            return Lib::php()->error(
-                [ 'The `from[script]` should be non-empty string', $from ]
+        if (! $theType->string_not_empty($titleEnglishString, $titleEnglish)) {
+            return Result::err(
+                $ctx,
+                [ 'The `from[titleEnglish]` should be non-empty string', $from ],
+                [ __FILE__, __LINE__ ]
             );
         }
 
-        if (null === ($_titleEnglish = Lib::parse()->string_not_empty($titleEnglish))) {
-            return Lib::php()->error(
-                [ 'The `from[titleEnglish]` should be non-empty string', $from ]
+        if (! $theType->string_not_empty($titleNativeString, $titleNative)) {
+            return Result::err(
+                $ctx,
+                [ 'The `from[titleNative]` should be non-empty string', $from ],
+                [ __FILE__, __LINE__ ]
             );
         }
 
-        if (null === ($_titleNative = Lib::parse()->string_not_empty($titleNative))) {
-            return Lib::php()->error(
-                [ 'The `from[titleNative]` should be non-empty string', $from ]
-            );
-        }
-
-        $_langString = $_lang->getValue();
+        $langString = $langObject->getValue();
 
         $instance = new static();
-
-        $instance->lang = $_langString;
-
-        $instance->locale = $_locale;
-        $instance->script = $_script;
-        $instance->titleEnglish = $_titleEnglish;
-        $instance->titleNative = $_titleNative;
+        $instance->lang = $langString;
+        $instance->locale = $localeString;
+        $instance->script = $scriptString;
+        $instance->titleEnglish = $titleEnglishString;
+        $instance->titleNative = $titleNativeString;
 
         if (null !== $phpLocales) {
-            if (! is_array($phpLocales) || ! $phpLocales) {
-                return Lib::php()->error(
-                    [ 'The `from[phpLocales]` should be non-empty array', $from ]
+            if ((! is_array($phpLocales)) || ([] === $phpLocales)) {
+                return Result::err(
+                    $ctx,
+                    [ 'The `from[phpLocales]` should be non-empty array', $from ],
+                    [ __FILE__, __LINE__ ]
                 );
             }
 
@@ -177,15 +166,17 @@ class Language implements LanguageInterface
 
         if (null !== $choice) {
             if (! is_a($choice, I18nChoiceInterface::class)) {
-                return Lib::php()->error(
-                    [ 'The `from[choice]` should be instance of: ' . I18nChoiceInterface::class, $choice ]
+                return Result::err(
+                    $ctx,
+                    [ 'The `from[choice]` should be instance of: ' . I18nChoiceInterface::class, $choice ],
+                    [ __FILE__, __LINE__ ]
                 );
             }
 
             $instance->setChoice($choice);
         }
 
-        return $instance;
+        return Result::ok($ctx, $instance);
     }
 
 

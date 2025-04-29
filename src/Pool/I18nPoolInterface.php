@@ -3,23 +3,23 @@
 namespace Gzhegow\I18n\Pool;
 
 
-use Gzhegow\I18n\Struct\WordInterface;
-use Gzhegow\I18n\Struct\LangInterface;
-use Gzhegow\I18n\Struct\GroupInterface;
+use Gzhegow\I18n\Struct\I18nWordInterface;
+use Gzhegow\I18n\Struct\I18nLangInterface;
+use Gzhegow\I18n\Struct\I18nGroupInterface;
 
 
 interface I18nPoolInterface
 {
     /**
-     * @param (WordInterface|string)[]       $andWordsIn
-     * @param (GroupInterface|string)[]|null $andGroupsIn
-     * @param (LangInterface|string)[]|null  $andLangsIn
+     * @param (I18nWordInterface|string)[]       $andWordsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
      *
      * @return iterable<array{
      *     status: bool,
-     *     word: WordInterface,
-     *     group: GroupInterface,
-     *     lang: LangInterface
+     *     word: I18nWordInterface,
+     *     group: I18nGroupInterface,
+     *     lang: I18nLangInterface
      * }>
      */
     public function has(
@@ -29,9 +29,9 @@ interface I18nPoolInterface
     ) : iterable;
 
     /**
-     * @param (WordInterface|string)[]       $andWordsIn
-     * @param (GroupInterface|string)[]|null $andGroupsIn
-     * @param (LangInterface|string)[]|null  $andLangsIn
+     * @param (I18nWordInterface|string)[]       $andWordsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
      *
      * @return I18nPoolItemInterface[]
      */

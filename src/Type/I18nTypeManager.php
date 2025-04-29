@@ -2,60 +2,85 @@
 
 namespace Gzhegow\I18n\Type;
 
-use Gzhegow\I18n\Struct\Lang;
-use Gzhegow\I18n\Struct\Word;
-use Gzhegow\I18n\Struct\Group;
-use Gzhegow\I18n\Struct\Aword;
-use Gzhegow\I18n\Pool\PoolItem;
-use Gzhegow\I18n\Struct\Language;
-use Gzhegow\I18n\Struct\LangInterface;
-use Gzhegow\I18n\Struct\WordInterface;
-use Gzhegow\I18n\Struct\GroupInterface;
-use Gzhegow\I18n\Struct\AwordInterface;
-use Gzhegow\I18n\Struct\LanguageInterface;
+use Gzhegow\I18n\Struct\I18nLang;
+use Gzhegow\I18n\Struct\I18nWord;
+use Gzhegow\I18n\Struct\I18nGroup;
+use Gzhegow\I18n\Struct\I18nAword;
+use Gzhegow\I18n\Pool\I18nPoolItem;
+use Gzhegow\I18n\Language\I18nLanguage;
+use Gzhegow\I18n\Struct\I18nLangInterface;
+use Gzhegow\I18n\Struct\I18nWordInterface;
+use Gzhegow\Lib\Modules\Php\Result\Result;
+use Gzhegow\I18n\Struct\I18nGroupInterface;
+use Gzhegow\I18n\Struct\I18nAwordInterface;
 use Gzhegow\I18n\Pool\I18nPoolItemInterface;
-use Gzhegow\I18n\Repository\File\Struct\FileSource;
-use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
+use Gzhegow\I18n\Language\I18nLanguageInterface;
 
 
-class I18nTypeManager implements I18nTypeManagerInterface
+class I18nTypeManager implements I18nTypeInterface
 {
-    public function parsePoolItem($poolItem) : ?I18nPoolItemInterface
+    public function poolItem($poolItem) : I18nPoolItemInterface
     {
-        return PoolItem::tryFrom($poolItem);
+        return I18nPoolItem::from($poolItem);
+    }
+
+    public function poolItemOrNull($poolItem) : ?I18nPoolItemInterface
+    {
+        return I18nPoolItem::from($poolItem, Result::parse());
     }
 
 
-    public function parseLanguage($language) : ?LanguageInterface
+    public function language($language) : I18nLanguageInterface
     {
-        return Language::tryFrom($language);
+        return I18nLanguage::from($language);
+    }
+
+    public function parseLanguage($language) : ?I18nLanguageInterface
+    {
+        return I18nLanguage::from($language, Result::parse());
     }
 
 
-    public function parseLang($lang) : ?LangInterface
+    public function lang($lang) : I18nLangInterface
     {
-        return Lang::tryFrom($lang);
+        return I18nLang::from($lang);
     }
 
-    public function parseGroup($group) : ?GroupInterface
+    public function parseLang($lang) : ?I18nLangInterface
     {
-        return Group::tryFrom($group);
-    }
-
-
-    public function parseAword($aword) : ?AwordInterface
-    {
-        return Aword::tryFrom($aword);
-    }
-
-    public function parseWord($word) : ?WordInterface
-    {
-        return Word::tryFrom($word);
+        return I18nLang::from($lang, Result::parse());
     }
 
 
-    public function parseFileSource($fileSource) : ?FileSourceInterface
+    public function group($group) : I18nGroupInterface
     {
-        return FileSource::tryFrom($fileSource);
+        return I18nGroup::from($group);
+    }
+
+    public function parseGroup($group) : ?I18nGroupInterface
+    {
+        return I18nGroup::from($group, Result::parse());
+    }
+
+
+    public function aword($aword) : I18nAwordInterface
+    {
+        return I18nAword::from($aword);
+    }
+
+    public function parseAword($aword) : ?I18nAwordInterface
+    {
+        return I18nAword::from($aword, Result::parse());
+    }
+
+
+    public function word($word) : I18nWordInterface
+    {
+        return I18nWord::from($word);
+    }
+
+    public function parseWord($word) : ?I18nWordInterface
+    {
+        return I18nWord::from($word, Result::parse());
     }
 }

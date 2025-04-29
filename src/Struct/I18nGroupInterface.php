@@ -2,7 +2,7 @@
 
 namespace Gzhegow\I18n\Struct;
 
-interface GroupInterface
+interface I18nGroupInterface
 {
     public function getValue() : string;
 }

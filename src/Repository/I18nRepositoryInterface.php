@@ -2,9 +2,9 @@
 
 namespace Gzhegow\I18n\Repository;
 
-use Gzhegow\I18n\Struct\WordInterface;
-use Gzhegow\I18n\Struct\LangInterface;
-use Gzhegow\I18n\Struct\GroupInterface;
+use Gzhegow\I18n\Struct\I18nWordInterface;
+use Gzhegow\I18n\Struct\I18nLangInterface;
+use Gzhegow\I18n\Struct\I18nGroupInterface;
 use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 
 
@@ -16,8 +16,8 @@ interface I18nRepositoryInterface
 
 
     /**
-     * @param (GroupInterface|string)[]|null $andGroupsIn
-     * @param (LangInterface|string)[]|null  $andLangsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
      *
      * @return array{
      *     status: bool,
@@ -31,9 +31,9 @@ interface I18nRepositoryInterface
     ) : array;
 
     /**
-     * @param (WordInterface|string)[]|null  $andWordsIn
-     * @param (GroupInterface|string)[]|null $andGroupsIn
-     * @param (LangInterface|string)[]|null  $andLangsIn
+     * @param (I18nWordInterface|string)[]|null  $andWordsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
      *
      * @return array{
      *     status: bool,
@@ -50,10 +50,10 @@ interface I18nRepositoryInterface
 
 
     /**
-     * @param (GroupInterface|string)[]|null $andGroupsIn
-     * @param (LangInterface|string)[]|null  $andLangsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
      *
-     * @return iterable<I18nPoolItemInterface[]>
+     * @return I18nPoolItemInterface[]
      */
     public function getGroups(
         array $andGroupsIn = null,
@@ -61,16 +61,47 @@ interface I18nRepositoryInterface
         //
         int $limit = null,
         int $offset = 0
-    ) : iterable;
+    ) : array;
 
     /**
-     * @param (WordInterface|string)[]|null  $andWordsIn
-     * @param (GroupInterface|string)[]|null $andGroupsIn
-     * @param (LangInterface|string)[]|null  $andLangsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
      *
      * @return iterable<I18nPoolItemInterface[]>
      */
+    public function getGroupsIt(
+        array $andGroupsIn = null,
+        array $andLangsIn = null,
+        //
+        int $limit = null,
+        int $offset = 0
+    ) : iterable;
+
+
+    /**
+     * @param (I18nWordInterface|string)[]|null  $andWordsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
+     *
+     * @return I18nPoolItemInterface[]
+     */
     public function getWords(
+        array $andWordsIn = null,
+        array $andGroupsIn = null,
+        array $andLangsIn = null,
+        //
+        int $limit = null,
+        int $offset = 0
+    ) : array;
+
+    /**
+     * @param (I18nWordInterface|string)[]|null  $andWordsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
+     *
+     * @return iterable<I18nPoolItemInterface[]>
+     */
+    public function getWordsIt(
         array $andWordsIn = null,
         array $andGroupsIn = null,
         array $andLangsIn = null,
@@ -83,14 +114,29 @@ interface I18nRepositoryInterface
     /**
      * @param I18nPoolItemInterface[] $poolItems
      *
-     * @return iterable<bool[]>
+     * @return bool[]
      */
-    public function save(array $poolItems) : iterable;
+    public function save(array $poolItems) : array;
 
     /**
      * @param I18nPoolItemInterface[] $poolItems
      *
      * @return iterable<bool[]>
      */
-    public function delete(array $poolItems) : iterable;
+    public function saveIt(array $poolItems) : iterable;
+
+
+    /**
+     * @param I18nPoolItemInterface[] $poolItems
+     *
+     * @return bool[]
+     */
+    public function delete(array $poolItems) : array;
+
+    /**
+     * @param I18nPoolItemInterface[] $poolItems
+     *
+     * @return iterable<bool[]>
+     */
+    public function deleteIt(array $poolItems) : iterable;
 }

@@ -8,7 +8,9 @@ ini_set('memory_limit', '32M');
 
 
 // > настраиваем обработку ошибок
-(new \Gzhegow\Lib\Exception\ErrorHandler())
+\Gzhegow\Lib\Lib::errorHandler()
+    ->setDirRoot(__DIR__ . '/..')
+    //
     ->useErrorReporting()
     ->useErrorHandler()
     ->useExceptionHandler()
@@ -85,7 +87,7 @@ $repositoryPhp = new \Gzhegow\I18n\Repository\File\PhpFileRepository($langDir = 
 
 // создаем и регистрируем менеджер типов (он определяет синтаксис для ключевых слов, отличие групп от слов, компоновку их в виде строки и так далее)
 $typeManager = new \Gzhegow\I18n\Type\I18nTypeManager();
-\Gzhegow\I18n\Type\I18nType::setInstance($typeManager);
+\Gzhegow\I18n\Type\I18nType::setFacade($typeManager);
 
 // > создаем конфигурацию
 $config = new \Gzhegow\I18n\I18nConfig();
@@ -249,7 +251,7 @@ $fn = function () use ($i18n, $ffn) {
     $ffn->print($result);
 
     try {
-        // throws exception
+        // > throws exception cause of no fallback provided
         $i18n->phrase('@main.message.missing', $fallback = []);
     }
     catch ( \Gzhegow\I18n\Exception\RuntimeException $e ) {
@@ -268,7 +270,7 @@ $ffn->assert_stdout($fn, [], '
 "Привет"
 NULL
 "123"
-"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\Aword }" | "tests/test.php" | 253
+"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 255
 ');
 
 
@@ -658,7 +660,7 @@ $fn = function () use ($i18n, $ffn) {
         'main.title.apple_only_russian',
     ];
 
-    $it = $repository->getWords(
+    $it = $repository->getWordsIt(
         $words,
         $andGroupsIn = [ 'main' ],
         $andLangsIn = [ 'en' ]
@@ -687,15 +689,17 @@ $fn = function () use ($i18n, $langDir, $ffn) {
 
     $repository = $i18n->getRepository();
 
-    $words = [
+    $andWordsIn = [
         'main.title.apple',
         'main.title.apple_only_russian',
     ];
+    $andGroupsIn = [ 'main' ];
+    $andLangsIn = [ 'en' ];
 
-    $it = $repository->getWords(
-        $words,
-        $andGroupsIn = [ 'main' ],
-        $andLangsIn = [ 'en' ]
+    $it = $repository->getWordsIt(
+        $andWordsIn,
+        $andGroupsIn,
+        $andLangsIn
     );
 
     $poolItemsCloned = [];
@@ -712,17 +716,11 @@ $fn = function () use ($i18n, $langDir, $ffn) {
     }
 
     /** @var \Generator $gen */
-    $gen = $repository->save($poolItemsCloned);
-    while ( $gen->valid() ) {
-        $gen->next();
-    }
+    $repository->save($poolItemsCloned);
     $ffn->print(is_file($langDir . '/by/main.php'));
 
     /** @var \Generator $gen */
-    $gen = $repository->delete($poolItemsCloned);
-    while ( $gen->valid() ) {
-        $gen->next();
-    }
+    $repository->delete($poolItemsCloned);
     $ffn->print(! file_exists($langDir . '/by/main.php'));
 };
 $ffn->assert_stdout($fn, [], '

@@ -4,9 +4,11 @@
 namespace Gzhegow\I18n\Repository\File;
 
 use Gzhegow\I18n\Type\I18nType;
+use Gzhegow\I18n\Pool\I18nPoolItem;
 use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
-use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
+use Gzhegow\I18n\Repository\File\FileSource\I18nFileSource;
+use Gzhegow\I18n\Repository\File\FileSource\I18nFileSourceInterface;
 
 
 class YamlFileRepository extends AbstractI18nFileRepository
@@ -26,18 +28,22 @@ class YamlFileRepository extends AbstractI18nFileRepository
     }
 
 
-    public function buildFileSource(string $lang, string $group) : FileSourceInterface
+    public function buildFileSource(string $lang, string $group) : I18nFileSourceInterface
     {
-        $_lang = I18nType::theLang($lang);
-        $_group = I18nType::theGroup($group);
+        $langObject = I18nType::lang($lang);
+        $groupObject = I18nType::group($group);
 
-        $path = $this->langDir . '/' . $_lang . '/' . $_group . '.yaml';
+        $filepath = ''
+            . $this->langDir
+            . '/' . $langObject->getValue()
+            . '/' . $groupObject->getValue()
+            . '.yaml';
 
-        $fileSource = I18nType::theFileSource([
-            'path'  => $path,
+        $fileSource = I18nFileSource::from([
+            'filepath' => $filepath,
             //
-            'lang'  => $_lang,
-            'group' => $_group,
+            'lang'     => $langObject,
+            'group'    => $groupObject,
         ]);
 
         return $fileSource;
@@ -47,7 +53,7 @@ class YamlFileRepository extends AbstractI18nFileRepository
     /**
      * @return array<string, I18nPoolItemInterface>
      */
-    public function loadItemsFromFile(FileSourceInterface $fileSource) : array
+    public function loadItemsFromFile(I18nFileSourceInterface $fileSource) : array
     {
         $poolItems = [];
 
@@ -59,7 +65,7 @@ class YamlFileRepository extends AbstractI18nFileRepository
 
         foreach ( $choicesArray as $word => $poolItemChoices ) {
             $poolItemPhrase = $poolItemChoices[ 0 ];
-            $poolItemWord = I18nType::theWord($word);
+            $poolItemWord = I18nType::word($word);
 
             $poolItemGroup = $poolItemWord->getGroup();
 
@@ -71,7 +77,7 @@ class YamlFileRepository extends AbstractI18nFileRepository
                 );
             }
 
-            $poolItem = I18nType::thePoolItem([
+            $poolItem = I18nPoolItem::from([
                 'word'    => $poolItemWord,
                 //
                 'lang'    => $fileSourceLang,
@@ -88,12 +94,12 @@ class YamlFileRepository extends AbstractI18nFileRepository
 
 
     /**
-     * @param FileSourceInterface     $fileSource
+     * @param I18nFileSourceInterface $fileSource
      * @param array<string, string[]> $choicesArray
      *
      * @return bool
      */
-    public static function saveChoicesArrayToFile(FileSourceInterface $fileSource, array $choicesArray) : bool
+    public static function saveChoicesArrayToFile(I18nFileSourceInterface $fileSource, array $choicesArray) : bool
     {
         $fileSourcePath = $fileSource->getValue();
 

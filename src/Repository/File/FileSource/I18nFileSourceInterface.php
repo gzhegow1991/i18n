@@ -1,9 +1,9 @@
 <?php
 
-namespace Gzhegow\I18n\Repository\File\Struct;
+namespace Gzhegow\I18n\Repository\File\FileSource;
 
 
-interface FileSourceInterface
+interface I18nFileSourceInterface
 {
     public function getValue() : string;
 

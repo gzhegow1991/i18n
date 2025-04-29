@@ -1,11 +1,11 @@
 <?php
 
-namespace Gzhegow\I18n\Struct;
+namespace Gzhegow\I18n\Language;
 
 use Gzhegow\I18n\Choice\I18nChoiceInterface;
 
 
-interface LanguageInterface
+interface I18nLanguageInterface
 {
     public function getLang() : string;
 

@@ -6,11 +6,11 @@
 
 namespace Gzhegow\I18n;
 
-use Gzhegow\I18n\Struct\LangInterface;
-use Gzhegow\I18n\Struct\GroupInterface;
-use Gzhegow\I18n\Struct\AwordInterface;
+use Gzhegow\I18n\Struct\I18nLangInterface;
+use Gzhegow\I18n\Struct\I18nGroupInterface;
+use Gzhegow\I18n\Struct\I18nAwordInterface;
 use Gzhegow\I18n\Pool\I18nPoolInterface;
-use Gzhegow\I18n\Struct\LanguageInterface;
+use Gzhegow\I18n\Language\I18nLanguageInterface;
 use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
 use Gzhegow\I18n\Repository\I18nRepositoryInterface;
@@ -60,15 +60,15 @@ interface I18nInterface
 
 
     /**
-     * @return LanguageInterface[]
+     * @return I18nLanguageInterface[]
      */
     public function getLanguages() : array;
 
-    public function getLanguage() : LanguageInterface;
+    public function getLanguage() : I18nLanguageInterface;
 
-    public function getLanguageDefault() : LanguageInterface;
+    public function getLanguageDefault() : I18nLanguageInterface;
 
-    public function getLanguageFor(string $lang) : ?LanguageInterface;
+    public function getLanguageFor(string $lang) : ?I18nLanguageInterface;
 
 
     public function getLocale() : string;
@@ -131,10 +131,10 @@ interface I18nInterface
 
 
     /**
-     * @param array<AwordInterface|string>      $awords
-     * @param array<string, string>[]|null      $placeholders
-     * @param array<GroupInterface|string>|null $groups
-     * @param array<LangInterface|string>|null  $langs
+     * @param array<I18nAwordInterface|string>      $awords
+     * @param array<string, string>[]|null          $placeholders
+     * @param array<I18nGroupInterface|string>|null $groups
+     * @param array<I18nLangInterface|string>|null  $langs
      *
      * @return string[]
      */
@@ -145,11 +145,11 @@ interface I18nInterface
     ) : array;
 
     /**
-     * @param array<AwordInterface|string>      $awords
-     * @param string[]|null                     $fallbacks
-     * @param array<string, string>[]|null      $placeholders
-     * @param array<GroupInterface|string>|null $groups
-     * @param array<LangInterface|string>|null  $langs
+     * @param array<I18nAwordInterface|string>      $awords
+     * @param string[]|null                         $fallbacks
+     * @param array<string, string>[]|null          $placeholders
+     * @param array<I18nGroupInterface|string>|null $groups
+     * @param array<I18nLangInterface|string>|null  $langs
      *
      * @return (string|null)[]
      * @throws RuntimeException
@@ -161,10 +161,10 @@ interface I18nInterface
     ) : array;
 
     /**
-     * @param AwordInterface|string             $aword
-     * @param array<string, string>|null        $placeholders
-     * @param array<GroupInterface|string>|null $groups
-     * @param array<LangInterface|string>|null  $langs
+     * @param I18nAwordInterface|string             $aword
+     * @param array<string, string>|null            $placeholders
+     * @param array<I18nGroupInterface|string>|null $groups
+     * @param array<I18nLangInterface|string>|null  $langs
      */
     public function phraseOrDefault(
         $aword,
@@ -173,11 +173,11 @@ interface I18nInterface
     ) : string;
 
     /**
-     * @param AwordInterface|string             $aword
-     * @param array{0?: string}|null            $fallback
-     * @param array<string, string>|null        $placeholders
-     * @param array<GroupInterface|string>|null $groups
-     * @param array<LangInterface|string>|null  $langs
+     * @param I18nAwordInterface|string             $aword
+     * @param array{0?: string}|null                $fallback
+     * @param array<string, string>|null            $placeholders
+     * @param array<I18nGroupInterface|string>|null $groups
+     * @param array<I18nLangInterface|string>|null  $langs
      *
      * @throws RuntimeException
      */
@@ -189,11 +189,11 @@ interface I18nInterface
 
 
     /**
-     * @param array<int|float|string>           $numbers
-     * @param array<AwordInterface|string>      $awords
-     * @param array<string, string>[]|null      $placeholders
-     * @param array<GroupInterface|string>|null $groups
-     * @param array<LangInterface|string>|null  $langs
+     * @param array<int|float|string>               $numbers
+     * @param array<I18nAwordInterface|string>      $awords
+     * @param array<string, string>[]|null          $placeholders
+     * @param array<I18nGroupInterface|string>|null $groups
+     * @param array<I18nLangInterface|string>|null  $langs
      *
      * @return array{0: string, 1: string}[]
      */
@@ -204,12 +204,12 @@ interface I18nInterface
     ) : array;
 
     /**
-     * @param array<int|float|string>           $numbers
-     * @param array<AwordInterface|string>      $awords
-     * @param string[]|null                     $fallbacks
-     * @param array<string, string>[]|null      $placeholders
-     * @param array<GroupInterface|string>|null $groups
-     * @param array<LangInterface|string>|null  $langs
+     * @param array<int|float|string>               $numbers
+     * @param array<I18nAwordInterface|string>      $awords
+     * @param string[]|null                         $fallbacks
+     * @param array<string, string>[]|null          $placeholders
+     * @param array<I18nGroupInterface|string>|null $groups
+     * @param array<I18nLangInterface|string>|null  $langs
      *
      * @return array{0: string, 1: string|null}[]
      * @throws RuntimeException
@@ -221,11 +221,11 @@ interface I18nInterface
     ) : array;
 
     /**
-     * @param int|float|string                  $number
-     * @param AwordInterface|string             $aword
-     * @param array<string, string>|null        $placeholders
-     * @param array<GroupInterface|string>|null $groups
-     * @param array<LangInterface|string>|null  $langs
+     * @param int|float|string                      $number
+     * @param I18nAwordInterface|string             $aword
+     * @param array<string, string>|null            $placeholders
+     * @param array<I18nGroupInterface|string>|null $groups
+     * @param array<I18nLangInterface|string>|null  $langs
      *
      * @return array{0: string, 1: string}
      */
@@ -236,12 +236,12 @@ interface I18nInterface
     ) : array;
 
     /**
-     * @param int|float|string                  $number
-     * @param AwordInterface|string             $aword
-     * @param array{0?: string}|null            $fallback
-     * @param array<string, string>|null        $placeholders
-     * @param array<GroupInterface|string>|null $groups
-     * @param array<LangInterface|string>|null  $langs
+     * @param int|float|string                      $number
+     * @param I18nAwordInterface|string             $aword
+     * @param array{0?: string}|null                $fallback
+     * @param array<string, string>|null            $placeholders
+     * @param array<I18nGroupInterface|string>|null $groups
+     * @param array<I18nLangInterface|string>|null  $langs
      *
      * @return array{0: string, 1: string|null}
      * @throws RuntimeException
@@ -254,9 +254,9 @@ interface I18nInterface
 
 
     /**
-     * @param array<AwordInterface|string>      $awords
-     * @param array<GroupInterface|string>|null $groups
-     * @param array<LangInterface|string>|null  $langs
+     * @param array<I18nAwordInterface|string>      $awords
+     * @param array<I18nGroupInterface|string>|null $groups
+     * @param array<I18nLangInterface|string>|null  $langs
      *
      * @return array{
      *     0: array{0: int, 1: string, 2?: array}[],
@@ -266,9 +266,9 @@ interface I18nInterface
     public function get(array $awords, array $groups = null, array $langs = null) : array;
 
     /**
-     * @param array<AwordInterface|string>      $awords
-     * @param array<GroupInterface|string>|null $groups
-     * @param array<LangInterface|string>|null  $langs
+     * @param array<I18nAwordInterface|string>      $awords
+     * @param array<I18nGroupInterface|string>|null $groups
+     * @param array<I18nLangInterface|string>|null  $langs
      *
      * @return array{
      *     0: array{0: int, 1: string, 2?: array}[],

@@ -3,41 +3,41 @@
 
 namespace Gzhegow\I18n\Repository\File;
 
+use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Type\I18nType;
+use Gzhegow\I18n\Pool\I18nPoolItem;
 use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
-use Gzhegow\I18n\Repository\File\Struct\FileSourceInterface;
+use Gzhegow\I18n\Repository\File\FileSource\I18nFileSource;
+use Gzhegow\I18n\Repository\File\FileSource\I18nFileSourceInterface;
 
 
 class JsonFileRepository extends AbstractI18nFileRepository
 {
     public function __construct(string $langDir)
     {
-        if (! extension_loaded('json')) {
-            throw new RuntimeException(
-                [
-                    'Extension `ext-json` is required to use this repository',
-                    $this,
-                ]
-            );
-        }
+        Lib::json();
 
         parent::__construct($langDir);
     }
 
 
-    public function buildFileSource(string $lang, string $group) : FileSourceInterface
+    public function buildFileSource(string $lang, string $group) : I18nFileSourceInterface
     {
-        $_lang = I18nType::theLang($lang);
-        $_group = I18nType::theGroup($group);
+        $langObject = I18nType::lang($lang);
+        $groupObject = I18nType::group($group);
 
-        $path = $this->langDir . '/' . $_lang . '/' . $_group . '.json';
+        $filepath = ''
+            . $this->langDir
+            . '/' . $langObject->getValue()
+            . '/' . $groupObject->getValue()
+            . '.json';
 
-        $fileSource = I18nType::theFileSource([
-            'path'  => $path,
+        $fileSource = I18nFileSource::from([
+            'filepath' => $filepath,
             //
-            'lang'  => $_lang,
-            'group' => $_group,
+            'lang'     => $langObject,
+            'group'    => $groupObject,
         ]);
 
         return $fileSource;
@@ -47,7 +47,7 @@ class JsonFileRepository extends AbstractI18nFileRepository
     /**
      * @return array<string, I18nPoolItemInterface>
      */
-    public function loadItemsFromFile(FileSourceInterface $fileSource) : array
+    public function loadItemsFromFile(I18nFileSourceInterface $fileSource) : array
     {
         $poolItems = [];
 
@@ -57,17 +57,11 @@ class JsonFileRepository extends AbstractI18nFileRepository
 
         $content = file_get_contents($fileSourceRealpath);
 
-        $choicesArray = json_decode($content, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new RuntimeException(
-                'Invalid JSON in file / ' . json_last_error_msg() . ': ' . $fileSourceRealpath
-            );
-        }
+        $choicesArray = Lib::json()->jsonc_decode($content, true);
 
         foreach ( $choicesArray as $word => $poolItemChoices ) {
             $poolItemPhrase = $poolItemChoices[ 0 ];
-            $poolItemWord = I18nType::theWord($word);
+            $poolItemWord = I18nType::word($word);
 
             $poolItemGroup = $poolItemWord->getGroup();
 
@@ -79,7 +73,7 @@ class JsonFileRepository extends AbstractI18nFileRepository
                 );
             }
 
-            $poolItem = I18nType::thePoolItem([
+            $poolItem = I18nPoolItem::from([
                 'word'    => $poolItemWord,
                 //
                 'lang'    => $fileSourceLang,
@@ -96,12 +90,12 @@ class JsonFileRepository extends AbstractI18nFileRepository
 
 
     /**
-     * @param FileSourceInterface     $fileSource
+     * @param I18nFileSourceInterface $fileSource
      * @param array<string, string[]> $choicesArray
      *
      * @return bool
      */
-    public static function saveChoicesArrayToFile(FileSourceInterface $fileSource, array $choicesArray) : bool
+    public static function saveChoicesArrayToFile(I18nFileSourceInterface $fileSource, array $choicesArray) : bool
     {
         $fileSourcePath = $fileSource->getValue();
 

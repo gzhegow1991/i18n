@@ -3,9 +3,9 @@
 namespace Gzhegow\I18n\Pool;
 
 use Gzhegow\I18n\Type\I18nType;
-use Gzhegow\I18n\Struct\WordInterface;
-use Gzhegow\I18n\Struct\LangInterface;
-use Gzhegow\I18n\Struct\GroupInterface;
+use Gzhegow\I18n\Struct\I18nWordInterface;
+use Gzhegow\I18n\Struct\I18nLangInterface;
+use Gzhegow\I18n\Struct\I18nGroupInterface;
 use Gzhegow\I18n\Exception\LogicException;
 
 
@@ -27,15 +27,15 @@ class MemoryPool implements I18nPoolInterface
 
 
     /**
-     * @param (WordInterface|string)[]       $andWordsIn
-     * @param (GroupInterface|string)[]|null $andGroupsIn
-     * @param (LangInterface|string)[]|null  $andLangsIn
+     * @param (I18nWordInterface|string)[]       $andWordsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
      *
      * @return iterable<array{
      *      status: bool,
-     *      word: WordInterface,
-     *      group: GroupInterface,
-     *      lang: LangInterface
+     *      word: I18nWordInterface,
+     *      group: I18nGroupInterface,
+     *      lang: I18nLangInterface
      *  }>
      */
     public function has(
@@ -56,26 +56,26 @@ class MemoryPool implements I18nPoolInterface
         foreach ( $andLangsIn as $lang ) {
             foreach ( $andGroupsIn as $group ) {
                 foreach ( $andWordsIn as $word ) {
-                    $_lang = I18nType::theLang($lang);
-                    $_group = I18nType::theGroup($group);
-                    $_word = I18nType::theWord($word);
+                    $langObject = I18nType::lang($lang);
+                    $groupObject = I18nType::group($group);
+                    $wordObject = I18nType::word($word);
 
-                    $_langString = $_lang->getValue();
-                    $_groupString = $_group->getValue();
-                    $_wordString = $_word->getValue();
+                    $langString = $langObject->getValue();
+                    $groupString = $groupObject->getValue();
+                    $wordString = $wordObject->getValue();
 
                     $index = $this->index(
-                        $_langString,
-                        $_groupString,
-                        $_wordString
+                        $langString,
+                        $groupString,
+                        $wordString
                     );
 
                     $report[] = [
                         'status' => isset($this->poolItemList[ $index ]),
                         //
-                        'word'   => $_wordString,
-                        'group'  => $_groupString,
-                        'lang'   => $_langString,
+                        'word'   => $wordString,
+                        'group'  => $groupString,
+                        'lang'   => $langString,
                     ];
                 }
             }
@@ -85,9 +85,9 @@ class MemoryPool implements I18nPoolInterface
     }
 
     /**
-     * @param (WordInterface|string)[]       $andWordsIn
-     * @param (GroupInterface|string)[]|null $andGroupsIn
-     * @param (LangInterface|string)[]|null  $andLangsIn
+     * @param (I18nWordInterface|string)[]       $andWordsIn
+     * @param (I18nGroupInterface|string)[]|null $andGroupsIn
+     * @param (I18nLangInterface|string)[]|null  $andLangsIn
      *
      * @return I18nPoolItemInterface[]
      */
@@ -123,18 +123,18 @@ class MemoryPool implements I18nPoolInterface
                         continue;
                     }
 
-                    $_lang = I18nType::theLang($lang);
-                    $_group = I18nType::theGroup($group);
-                    $_word = I18nType::theWord($word);
+                    $langObject = I18nType::lang($lang);
+                    $groupObject = I18nType::group($group);
+                    $wordObject = I18nType::word($word);
 
-                    $_langString = $_lang->getValue();
-                    $_groupString = $_group->getValue();
-                    $_wordString = $_word->getValue();
+                    $langString = $langObject->getValue();
+                    $groupString = $groupObject->getValue();
+                    $wordString = $wordObject->getValue();
 
                     $index = $this->index(
-                        $_langString,
-                        $_groupString,
-                        $_wordString
+                        $langString,
+                        $groupString,
+                        $wordString
                     );
 
                     if (isset($this->poolItemList[ $index ])) {
@@ -157,7 +157,7 @@ class MemoryPool implements I18nPoolInterface
      *
      * @return static
      */
-    public function set(array $poolItems) // : static
+    public function set(array $poolItems)
     {
         foreach ( $poolItems as $poolItem ) {
             if (! is_a($poolItem, I18nPoolItemInterface::class)) {
@@ -189,7 +189,7 @@ class MemoryPool implements I18nPoolInterface
     /**
      * @return static
      */
-    public function clear() // : static
+    public function clear()
     {
         $this->poolItemList = [];
 
