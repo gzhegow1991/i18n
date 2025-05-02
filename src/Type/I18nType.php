@@ -13,70 +13,66 @@ class I18nType
 {
     public static function language($value) : I18nLanguageInterface
     {
-        return static::$manager->language($value);
+        return static::getInstance()->language($value);
     }
 
     public static function languageOrNull($value) : ?I18nLanguageInterface
     {
-        return static::$manager->languageOrNull($value);
+        return static::getInstance()->languageOrNull($value);
     }
 
 
     public static function lang($value) : I18nLangInterface
     {
-        return static::$manager->lang($value);
+        return static::getInstance()->lang($value);
     }
 
     public static function langOrNull($value) : ?I18nLangInterface
     {
-        return static::$manager->langOrNull($value);
+        return static::getInstance()->langOrNull($value);
     }
 
 
     public static function group($group) : I18nGroupInterface
     {
-        return static::$manager->group($group);
+        return static::getInstance()->group($group);
     }
 
     public static function groupOrNull($group) : ?I18nGroupInterface
     {
-        return static::$manager->groupOrNull($group);
+        return static::getInstance()->groupOrNull($group);
     }
 
 
     public static function aword($value) : I18nAwordInterface
     {
-        return static::$manager->aword($value);
+        return static::getInstance()->aword($value);
     }
 
     public static function awordOrNull($value) : ?I18nAwordInterface
     {
-        return static::$manager->awordOrNull($value);
+        return static::getInstance()->awordOrNull($value);
     }
 
 
     public static function word($value) : I18nWordInterface
     {
-        return static::$manager->word($value);
+        return static::getInstance()->word($value);
     }
 
     public static function wordOrNull($value) : ?I18nWordInterface
     {
-        return static::$manager->wordOrNull($value);
+        return static::getInstance()->wordOrNull($value);
     }
 
 
-    public static function setFacade(?I18nTypeInterface $type) : ?I18nTypeInterface
+    public static function getInstance(?I18nTypeInterface $type = null) : I18nTypeInterface
     {
-        $last = static::$manager;
-
-        static::$manager = $type;
-
-        return $last;
+        return static::$instance = $type ?? static::$instance ?? new I18nTypeManager();
     }
 
     /**
      * @var I18nTypeInterface
      */
-    protected static $manager;
+    protected static $instance;
 }

@@ -85,10 +85,6 @@ $repositoryPhp = new \Gzhegow\I18n\Repository\File\PhpFileRepository($langDir = 
 // $repositoryJson = new \Gzhegow\I18n\Repo\File\JsonFileRepository($langDir = $ffn->root() . '/storage/resource/lang');
 // $repositoryYaml = new \Gzhegow\I18n\Repo\File\YamlFileRepository($langDir = $ffn->root() . '/storage/resource/lang');
 
-// создаем и регистрируем менеджер типов (он определяет синтаксис для ключевых слов, отличие групп от слов, компоновку их в виде строки и так далее)
-$typeManager = new \Gzhegow\I18n\Type\I18nTypeManager();
-\Gzhegow\I18n\Type\I18nType::setFacade($typeManager);
-
 // > создаем конфигурацию
 $config = new \Gzhegow\I18n\I18nConfig();
 $config->configure(function (\Gzhegow\I18n\I18nConfig $config) {
@@ -273,7 +269,7 @@ $ffn->assert_stdout($fn, [], '
 "Привет"
 NULL
 "123"
-"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 258
+"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 254
 ');
 
 
