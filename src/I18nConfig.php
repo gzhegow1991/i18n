@@ -387,7 +387,7 @@ class I18nConfig extends AbstractConfig
      */
     protected $logger;
     /**
-     * @see I18nInterface::E_LIST
+     * @see I18n::E_LIST
      * @see \Psr\Log\LogLevel::WARNING
      *
      * @var array<int, int>
@@ -567,7 +567,7 @@ class I18nConfig extends AbstractConfig
         }
 
         foreach ( $this->loggables as $error => $errorLevel ) {
-            if (isset(I18nInterface::E_LIST[ $error ])) {
+            if (isset(I18n::E_LIST[ $error ])) {
                 throw new LogicException(
                     [
                         'The `logger` should be instance of: \Psr\Log\LoggerInterface',

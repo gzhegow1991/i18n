@@ -4,6 +4,7 @@ namespace Gzhegow\I18n\Struct;
 
 use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\I18n;
+use Gzhegow\I18n\I18nFacade;
 use Gzhegow\I18n\Type\I18nType;
 use Gzhegow\Lib\Modules\Php\Result\Result;
 

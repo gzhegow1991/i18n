@@ -152,11 +152,14 @@ $config->configure(function (\Gzhegow\I18n\I18nConfig $config) {
 });
 
 // > создаем основной модуль
-$i18n = new \Gzhegow\I18n\I18n(
+$i18n = new \Gzhegow\I18n\I18nFacade(
     $factory,
     $repositoryPhp,
     $config
 );
+
+// > устанавливаем фасад, если удобно пользоваться статически
+\Gzhegow\I18n\I18n::setFacade($i18n);
 
 
 // > TEST
@@ -270,7 +273,7 @@ $ffn->assert_stdout($fn, [], '
 "Привет"
 NULL
 "123"
-"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 255
+"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 258
 ');
 
 
