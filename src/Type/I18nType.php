@@ -66,7 +66,7 @@ class I18nType
     }
 
 
-    public static function setFacade(I18nTypeInterface $type) : ?I18nTypeInterface
+    public static function setFacade(?I18nTypeInterface $type) : ?I18nTypeInterface
     {
         $last = static::$manager;
 

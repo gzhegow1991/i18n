@@ -404,7 +404,7 @@ class I18n
     }
 
 
-    public static function setFacade(I18nInterface $facade) : ?I18nInterface
+    public static function setFacade(?I18nInterface $facade) : ?I18nInterface
     {
         $last = static::$facade;
 
