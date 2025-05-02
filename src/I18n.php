@@ -226,7 +226,7 @@ class I18n
      * @throws RuntimeException
      */
     public function phrases(
-        array $awords, array $fallbacks = null,
+        array $awords, array $fallbacks = [],
         array $placeholders = null,
         array $groups = null, array $langs = null
     ) : array
@@ -267,7 +267,7 @@ class I18n
      * @throws RuntimeException
      */
     public function phrase(
-        $aword, array $fallback = null,
+        $aword, array $fallback = [],
         array $placeholders = null,
         array $groups = null, array $langs = null
     ) : ?string
@@ -314,7 +314,7 @@ class I18n
      * @throws RuntimeException
      */
     public function choices(
-        array $numbers, array $awords, array $fallbacks = null,
+        array $numbers, array $awords, array $fallbacks = [],
         array $placeholders = null,
         array $groups = null, array $langs = null
     ) : array
@@ -360,7 +360,7 @@ class I18n
      * @throws RuntimeException
      */
     public function choice(
-        $number, $aword, array $fallback = null,
+        $number, $aword, array $fallback = [],
         array $placeholders = null,
         array $groups = null, array $langs = null
     ) : array

@@ -295,7 +295,7 @@ $fn = function () use ($i18n, $ffn) {
             '@main.message.hello_$',
             '@main.message.hello_$$',
         ],
-        $fallbacks = null,
+        $fallbacks = [],
         $placeholders = [
             [ 'name' => 'Андрей' ],
             [ 'name1' => 'Вася', 'name2' => 'Валера' ],

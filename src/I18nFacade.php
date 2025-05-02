@@ -728,7 +728,7 @@ class I18nFacade implements I18nInterface
 
     /**
      * @param array<I18nAwordInterface|string>      $awords
-     * @param string[]|null                         $fallbacks
+     * @param string[]                              $fallbacks
      * @param array<string, string>[]|null          $placeholders
      * @param array<I18nGroupInterface|string>|null $groups
      * @param array<I18nLangInterface|string>|null  $langs
@@ -737,7 +737,7 @@ class I18nFacade implements I18nInterface
      * @throws RuntimeException
      */
     public function phrases(
-        array $awords, array $fallbacks = null,
+        array $awords, array $fallbacks = [],
         array $placeholders = null,
         array $groups = null, array $langs = null
     ) : array
@@ -750,7 +750,6 @@ class I18nFacade implements I18nInterface
 
         $this->loadUses();
 
-        $fallbacks = $fallbacks ?? [];
         $placeholders = $placeholders ?? [];
 
         [
@@ -832,7 +831,7 @@ class I18nFacade implements I18nInterface
 
     /**
      * @param I18nAwordInterface|string             $aword
-     * @param array{0?: string}|null                $fallback
+     * @param array{0?: string}                     $fallback
      * @param array<string, string>|null            $placeholders
      * @param array<I18nGroupInterface|string>|null $groups
      * @param array<I18nLangInterface|string>|null  $langs
@@ -840,13 +839,15 @@ class I18nFacade implements I18nInterface
      * @throws RuntimeException
      */
     public function phrase(
-        $aword, array $fallback = null,
+        $aword, array $fallback = [],
         array $placeholders = null,
         array $groups = null, array $langs = null
     ) : ?string
     {
+        $fallbacks = $fallback ? [ $fallback[ 0 ] ] : [];
+
         [ $phraseInterpolated ] = $this->phrases(
-            [ $aword ], $fallback,
+            [ $aword ], $fallbacks,
             $placeholders,
             $groups, $langs
         );
@@ -971,7 +972,7 @@ class I18nFacade implements I18nInterface
     /**
      * @param array<int|float|string>               $numbers
      * @param array<I18nAwordInterface|string>      $awords
-     * @param string[]|null                         $fallbacks
+     * @param string[]                              $fallbacks
      * @param array<string, string>[]|null          $placeholders
      * @param array<I18nGroupInterface|string>|null $groups
      * @param array<I18nLangInterface|string>|null  $langs
@@ -980,7 +981,7 @@ class I18nFacade implements I18nInterface
      * @throws RuntimeException
      */
     public function choices(
-        array $numbers, array $awords, array $fallbacks = null,
+        array $numbers, array $awords, array $fallbacks = [],
         array $placeholders = null,
         array $groups = null, array $langs = null
     ) : array
@@ -993,7 +994,6 @@ class I18nFacade implements I18nInterface
 
         $this->loadUses();
 
-        $fallbacks = $fallbacks ?? [];
         $placeholders = $placeholders ?? [];
 
         $_numbers = [];
@@ -1109,7 +1109,7 @@ class I18nFacade implements I18nInterface
     /**
      * @param int|float|string                      $number
      * @param I18nAwordInterface|string             $aword
-     * @param array{0?: string}|null                $fallback
+     * @param array{0?: string}                     $fallback
      * @param array<string, string>|null            $placeholders
      * @param array<I18nGroupInterface|string>|null $groups
      * @param array<I18nLangInterface|string>|null  $langs
@@ -1118,13 +1118,15 @@ class I18nFacade implements I18nInterface
      * @throws RuntimeException
      */
     public function choice(
-        $number, $aword, array $fallback = null,
+        $number, $aword, array $fallback = [],
         array $placeholders = null,
         array $groups = null, array $langs = null
     ) : array
     {
+        $fallbacks = $fallback ? [ $fallback[ 0 ] ] : [];
+
         [ $phraseInterpolated ] = $this->choices(
-            [ $number ], [ $aword ], $fallback,
+            [ $number ], [ $aword ], $fallbacks,
             $placeholders,
             $groups, $langs
         );
