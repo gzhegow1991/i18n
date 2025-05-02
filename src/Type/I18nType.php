@@ -16,9 +16,9 @@ class I18nType
         return static::$manager->language($value);
     }
 
-    public static function parseLanguage($value) : ?I18nLanguageInterface
+    public static function languageOrNull($value) : ?I18nLanguageInterface
     {
-        return static::$manager->parseLanguage($value);
+        return static::$manager->languageOrNull($value);
     }
 
 
@@ -27,9 +27,9 @@ class I18nType
         return static::$manager->lang($value);
     }
 
-    public static function parseLang($value) : ?I18nLangInterface
+    public static function langOrNull($value) : ?I18nLangInterface
     {
-        return static::$manager->parseLang($value);
+        return static::$manager->langOrNull($value);
     }
 
 
@@ -38,9 +38,9 @@ class I18nType
         return static::$manager->group($group);
     }
 
-    public static function parseGroup($group) : ?I18nGroupInterface
+    public static function groupOrNull($group) : ?I18nGroupInterface
     {
-        return static::$manager->parseGroup($group);
+        return static::$manager->groupOrNull($group);
     }
 
 
@@ -49,9 +49,9 @@ class I18nType
         return static::$manager->aword($value);
     }
 
-    public static function parseAword($value) : ?I18nAwordInterface
+    public static function awordOrNull($value) : ?I18nAwordInterface
     {
-        return static::$manager->parseAword($value);
+        return static::$manager->awordOrNull($value);
     }
 
 
@@ -60,9 +60,9 @@ class I18nType
         return static::$manager->word($value);
     }
 
-    public static function parseWord($value) : ?I18nWordInterface
+    public static function wordOrNull($value) : ?I18nWordInterface
     {
-        return static::$manager->parseWord($value);
+        return static::$manager->wordOrNull($value);
     }
 
 

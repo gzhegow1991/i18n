@@ -93,7 +93,7 @@ class I18nAword implements I18nAwordInterface
         $groupString = null;
         if ($fromString[ 0 ] === I18n::AWORD_PREFIX) {
             $word = substr($fromString, 1);
-            $word = I18nType::parseWord($word);
+            $word = I18nType::wordOrNull($word);
 
             if (null !== $word) {
                 $wordString = $word->getValue();

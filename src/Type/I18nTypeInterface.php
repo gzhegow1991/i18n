@@ -19,25 +19,25 @@ interface I18nTypeInterface
 
     public function language($language) : I18nLanguageInterface;
 
-    public function parseLanguage($language) : ?I18nLanguageInterface;
+    public function languageOrNull($language) : ?I18nLanguageInterface;
 
 
     public function lang($lang) : I18nLangInterface;
 
-    public function parseLang($lang) : ?I18nLangInterface;
+    public function langOrNull($lang) : ?I18nLangInterface;
 
 
     public function group($group) : I18nGroupInterface;
 
-    public function parseGroup($group) : ?I18nGroupInterface;
+    public function groupOrNull($group) : ?I18nGroupInterface;
 
 
     public function aword($aword) : I18nAwordInterface;
 
-    public function parseAword($aword) : ?I18nAwordInterface;
+    public function awordOrNull($aword) : ?I18nAwordInterface;
 
 
     public function word($word) : I18nWordInterface;
 
-    public function parseWord($word) : ?I18nWordInterface;
+    public function wordOrNull($word) : ?I18nWordInterface;
 }
