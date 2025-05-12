@@ -8,10 +8,12 @@ ini_set('memory_limit', '32M');
 
 
 // > настраиваем обработку ошибок
-\Gzhegow\Lib\Lib::errorHandler()
+\Gzhegow\Lib\Lib::entrypoint()
     ->setDirRoot(__DIR__ . '/..')
     //
     ->useErrorReporting()
+    ->useMemoryLimit()
+    ->useTimeLimit()
     ->useErrorHandler()
     ->useExceptionHandler()
 ;
@@ -58,20 +60,17 @@ $ffn = new class {
     }
 
 
-    function assert_stdout(
-        \Closure $fn, array $fnArgs = [],
-        string $expectedStdout = null
-    ) : void
+    function test(\Closure $fn, array $args = []) : \Gzhegow\Lib\Modules\Test\TestRunner\TestRunner
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
 
-        \Gzhegow\Lib\Lib::test()->assertStdout(
-            $trace,
-            $fn, $fnArgs,
-            $expectedStdout
-        );
+        return \Gzhegow\Lib\Lib::test()->test()
+            ->fn($fn, $args)
+            ->trace($trace)
+        ;
     }
 };
+
 
 
 // >>> ЗАПУСКАЕМ!
@@ -158,6 +157,9 @@ $i18n = new \Gzhegow\I18n\I18nFacade(
 \Gzhegow\I18n\I18n::setFacade($i18n);
 
 
+
+// >>> ТЕСТЫ
+
 // > TEST
 // > Получаем часть пути, который подставляется при генерации URL, для языка по-умолчанию должен быть NULL
 $fn = function () use ($i18n, $ffn) {
@@ -176,12 +178,14 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLangDefault($before);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 1"
 
 NULL
 "ru"
 ');
+$test->run();
 
 
 // > TEST
@@ -200,12 +204,14 @@ $fn = function () use ($i18n, $ffn) {
     );
     $ffn->print($result);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 2"
 
 "/(\/|en\/|ru\/)/"
 "/(?<lang>\/|en\/|ru\/)/iu"
 ');
+$test->run();
 
 
 // > TEST
@@ -220,11 +226,13 @@ $fn = function () use ($i18n, $ffn) {
     );
     $ffn->print($result);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 3"
 
 "Здесь был Вася. И ниже кто-то дописал: сосед"
 ');
+$test->run();
 
 
 // > TEST
@@ -263,7 +271,8 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLang($langBefore);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 4"
 
 "Привет"
@@ -271,6 +280,7 @@ NULL
 "123"
 "[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 254
 ');
+$test->run();
 
 
 // > TEST
@@ -301,11 +311,13 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLang($langBefore);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 5"
 
 [ "Привет, Андрей", "Привет, Вася и Валера" ]
 ');
+$test->run();
 
 
 // > TEST
@@ -332,12 +344,14 @@ $fn = function () use ($i18n, $ffn) {
     $i18n->setLangDefault($langDefaultBefore);
     $i18n->setLang($langBefore);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 6"
 
 NULL
 "яблоко"
 ');
+$test->run();
 
 
 // > TEST
@@ -370,7 +384,8 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLang($langBefore);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 7"
 
 [ "1", "apple" ]
@@ -405,6 +420,7 @@ $ffn->assert_stdout($fn, [], '
 ]
 ###
 ');
+$test->run();
 
 
 // > TEST
@@ -437,7 +453,8 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLang($langBefore);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 8"
 
 [ "1", "яблоко" ]
@@ -496,6 +513,7 @@ $ffn->assert_stdout($fn, [], '
 ]
 ###
 ');
+$test->run();
 
 
 // > TEST
@@ -524,7 +542,8 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLang($langBefore);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 9"
 
 ###
@@ -544,6 +563,7 @@ $ffn->assert_stdout($fn, [], '
 ]
 ###
 ');
+$test->run();
 
 
 // > TEST
@@ -576,11 +596,13 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLang($langBefore);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 10"
 
 [ [ "apple", "apples" ] ]
 ');
+$test->run();
 
 
 // > TEST
@@ -597,11 +619,13 @@ $fn = function () use ($i18n, $ffn) {
     );
     $ffn->print_array($result, 2);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 11"
 
 [ [ "status" => TRUE, "group" => "main", "lang" => "en" ] ]
 ');
+$test->run();
 
 
 // > TEST
@@ -624,7 +648,8 @@ $fn = function () use ($i18n, $ffn) {
     );
     $ffn->print_array_multiline($result, 2);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 12"
 
 ###
@@ -644,6 +669,7 @@ $ffn->assert_stdout($fn, [], '
 ]
 ###
 ');
+$test->run();
 
 
 // > TEST
@@ -673,11 +699,13 @@ $fn = function () use ($i18n, $ffn) {
     }
     $ffn->print_array($result, 2);
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 13"
 
 [ [ "apple", "apples" ] ]
 ');
+$test->run();
 
 
 // > TEST
@@ -722,9 +750,11 @@ $fn = function () use ($i18n, $langDir, $ffn) {
     $repository->delete($poolItemsCloned);
     $ffn->print(! file_exists($langDir . '/by/main.php'));
 };
-$ffn->assert_stdout($fn, [], '
+$test = $ffn->test($fn);
+$test->expectStdout('
 "TEST 14"
 
 TRUE
 TRUE
 ');
+$test->run();
