@@ -85,7 +85,7 @@ class I18nFileSource implements I18nFileSourceInterface
         $lang = $from[ 'lang' ];
         $group = $from[ 'group' ];
 
-        if (! Lib::type()->filepath($filepathString, $filepath)) {
+        if (! Lib::type()->filepath($filepathString, $filepath, true)) {
             return Result::err(
                 $ctx,
                 [ 'The `from[filepath]` should be valid path', $from ],
