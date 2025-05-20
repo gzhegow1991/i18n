@@ -10,6 +10,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
     ->useErrorReporting()
     ->useMemoryLimit()
     ->useTimeLimit()
+    ->useUmask()
     ->useErrorHandler()
     ->useExceptionHandler()
 ;
@@ -274,7 +275,7 @@ $test->expectStdout('
 "Привет"
 NULL
 "123"
-"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 258
+"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 259
 ');
 $test->run();
 
