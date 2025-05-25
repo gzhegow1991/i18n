@@ -4,6 +4,7 @@ namespace Gzhegow\I18n\Language;
 
 use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Type\I18nType;
+use Gzhegow\Lib\Modules\Php\Result\Ret;
 use Gzhegow\Lib\Modules\Php\Result\Result;
 use Gzhegow\I18n\Choice\I18nChoiceInterface;
 
@@ -49,47 +50,53 @@ class I18nLanguage implements I18nLanguageInterface
 
 
     /**
+     * @param Ret $ret
+     *
      * @return static|bool|null
      */
-    public static function from($from, $ctx = null)
+    public static function from($from, $ret = null)
     {
-        Result::parse($cur);
+        $retCur = Result::asValue();
 
         $instance = null
-            ?? static::fromStatic($from, $cur)
-            ?? static::fromArray($from, $cur);
+            ?? static::fromStatic($from, $retCur)
+            ?? static::fromArray($from, $retCur);
 
-        if ($cur->isErr()) {
-            return Result::err($ctx, $cur);
+        if ($retCur->isErr()) {
+            return Result::err($ret, $retCur);
         }
 
-        return Result::ok($ctx, $instance);
+        return Result::ok($ret, $instance);
     }
 
     /**
+     * @param Ret $ret
+     *
      * @return static|bool|null
      */
-    public static function fromStatic($from, $ctx = null)
+    public static function fromStatic($from, $ret = null)
     {
         if ($from instanceof static) {
-            return Result::ok($ctx, $from);
+            return Result::ok($ret, $from);
         }
 
         return Result::err(
-            $ctx,
+            $ret,
             [ 'The `from` should be instance of: ' . static::class, $from ],
             [ __FILE__, __LINE__ ]
         );
     }
 
     /**
+     * @param Ret $ret
+     *
      * @return static|bool|null
      */
-    public static function fromArray($from, $ctx = null)
+    public static function fromArray($from, $ret = null)
     {
         if (! is_array($from)) {
             return Result::err(
-                $ctx,
+                $ret,
                 [ 'The `from` should be non-empty string', $from ],
                 [ __FILE__, __LINE__ ]
             );
@@ -113,7 +120,7 @@ class I18nLanguage implements I18nLanguageInterface
 
         if (! $theType->string_not_empty($localeString, $locale)) {
             return Result::err(
-                $ctx,
+                $ret,
                 [ 'The `from[locale]` should be non-empty string', $from ],
                 [ __FILE__, __LINE__ ]
             );
@@ -121,7 +128,7 @@ class I18nLanguage implements I18nLanguageInterface
 
         if (! $theType->string_not_empty($scriptString, $script)) {
             return Result::err(
-                $ctx,
+                $ret,
                 [ 'The `from[script]` should be non-empty string', $from ],
                 [ __FILE__, __LINE__ ]
             );
@@ -129,7 +136,7 @@ class I18nLanguage implements I18nLanguageInterface
 
         if (! $theType->string_not_empty($titleEnglishString, $titleEnglish)) {
             return Result::err(
-                $ctx,
+                $ret,
                 [ 'The `from[titleEnglish]` should be non-empty string', $from ],
                 [ __FILE__, __LINE__ ]
             );
@@ -137,7 +144,7 @@ class I18nLanguage implements I18nLanguageInterface
 
         if (! $theType->string_not_empty($titleNativeString, $titleNative)) {
             return Result::err(
-                $ctx,
+                $ret,
                 [ 'The `from[titleNative]` should be non-empty string', $from ],
                 [ __FILE__, __LINE__ ]
             );
@@ -155,7 +162,7 @@ class I18nLanguage implements I18nLanguageInterface
         if (null !== $phpLocales) {
             if ((! is_array($phpLocales)) || ([] === $phpLocales)) {
                 return Result::err(
-                    $ctx,
+                    $ret,
                     [ 'The `from[phpLocales]` should be non-empty array', $from ],
                     [ __FILE__, __LINE__ ]
                 );
@@ -167,7 +174,7 @@ class I18nLanguage implements I18nLanguageInterface
         if (null !== $choice) {
             if (! is_a($choice, I18nChoiceInterface::class)) {
                 return Result::err(
-                    $ctx,
+                    $ret,
                     [ 'The `from[choice]` should be instance of: ' . I18nChoiceInterface::class, $choice ],
                     [ __FILE__, __LINE__ ]
                 );
@@ -176,7 +183,7 @@ class I18nLanguage implements I18nLanguageInterface
             $instance->setChoice($choice);
         }
 
-        return Result::ok($ctx, $instance);
+        return Result::ok($ret, $instance);
     }
 
 

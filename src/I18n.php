@@ -54,7 +54,11 @@ class I18n
         return static::$facade->getLangs();
     }
 
-    public function getLangsRegexForRoute(string $regexGroupName = null, string $regexBraces = '/', string $regexFlags = '') : string
+    public function getLangsRegexForRoute(
+        ?string $regexGroupName = null,
+        string $regexBraces = '/',
+        string $regexFlags = ''
+    ) : string
     {
         return static::$facade->getLangsRegexForRoute($regexGroupName, $regexBraces, $regexFlags);
     }
@@ -70,7 +74,7 @@ class I18n
         return static::$facade->getLangDefault();
     }
 
-    public function getLangForUrl(string $lang = null) : ?string
+    public function getLangForUrl(?string $lang = null) : ?string
     {
         return static::$facade->getLangForUrl($lang);
     }
@@ -150,12 +154,12 @@ class I18n
         return static::$facade->resetUses();
     }
 
-    public function useAwords(array $awords, array $groups = null, array $langs = null) : I18nInterface
+    public function useAwords(array $awords, ?array $groups = null, ?array $langs = null) : I18nInterface
     {
         return static::$facade->useAwords($awords, $groups, $langs);
     }
 
-    public function useGroups(array $groups, string $lang = null) : I18nInterface
+    public function useGroups(array $groups, ?string $lang = null) : I18nInterface
     {
         return static::$facade->useGroups($groups, $lang);
     }
@@ -174,7 +178,7 @@ class I18n
     /**
      * @return string[]
      */
-    public function getGroupsLoaded(array $langs = null) : array
+    public function getGroupsLoaded(?array $langs = null) : array
     {
         return static::$facade->getGroupsLoaded($langs);
     }
@@ -182,13 +186,13 @@ class I18n
     /**
      * @return string[]
      */
-    public function getLangsLoaded(array $groups = null) : array
+    public function getLangsLoaded(?array $groups = null) : array
     {
         return static::$facade->getLangsLoaded($groups);
     }
 
 
-    public function interpolate(?string $phrase, array $placeholders = null) : ?string
+    public function interpolate(?string $phrase, ?array $placeholders = null) : ?string
     {
         return static::$facade->interpolate($phrase, $placeholders);
     }
@@ -204,8 +208,8 @@ class I18n
      */
     public function phrasesOrDefault(
         array $awords,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array
     {
         return static::$facade->phrasesOrDefault(
@@ -227,8 +231,8 @@ class I18n
      */
     public function phrases(
         array $awords, array $fallbacks = [],
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array
     {
         return static::$facade->phrases(
@@ -246,8 +250,8 @@ class I18n
      */
     public function phraseOrDefault(
         $aword,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : string
     {
         return static::$facade->phraseOrDefault(
@@ -268,8 +272,8 @@ class I18n
      */
     public function phrase(
         $aword, array $fallback = [],
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : ?string
     {
         return static::$facade->phrase(
@@ -291,8 +295,8 @@ class I18n
      */
     public function choicesOrDefault(
         array $numbers, array $awords,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array
     {
         return static::$facade->choicesOrDefault(
@@ -315,8 +319,8 @@ class I18n
      */
     public function choices(
         array $numbers, array $awords, array $fallbacks = [],
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array
     {
         return static::$facade->choicesOrDefault(
@@ -337,8 +341,8 @@ class I18n
      */
     public function choiceOrDefault(
         $number, $aword,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array
     {
         return static::$facade->choiceOrDefault(
@@ -361,8 +365,8 @@ class I18n
      */
     public function choice(
         $number, $aword, array $fallback = [],
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array
     {
         return static::$facade->choice(
@@ -383,7 +387,7 @@ class I18n
      *     1: I18nPoolItemInterface[]
      * }
      */
-    public function get(array $awords, array $groups = null, array $langs = null) : array
+    public function get(array $awords, ?array $groups = null, ?array $langs = null) : array
     {
         return static::$facade->get($awords, $groups, $langs);
     }
@@ -398,7 +402,7 @@ class I18n
      *     1: I18nPoolItemInterface[]
      * }
      */
-    public function getOrDefault(array $awords, array $groups = null, array $langs = null) : array
+    public function getOrDefault(array $awords, ?array $groups = null, ?array $langs = null) : array
     {
         return static::$facade->getOrDefault($awords, $groups, $langs);
     }

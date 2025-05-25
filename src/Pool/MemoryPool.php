@@ -39,9 +39,9 @@ class MemoryPool implements I18nPoolInterface
      *  }>
      */
     public function has(
-        array $andWordsIn,
-        array $andGroupsIn = null,
-        array $andLangsIn = null
+        ?array $andWordsIn,
+        ?array $andGroupsIn = null,
+        ?array $andLangsIn = null
     ) : iterable
     {
         if (! $andWordsIn) {
@@ -93,10 +93,10 @@ class MemoryPool implements I18nPoolInterface
      */
     public function get(
         array $andWordsIn,
-        array $andGroupsIn = null,
-        array $andLangsIn = null,
+        ?array $andGroupsIn = null,
+        ?array $andLangsIn = null,
         //
-        int $limit = null,
+        ?int $limit = null,
         int $offset = 0
     ) : array
     {

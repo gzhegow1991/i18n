@@ -28,14 +28,18 @@ interface I18nInterface
      */
     public function getLangs() : array;
 
-    public function getLangsRegexForRoute(string $regexGroupName = null, string $regexBraces = '/', string $regexFlags = '') : string;
+    public function getLangsRegexForRoute(
+        ?string $regexGroupName = null,
+        string $regexBraces = '/',
+        string $regexFlags = ''
+    ) : string;
 
 
     public function getLang() : string;
 
     public function getLangDefault() : string;
 
-    public function getLangForUrl(string $lang = null) : ?string;
+    public function getLangForUrl(?string $lang = null) : ?string;
 
 
     public function setLang(string $lang) : I18nInterface;
@@ -77,9 +81,9 @@ interface I18nInterface
 
     public function resetUses() : I18nInterface;
 
-    public function useAwords(array $awords, array $groups = null, array $langs = null) : I18nInterface;
+    public function useAwords(array $awords, ?array $groups = null, ?array $langs = null) : I18nInterface;
 
-    public function useGroups(array $groups, string $lang = null) : I18nInterface;
+    public function useGroups(array $groups, ?string $lang = null) : I18nInterface;
 
     public function clearUsesLoaded() : I18nInterface;
 
@@ -89,15 +93,15 @@ interface I18nInterface
     /**
      * @return string[]
      */
-    public function getGroupsLoaded(array $langs = null) : array;
+    public function getGroupsLoaded(?array $langs = null) : array;
 
     /**
      * @return string[]
      */
-    public function getLangsLoaded(array $groups = null) : array;
+    public function getLangsLoaded(?array $groups = null) : array;
 
 
-    public function interpolate(?string $phrase, array $placeholders = null) : ?string;
+    public function interpolate(?string $phrase, ?array $placeholders = null) : ?string;
 
 
     /**
@@ -110,8 +114,8 @@ interface I18nInterface
      */
     public function phrasesOrDefault(
         array $awords,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array;
 
     /**
@@ -126,8 +130,8 @@ interface I18nInterface
      */
     public function phrases(
         array $awords, array $fallbacks = [],
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array;
 
     /**
@@ -138,8 +142,8 @@ interface I18nInterface
      */
     public function phraseOrDefault(
         $aword,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : string;
 
     /**
@@ -153,8 +157,8 @@ interface I18nInterface
      */
     public function phrase(
         $aword, array $fallback = [],
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : ?string;
 
 
@@ -169,8 +173,8 @@ interface I18nInterface
      */
     public function choicesOrDefault(
         array $numbers, array $awords,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array;
 
     /**
@@ -186,8 +190,8 @@ interface I18nInterface
      */
     public function choices(
         array $numbers, array $awords, array $fallbacks = [],
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array;
 
     /**
@@ -201,8 +205,8 @@ interface I18nInterface
      */
     public function choiceOrDefault(
         $number, $aword,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array;
 
     /**
@@ -218,8 +222,8 @@ interface I18nInterface
      */
     public function choice(
         $number, $aword, array $fallback = [],
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array;
 
 
@@ -233,7 +237,7 @@ interface I18nInterface
      *     1: I18nPoolItemInterface[]
      * }
      */
-    public function get(array $awords, array $groups = null, array $langs = null) : array;
+    public function get(array $awords, ?array $groups = null, ?array $langs = null) : array;
 
     /**
      * @param array<I18nAwordInterface|string>      $awords
@@ -245,5 +249,5 @@ interface I18nInterface
      *     1: I18nPoolItemInterface[]
      * }
      */
-    public function getOrDefault(array $awords, array $groups = null, array $langs = null) : array;
+    public function getOrDefault(array $awords, ?array $groups = null, ?array $langs = null) : array;
 }

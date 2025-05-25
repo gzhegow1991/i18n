@@ -78,12 +78,12 @@ $ffn = new class {
     }
 
 
-    function value_array($value, int $maxLevel = null, array $options = []) : string
+    function value_array($value, ?int $maxLevel = null, array $options = []) : string
     {
         return \Gzhegow\Lib\Lib::debug()->value_array($value, $maxLevel, $options);
     }
 
-    function value_array_multiline($value, int $maxLevel = null, array $options = []) : string
+    function value_array_multiline($value, ?int $maxLevel = null, array $options = []) : string
     {
         return \Gzhegow\Lib\Lib::debug()->value_array_multiline($value, $maxLevel, $options);
     }
@@ -100,22 +100,22 @@ $ffn = new class {
         echo $this->values(' | ', ...$values) . PHP_EOL;
     }
 
-    function print_array($value, int $maxLevel = null, array $options = []) : void
+    function print_array($value, ?int $maxLevel = null, array $options = []) : void
     {
         echo $this->value_array($value, $maxLevel, $options) . PHP_EOL;
     }
 
-    function print_array_multiline($value, int $maxLevel = null, array $options = []) : void
+    function print_array_multiline($value, ?int $maxLevel = null, array $options = []) : void
     {
         echo $this->value_array_multiline($value, $maxLevel, $options) . PHP_EOL;
     }
 
 
-    function test(\Closure $fn, array $args = []) : \Gzhegow\Lib\Modules\Test\TestRunner\TestRunner
+    function test(\Closure $fn, array $args = []) : \Gzhegow\Lib\Modules\Test\Test
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
 
-        return \Gzhegow\Lib\Lib::test()->test()
+        return \Gzhegow\Lib\Lib::test()->newTest()
             ->fn($fn, $args)
             ->trace($trace)
         ;

@@ -26,8 +26,8 @@ interface I18nRepositoryInterface
      * }[]
      */
     public function hasGroups(
-        array $andGroupsIn = null,
-        array $andLangsIn = null
+        ?array $andGroupsIn = null,
+        ?array $andLangsIn = null
     ) : array;
 
     /**
@@ -43,9 +43,9 @@ interface I18nRepositoryInterface
      * }[]
      */
     public function hasWords(
-        array $andWordsIn = null,
-        array $andGroupsIn = null,
-        array $andLangsIn = null
+        ?array $andWordsIn = null,
+        ?array $andGroupsIn = null,
+        ?array $andLangsIn = null
     ) : array;
 
 
@@ -56,10 +56,10 @@ interface I18nRepositoryInterface
      * @return I18nPoolItemInterface[]
      */
     public function getGroups(
-        array $andGroupsIn = null,
-        array $andLangsIn = null,
+        ?array $andGroupsIn = null,
+        ?array $andLangsIn = null,
         //
-        int $limit = null,
+        ?int $limit = null,
         int $offset = 0
     ) : array;
 
@@ -70,10 +70,10 @@ interface I18nRepositoryInterface
      * @return iterable<I18nPoolItemInterface[]>
      */
     public function getGroupsIt(
-        array $andGroupsIn = null,
-        array $andLangsIn = null,
+        ?array $andGroupsIn = null,
+        ?array $andLangsIn = null,
         //
-        int $limit = null,
+        ?int $limit = null,
         int $offset = 0
     ) : iterable;
 
@@ -86,11 +86,11 @@ interface I18nRepositoryInterface
      * @return I18nPoolItemInterface[]
      */
     public function getWords(
-        array $andWordsIn = null,
-        array $andGroupsIn = null,
-        array $andLangsIn = null,
+        ?array $andWordsIn = null,
+        ?array $andGroupsIn = null,
+        ?array $andLangsIn = null,
         //
-        int $limit = null,
+        ?int $limit = null,
         int $offset = 0
     ) : array;
 
@@ -102,11 +102,11 @@ interface I18nRepositoryInterface
      * @return iterable<I18nPoolItemInterface[]>
      */
     public function getWordsIt(
-        array $andWordsIn = null,
-        array $andGroupsIn = null,
-        array $andLangsIn = null,
+        ?array $andWordsIn = null,
+        ?array $andGroupsIn = null,
+        ?array $andLangsIn = null,
         //
-        int $limit = null,
+        ?int $limit = null,
         int $offset = 0
     ) : iterable;
 

@@ -188,7 +188,11 @@ class I18nFacade implements I18nInterface
         return array_keys($this->languages);
     }
 
-    public function getLangsRegexForRoute(string $regexGroupName = null, string $regexBraces = '/', string $regexFlags = '') : string
+    public function getLangsRegexForRoute(
+        ?string $regexGroupName = null,
+        string $regexBraces = '/',
+        string $regexFlags = ''
+    ) : string
     {
         $withGroupName = false;
         $withBraces = $regexBraces !== '';
@@ -256,7 +260,7 @@ class I18nFacade implements I18nInterface
         return $this->langDefault;
     }
 
-    public function getLangForUrl(string $lang = null) : ?string
+    public function getLangForUrl(?string $lang = null) : ?string
     {
         $lang = $lang ?? $this->lang;
 
@@ -420,7 +424,7 @@ class I18nFacade implements I18nInterface
         return $this;
     }
 
-    public function useAwords(array $awords, array $groups = null, array $langs = null) : I18nInterface
+    public function useAwords(array $awords, ?array $groups = null, ?array $langs = null) : I18nInterface
     {
         if (! $awords) {
             throw new LogicException(
@@ -436,7 +440,7 @@ class I18nFacade implements I18nInterface
         return $this;
     }
 
-    public function useGroups(array $groups, string $lang = null) : I18nInterface
+    public function useGroups(array $groups, ?string $lang = null) : I18nInterface
     {
         if (! $groups) {
             throw new LogicException(
@@ -564,7 +568,7 @@ class I18nFacade implements I18nInterface
      *
      * @return string[]
      */
-    public function getGroupsLoaded(array $langs = null) : array
+    public function getGroupsLoaded(?array $langs = null) : array
     {
         if (null === $langs) {
             $groups = $this->loadedGroupLangIndex;
@@ -591,7 +595,7 @@ class I18nFacade implements I18nInterface
      *
      * @return string[]
      */
-    public function getLangsLoaded(array $groups = null) : array
+    public function getLangsLoaded(?array $groups = null) : array
     {
         if (null === $groups) {
             $langs = $this->loadedLangGroupIndex;
@@ -614,7 +618,7 @@ class I18nFacade implements I18nInterface
     }
 
 
-    public function interpolate(?string $phrase, array $placeholders = null) : ?string
+    public function interpolate(?string $phrase, ?array $placeholders = null) : ?string
     {
         $placeholders = $placeholders ?? [];
 
@@ -652,8 +656,8 @@ class I18nFacade implements I18nInterface
      */
     public function phrasesOrDefault(
         array $awords,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array
     {
         if (! $awords) {
@@ -738,8 +742,8 @@ class I18nFacade implements I18nInterface
      */
     public function phrases(
         array $awords, array $fallbacks = [],
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array
     {
         if (! $awords) {
@@ -816,8 +820,8 @@ class I18nFacade implements I18nInterface
      */
     public function phraseOrDefault(
         $aword,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : string
     {
         [ $phraseInterpolated ] = $this->phrasesOrDefault(
@@ -840,8 +844,8 @@ class I18nFacade implements I18nInterface
      */
     public function phrase(
         $aword, array $fallback = [],
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : ?string
     {
         $fallbacks = $fallback ? [ $fallback[ 0 ] ] : [];
@@ -867,8 +871,8 @@ class I18nFacade implements I18nInterface
      */
     public function choicesOrDefault(
         array $numbers, array $awords,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array
     {
         if (! $awords) {
@@ -982,8 +986,8 @@ class I18nFacade implements I18nInterface
      */
     public function choices(
         array $numbers, array $awords, array $fallbacks = [],
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array
     {
         if (! $awords) {
@@ -1093,8 +1097,8 @@ class I18nFacade implements I18nInterface
      */
     public function choiceOrDefault(
         $number, $aword,
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array
     {
         [ $phraseInterpolated ] = $this->choicesOrDefault(
@@ -1119,8 +1123,8 @@ class I18nFacade implements I18nInterface
      */
     public function choice(
         $number, $aword, array $fallback = [],
-        array $placeholders = null,
-        array $groups = null, array $langs = null
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
     ) : array
     {
         $fallbacks = $fallback ? [ $fallback[ 0 ] ] : [];
@@ -1145,7 +1149,7 @@ class I18nFacade implements I18nInterface
      *     1: I18nPoolItemInterface[]
      * }
      */
-    public function get(array $awords, array $groups = null, array $langs = null) : array
+    public function get(array $awords, ?array $groups = null, ?array $langs = null) : array
     {
         if ([] === $awords) {
             return [ [], [] ];
@@ -1255,7 +1259,7 @@ class I18nFacade implements I18nInterface
      *     1: I18nPoolItemInterface[]
      * }
      */
-    public function getOrDefault(array $awords, array $groups = null, array $langs = null) : array
+    public function getOrDefault(array $awords, ?array $groups = null, ?array $langs = null) : array
     {
         if (! $awords) {
             return [ [], [] ];

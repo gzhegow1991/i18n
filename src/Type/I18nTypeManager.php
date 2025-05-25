@@ -26,7 +26,7 @@ class I18nTypeManager implements I18nTypeInterface
 
     public function poolItemOrNull($poolItem) : ?I18nPoolItemInterface
     {
-        return I18nPoolItem::from($poolItem, Result::parse());
+        return I18nPoolItem::from($poolItem, Result::asValue());
     }
 
 
@@ -37,7 +37,7 @@ class I18nTypeManager implements I18nTypeInterface
 
     public function languageOrNull($language) : ?I18nLanguageInterface
     {
-        return I18nLanguage::from($language, Result::parse());
+        return I18nLanguage::from($language, Result::asValue());
     }
 
 
@@ -48,7 +48,7 @@ class I18nTypeManager implements I18nTypeInterface
 
     public function langOrNull($lang) : ?I18nLangInterface
     {
-        return I18nLang::from($lang, Result::parse());
+        return I18nLang::from($lang, Result::asValue());
     }
 
 
@@ -59,7 +59,7 @@ class I18nTypeManager implements I18nTypeInterface
 
     public function groupOrNull($group) : ?I18nGroupInterface
     {
-        return I18nGroup::from($group, Result::parse());
+        return I18nGroup::from($group, Result::asValue());
     }
 
 
@@ -70,7 +70,7 @@ class I18nTypeManager implements I18nTypeInterface
 
     public function awordOrNull($aword) : ?I18nAwordInterface
     {
-        return I18nAword::from($aword, Result::parse());
+        return I18nAword::from($aword, Result::asValue());
     }
 
 
@@ -81,6 +81,6 @@ class I18nTypeManager implements I18nTypeInterface
 
     public function wordOrNull($word) : ?I18nWordInterface
     {
-        return I18nWord::from($word, Result::parse());
+        return I18nWord::from($word, Result::asValue());
     }
 }
