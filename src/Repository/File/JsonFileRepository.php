@@ -16,7 +16,7 @@ class JsonFileRepository extends AbstractI18nFileRepository
 {
     public function __construct(string $langDir)
     {
-        Lib::json();
+        Lib::format()->json();
 
         parent::__construct($langDir);
     }
@@ -49,6 +49,8 @@ class JsonFileRepository extends AbstractI18nFileRepository
      */
     public function loadItemsFromFile(I18nFileSourceInterface $fileSource) : array
     {
+        $theJson = Lib::format()->json();
+
         $poolItems = [];
 
         $fileSourceLang = $fileSource->getLang();
@@ -57,7 +59,7 @@ class JsonFileRepository extends AbstractI18nFileRepository
 
         $content = file_get_contents($fileSourceRealpath);
 
-        $choicesArray = Lib::json()->jsonc_decode($content, true);
+        $choicesArray = $theJson->jsonc_decode($content, true);
 
         foreach ( $choicesArray as $word => $poolItemChoices ) {
             $poolItemPhrase = $poolItemChoices[ 0 ];
