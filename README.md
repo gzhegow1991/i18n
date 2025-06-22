@@ -61,12 +61,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 \Gzhegow\Lib\Lib::entrypoint()
     ->setDirRoot(__DIR__ . '/..')
     //
-    ->useAllErrorReporting()
-    //
-    ->useMemoryLimit()
-    ->usePrecision()
-    ->useTimezoneDefault()
-    ->useUmask()
+    ->useAll()
 ;
 
 
@@ -329,7 +324,7 @@ $test->expectStdout('
 "Привет"
 NULL
 "123"
-"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 260
+"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 254
 ');
 $test->run();
 
