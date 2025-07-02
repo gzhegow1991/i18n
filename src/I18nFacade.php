@@ -329,6 +329,10 @@ class I18nFacade implements I18nInterface
 
     public function setLangCurrent(string $lang) : I18nInterface
     {
+        if ($lang === $this->langCurrent) {
+            return $this;
+        }
+
         $language = $this->getLanguage($lang);
 
         $langString = $language->getLang();
