@@ -133,9 +133,9 @@ $config->configure(function (\Gzhegow\I18n\I18nConfig $config) {
 
     // > и указать уровень логирования для ошибок, которые регистрирует модуль
     // $config->loggables = [
-    //     // \Gzhegow\I18n\I18nInterface::E_FORGOTTEN_GROUP => \Psr\Log\LogLevel::WARNING,
-    //     // \Gzhegow\I18n\I18nInterface::E_MISSING_WORD    => \Psr\Log\LogLevel::WARNING,
-    //     // \Gzhegow\I18n\I18nInterface::E_WRONG_AWORD     => \Psr\Log\LogLevel::WARNING,
+    //     // \Gzhegow\I18n\I18n::E_FORGOTTEN_GROUP => \Psr\Log\LogLevel::WARNING,
+    //     // \Gzhegow\I18n\I18n::E_MISSING_WORD    => \Psr\Log\LogLevel::WARNING,
+    //     // \Gzhegow\I18n\I18n::E_WRONG_AWORD     => \Psr\Log\LogLevel::WARNING,
     // ];
 });
 

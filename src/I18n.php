@@ -29,9 +29,9 @@ class I18n
     const E_MISSING_WORD    = 1 << 2;
 
     const E_LIST = [
-        self::E_WRONG_AWORD     => true,
-        self::E_FORGOTTEN_GROUP => true,
-        self::E_MISSING_WORD    => true,
+        self::E_WRONG_AWORD     => 'E_WRONG_AWORD',
+        self::E_FORGOTTEN_GROUP => 'E_FORGOTTEN_GROUP',
+        self::E_MISSING_WORD    => 'E_MISSING_WORD',
     ];
 
 

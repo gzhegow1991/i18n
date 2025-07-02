@@ -393,9 +393,9 @@ class I18nConfig extends AbstractConfig
      * @var array<int, int>
      */
     protected $loggables = [
-        // \Gzhegow\I18n\I18nInterface::E_FORGOTTEN_GROUP => \Psr\Log\LogLevel::WARNING,
-        // \Gzhegow\I18n\I18nInterface::E_MISSING_WORD    => \Psr\Log\LogLevel::WARNING,
-        // \Gzhegow\I18n\I18nInterface::E_WRONG_AWORD     => \Psr\Log\LogLevel::WARNING,
+        // \Gzhegow\I18n\I18n::E_WRONG_AWORD     => \Psr\Log\LogLevel::WARNING,
+        // \Gzhegow\I18n\I18n::E_FORGOTTEN_GROUP => \Psr\Log\LogLevel::WARNING,
+        // \Gzhegow\I18n\I18n::E_MISSING_WORD    => \Psr\Log\LogLevel::WARNING,
     ];
 
 
@@ -422,6 +422,7 @@ class I18nConfig extends AbstractConfig
                 throw new LogicException(
                     [
                         'The `locale` should be non-empty string',
+                        //
                         $locale,
                     ]
                 );
@@ -431,6 +432,7 @@ class I18nConfig extends AbstractConfig
                 throw new LogicException(
                     [
                         'The `script` should be non-empty string',
+                        //
                         $locale,
                     ]
                 );
@@ -440,6 +442,7 @@ class I18nConfig extends AbstractConfig
                 throw new LogicException(
                     [
                         'The `titleEnglish` should be non-empty string',
+                        //
                         $locale,
                     ]
                 );
@@ -449,6 +452,7 @@ class I18nConfig extends AbstractConfig
                 throw new LogicException(
                     [
                         'The `titleNative` should be non-empty string',
+                        //
                         $locale,
                     ]
                 );
@@ -476,6 +480,7 @@ class I18nConfig extends AbstractConfig
                 throw new LogicException(
                     [
                         'The `lang` should be existing language',
+                        //
                         $lang,
                         $this,
                     ]
@@ -487,6 +492,7 @@ class I18nConfig extends AbstractConfig
                     throw new LogicException(
                         [
                             'The `phpLocale` should be existing PHP locale constant',
+                            //
                             $phpLocale,
                             $this,
                         ]
@@ -500,6 +506,7 @@ class I18nConfig extends AbstractConfig
                         throw new LogicException(
                             [
                                 'The `phpLocale` should be non-empty string',
+                                //
                                 $phpLocale,
                                 $this,
                             ]
@@ -514,6 +521,7 @@ class I18nConfig extends AbstractConfig
                 throw new LogicException(
                     [
                         'The `lang` should be existing language',
+                        //
                         $lang,
                         $this,
                     ]
@@ -524,6 +532,7 @@ class I18nConfig extends AbstractConfig
                 throw new LogicException(
                     [
                         'Each of `choices` should be instance of: ' . I18nChoiceInterface::class,
+                        //
                         $lang,
                         $this,
                     ]
@@ -536,6 +545,7 @@ class I18nConfig extends AbstractConfig
                 throw new LogicException(
                     [
                         'The `lang` should be existing language',
+                        //
                         $this->lang,
                         $this,
                     ]
@@ -548,6 +558,7 @@ class I18nConfig extends AbstractConfig
                 throw new LogicException(
                     [
                         'The `lang_default` should be existing language',
+                        //
                         $this->langDefault,
                         $this,
                     ]
@@ -560,6 +571,7 @@ class I18nConfig extends AbstractConfig
                 throw new LogicException(
                     [
                         'The `logger` should be instance of: \Psr\Log\LoggerInterface',
+                        //
                         $this,
                     ]
                 );
@@ -567,10 +579,14 @@ class I18nConfig extends AbstractConfig
         }
 
         foreach ( $this->loggables as $error => $errorLevel ) {
-            if (isset(I18n::E_LIST[ $error ])) {
+            if (! isset(I18n::E_LIST[ $error ])) {
                 throw new LogicException(
                     [
-                        'The `logger` should be instance of: \Psr\Log\LoggerInterface',
+                        ''
+                        . 'Each of `loggable` should be valid key of the list: '
+                        . '[ ' . implode(' ][ ', I18n::E_LIST) . ' ]',
+                        //
+                        $error,
                         $this,
                     ]
                 );
