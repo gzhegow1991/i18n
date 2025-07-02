@@ -28,11 +28,18 @@ interface I18nInterface
      */
     public function getLangs() : array;
 
-    public function getLangsRegexForRoute(
-        ?string $regexGroupName = null,
-        string $regexBraces = '/',
-        string $regexFlags = ''
-    ) : string;
+    public function getLangsRegex(
+        string $stringPrefix = '', string $stringSuffix = '',
+        ?string $regexGroupName = null, string $regexBraces = '/', string $regexFlags = ''
+    ) : ?string;
+
+    /**
+     * @return string[]
+     */
+    public function getLangsHtmlMetaHreflangLines(
+        string $stringPrefix = '', string $stringSuffix = '',
+        $url = '', $query = null, $fragment = null
+    ) : array;
 
 
     public function getLang() : string;

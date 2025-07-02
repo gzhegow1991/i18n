@@ -35,6 +35,11 @@ class I18n
     ];
 
 
+    private function __construct()
+    {
+    }
+
+
     public function getRepository() : I18nRepositoryInterface
     {
         return static::$facade->getRepository();
@@ -49,42 +54,60 @@ class I18n
     /**
      * @return string[]
      */
-    public function getLangs() : array
+    public static function getLangs() : array
     {
         return static::$facade->getLangs();
     }
 
-    public function getLangsRegexForRoute(
+    public static function getLangsRegexForRoute(
+        string $stringPrefix = '', string $stringSuffix = '',
         ?string $regexGroupName = null,
         string $regexBraces = '/',
         string $regexFlags = ''
-    ) : string
+    ) : ?string
     {
-        return static::$facade->getLangsRegexForRoute($regexGroupName, $regexBraces, $regexFlags);
+        return static::$facade->getLangsRegex(
+            $stringPrefix, $stringSuffix,
+            $regexGroupName, $regexBraces, $regexFlags
+        );
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getLangsMetaHreflangForSeo(
+        string $stringPrefix = '', string $stringSuffix = '',
+        $url = '', $query = null, $fragment = null
+    ) : array
+    {
+        return static::$facade->getLangsHtmlMetaHreflangLines(
+            $stringPrefix, $stringSuffix,
+            $url, $query, $fragment
+        );
     }
 
 
-    public function getLang() : string
+    public static function getLang() : string
     {
         return static::$facade->getLang();
     }
 
-    public function getLangDefault() : string
+    public static function getLangDefault() : string
     {
         return static::$facade->getLangDefault();
     }
 
-    public function getLangForUrl(?string $lang = null) : ?string
+    public static function getLangForUrl(?string $lang = null) : ?string
     {
         return static::$facade->getLangForUrl($lang);
     }
 
-    public function setLang(string $lang) : I18nInterface
+    public static function setLang(string $lang) : I18nInterface
     {
         return static::$facade->setLang($lang);
     }
 
-    public function setLangDefault(string $lang) : I18nInterface
+    public static function setLangDefault(string $lang) : I18nInterface
     {
         return static::$facade->setLangDefault($lang);
     }
@@ -93,38 +116,38 @@ class I18n
     /**
      * @return I18nLanguageInterface[]
      */
-    public function getLanguages() : array
+    public static function getLanguages() : array
     {
         return static::$facade->getLanguages();
     }
 
-    public function getLanguage() : I18nLanguageInterface
+    public static function getLanguage() : I18nLanguageInterface
     {
         return static::$facade->getLanguage();
     }
 
-    public function getLanguageDefault() : I18nLanguageInterface
+    public static function getLanguageDefault() : I18nLanguageInterface
     {
         return static::$facade->getLanguageDefault();
     }
 
-    public function getLanguageFor(string $lang) : ?I18nLanguageInterface
+    public static function getLanguageFor(string $lang) : ?I18nLanguageInterface
     {
         return static::$facade->getLanguageFor($lang);
     }
 
 
-    public function getLocale() : string
+    public static function getLocale() : string
     {
         return static::$facade->getLocale();
     }
 
-    public function getLocaleDefault() : string
+    public static function getLocaleDefault() : string
     {
         return static::$facade->getLocaleDefault();
     }
 
-    public function getLocaleFor(string $lang) : ?string
+    public static function getLocaleFor(string $lang) : ?string
     {
         return static::$facade->getLocaleFor($lang);
     }
@@ -135,7 +158,7 @@ class I18n
      *
      * @return \Psr\Log\LoggerInterface|null
      */
-    public function setLogger($logger)
+    public static function setLogger($logger)
     {
         return static::$facade->setLogger($logger);
     }
@@ -143,33 +166,33 @@ class I18n
     /**
      * @param array<int, int> $loggables
      */
-    public function setLoggables(array $loggables) : array
+    public static function setLoggables(array $loggables) : array
     {
         return static::$facade->setLoggables($loggables);
     }
 
 
-    public function resetUses() : I18nInterface
+    public static function resetUses() : I18nInterface
     {
         return static::$facade->resetUses();
     }
 
-    public function useAwords(array $awords, ?array $groups = null, ?array $langs = null) : I18nInterface
+    public static function useAwords(array $awords, ?array $groups = null, ?array $langs = null) : I18nInterface
     {
         return static::$facade->useAwords($awords, $groups, $langs);
     }
 
-    public function useGroups(array $groups, ?string $lang = null) : I18nInterface
+    public static function useGroups(array $groups, ?string $lang = null) : I18nInterface
     {
         return static::$facade->useGroups($groups, $lang);
     }
 
-    public function clearUsesLoaded() : I18nInterface
+    public static function clearUsesLoaded() : I18nInterface
     {
         return static::$facade->clearUsesLoaded();
     }
 
-    public function loadUses() : I18nInterface
+    public static function loadUses() : I18nInterface
     {
         return static::$facade->loadUses();
     }
@@ -178,7 +201,7 @@ class I18n
     /**
      * @return string[]
      */
-    public function getGroupsLoaded(?array $langs = null) : array
+    public static function getGroupsLoaded(?array $langs = null) : array
     {
         return static::$facade->getGroupsLoaded($langs);
     }
@@ -186,13 +209,13 @@ class I18n
     /**
      * @return string[]
      */
-    public function getLangsLoaded(?array $groups = null) : array
+    public static function getLangsLoaded(?array $groups = null) : array
     {
         return static::$facade->getLangsLoaded($groups);
     }
 
 
-    public function interpolate(?string $phrase, ?array $placeholders = null) : ?string
+    public static function interpolate(?string $phrase, ?array $placeholders = null) : ?string
     {
         return static::$facade->interpolate($phrase, $placeholders);
     }
@@ -206,7 +229,7 @@ class I18n
      *
      * @return string[]
      */
-    public function phrasesOrDefault(
+    public static function phrasesOrDefault(
         array $awords,
         ?array $placeholders = null,
         ?array $groups = null, ?array $langs = null
@@ -229,7 +252,7 @@ class I18n
      * @return (string|null)[]
      * @throws RuntimeException
      */
-    public function phrases(
+    public static function phrases(
         array $awords, array $fallbacks = [],
         ?array $placeholders = null,
         ?array $groups = null, ?array $langs = null
@@ -248,7 +271,7 @@ class I18n
      * @param array<I18nGroupInterface|string>|null $groups
      * @param array<I18nLangInterface|string>|null  $langs
      */
-    public function phraseOrDefault(
+    public static function phraseOrDefault(
         $aword,
         ?array $placeholders = null,
         ?array $groups = null, ?array $langs = null
@@ -270,7 +293,7 @@ class I18n
      *
      * @throws RuntimeException
      */
-    public function phrase(
+    public static function phrase(
         $aword, array $fallback = [],
         ?array $placeholders = null,
         ?array $groups = null, ?array $langs = null
@@ -293,7 +316,7 @@ class I18n
      *
      * @return array{0: string, 1: string}[]
      */
-    public function choicesOrDefault(
+    public static function choicesOrDefault(
         array $numbers, array $awords,
         ?array $placeholders = null,
         ?array $groups = null, ?array $langs = null
@@ -317,7 +340,7 @@ class I18n
      * @return array{0: string, 1: string|null}[]
      * @throws RuntimeException
      */
-    public function choices(
+    public static function choices(
         array $numbers, array $awords, array $fallbacks = [],
         ?array $placeholders = null,
         ?array $groups = null, ?array $langs = null
@@ -339,7 +362,7 @@ class I18n
      *
      * @return array{0: string, 1: string}
      */
-    public function choiceOrDefault(
+    public static function choiceOrDefault(
         $number, $aword,
         ?array $placeholders = null,
         ?array $groups = null, ?array $langs = null
@@ -363,7 +386,7 @@ class I18n
      * @return array{0: string, 1: string|null}
      * @throws RuntimeException
      */
-    public function choice(
+    public static function choice(
         $number, $aword, array $fallback = [],
         ?array $placeholders = null,
         ?array $groups = null, ?array $langs = null
@@ -387,7 +410,7 @@ class I18n
      *     1: I18nPoolItemInterface[]
      * }
      */
-    public function get(array $awords, ?array $groups = null, ?array $langs = null) : array
+    public static function get(array $awords, ?array $groups = null, ?array $langs = null) : array
     {
         return static::$facade->get($awords, $groups, $langs);
     }
@@ -402,7 +425,7 @@ class I18n
      *     1: I18nPoolItemInterface[]
      * }
      */
-    public function getOrDefault(array $awords, ?array $groups = null, ?array $langs = null) : array
+    public static function getOrDefault(array $awords, ?array $groups = null, ?array $langs = null) : array
     {
         return static::$facade->getOrDefault($awords, $groups, $langs);
     }

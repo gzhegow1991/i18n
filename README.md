@@ -125,10 +125,11 @@ $ffn = new class {
 $factory = new \Gzhegow\I18n\I18nFactory();
 
 // > создаем репозиторий, который будет получать переводы из удаленного источника
+$langDir = $ffn->root() . '/storage/resource/lang';
 // > в пакете поставляются несколько готовых репозиториев: JSON, PHP, YAML, и всегда можно написать свой собственный
-$repositoryPhp = new \Gzhegow\I18n\Repository\File\PhpFileRepository($langDir = $ffn->root() . '/storage/resource/lang');
-// $repositoryJson = new \Gzhegow\I18n\Repo\File\JsonFileRepository($langDir = $ffn->root() . '/storage/resource/lang');
-// $repositoryYaml = new \Gzhegow\I18n\Repo\File\YamlFileRepository($langDir = $ffn->root() . '/storage/resource/lang');
+$repositoryPhp = new \Gzhegow\I18n\Repository\File\PhpFileRepository($langDir);
+// $repositoryJson = new \Gzhegow\I18n\Repo\File\JsonFileRepository($langDir);
+// $repositoryYaml = new \Gzhegow\I18n\Repo\File\YamlFileRepository($langDir);
 
 // > создаем конфигурацию
 $config = new \Gzhegow\I18n\I18nConfig();
@@ -212,6 +213,7 @@ $fn = function () use ($i18n, $ffn) {
     $ffn->print('TEST 1');
     echo PHP_EOL;
 
+
     $before = $i18n->getLangDefault();
 
     $i18n->setLangDefault('en');
@@ -240,22 +242,50 @@ $fn = function () use ($i18n, $ffn) {
     $ffn->print('TEST 2');
     echo PHP_EOL;
 
-    $result = $i18n->getLangsRegexForRoute();
+
+    $result = $i18n->getLangsRegex();
     $ffn->print($result);
 
-    $result = $i18n->getLangsRegexForRoute(
+    $result = $i18n->getLangsRegex(
+        '', '',
         $regexGroupName = 'lang',
         $regexBraces = '/',
         $regexFlags = 'iu'
     );
     $ffn->print($result);
+
+    echo "\n";
+
+
+    $before = [
+        $_SERVER[ 'HTTP_HOST' ] ?? null,
+        $_SERVER[ 'REQUEST_URI' ] ?? null,
+    ];
+
+    $_SERVER[ 'HTTP_HOST' ] = 'localhost';
+    $_SERVER[ 'REQUEST_URI' ] = '/ru/hello-world';
+    $result = $i18n->getLangsHtmlMetaHreflangLines();
+    $ffn->print_array_multiline($result);
+
+    [
+        $_SERVER[ 'HTTP_HOST' ],
+        $_SERVER[ 'REQUEST_URI' ],
+    ] = $before;
 };
 $test = $ffn->test($fn);
 $test->expectStdout('
 "TEST 2"
 
-"/(\/|en\/|ru\/)/"
-"/(?<lang>\/|en\/|ru\/)/iu"
+"/(?:(en|ru))/"
+"/(?:(?<lang>en|ru))/iu"
+
+###
+[
+  "<link rel=\"alternate\" hreflang=\"en\" href=\"http://localhost/hello-world\" />",
+  "<link rel=\"alternate\" hreflang=\"ru\" href=\"http://localhost/ru/hello-world\" />",
+  "<link rel=\"alternate\" hreflang=\"x-default\" href=\"http://localhost/hello-world\" />"
+]
+###
 ');
 $test->run();
 
@@ -324,7 +354,7 @@ $test->expectStdout('
 "Привет"
 NULL
 "123"
-"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 254
+"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 284
 ');
 $test->run();
 

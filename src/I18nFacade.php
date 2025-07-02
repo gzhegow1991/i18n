@@ -188,11 +188,10 @@ class I18nFacade implements I18nInterface
         return array_keys($this->languages);
     }
 
-    public function getLangsRegexForRoute(
-        ?string $regexGroupName = null,
-        string $regexBraces = '/',
-        string $regexFlags = ''
-    ) : string
+    public function getLangsRegex(
+        string $stringPrefix = '', string $stringSuffix = '',
+        ?string $regexGroupName = null, string $regexBraces = '/', string $regexFlags = ''
+    ) : ?string
     {
         $withGroupName = false;
         $withBraces = $regexBraces !== '';
@@ -215,38 +214,89 @@ class I18nFacade implements I18nInterface
         }
 
         $regex = [];
-
         foreach ( $this->languages as $lang => $language ) {
-            if ($this->langDefault === $lang) {
-                $regex[] = preg_quote('/', '/');
-            }
+            $regex[] = preg_quote($lang, $regexBraces[ 0 ] ?? '/');
+        }
 
-            $regex[] = preg_quote($lang . '/', $regexBraces[ 0 ] ?? '/');
+        if ([] === $regex) {
+            return null;
         }
 
         $regex = implode('|', $regex);
 
-        if ('' !== $regex) {
-            if ($withGroupName) {
-                $regex = "(?<{$regexGroupName}>" . $regex . ')';
+        $regexPrefix = '';
+        $regexSuffix = '';
+        if ('' !== $stringPrefix) {
+            $regexPrefix = preg_quote($stringPrefix, $regexBraces[ 0 ] ?? '/');
+        }
+        if ('' !== $stringSuffix) {
+            $regexSuffix = preg_quote($stringSuffix, $regexBraces[ 0 ] ?? '/');
+        }
 
-            } elseif ($withBraces || $withFlags) {
-                $regex = '(' . $regex . ')';
-            }
+        if ($withGroupName) {
+            $regex = "(?:{$regexPrefix}(?<{$regexGroupName}>{$regex}){$regexSuffix})";
 
-            if ($withBraces) {
-                $braceLeft = $regexBraces[ 0 ] ?? '';
-                $braceRight = $regexBraces[ 1 ] ?? $braceLeft;
+        } elseif ($withBraces || $withFlags) {
+            $regex = "(?:{$regexPrefix}({$regex}){$regexSuffix})";
+        }
 
-                $regex = $braceLeft . $regex . $braceRight;
-            }
+        if ($withBraces) {
+            $braceLeft = $regexBraces[ 0 ] ?? '';
+            $braceRight = $regexBraces[ 1 ] ?? $braceLeft;
 
-            if ($withFlags) {
-                $regex .= $regexFlags;
-            }
+            $regex = $braceLeft . $regex . $braceRight;
+        }
+
+        if ($withFlags) {
+            $regex .= $regexFlags;
         }
 
         return $regex;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getLangsHtmlMetaHreflangLines(
+        string $stringPrefix = '', string $stringSuffix = '',
+        $url = '', $query = null, $fragment = null
+    ) : array
+    {
+        $theUrl = Lib::url();
+
+        $regex = $this->getLangsRegex();
+
+        $link = $theUrl->link($url, $query, $fragment);
+
+        $split = preg_split($regex, $link, 2);
+        if (count($split) > 1) {
+            $link = implode('{{lang}}', $split);
+        }
+
+        $link = ltrim($link, '/');
+
+        $htmlLines = [];
+
+        $langUrlDefault = null;
+        foreach ( $this->languages as $lang => $language ) {
+            if ($this->langDefault === $lang) {
+                $langLink = str_replace('{{lang}}', "{$stringPrefix}{$stringSuffix}", $link);
+
+                $langUrl = $theUrl->url($langLink);
+                $langUrlDefault = $langUrl;
+
+            } else {
+                $langLink = str_replace('{{lang}}', "{$stringPrefix}{$lang}{$stringSuffix}", $link);
+
+                $langUrl = $theUrl->url("{$langLink}");
+            }
+
+            $htmlLines[] = '<link rel="alternate" hreflang="' . $lang . '" href="' . $langUrl . '" />';
+        }
+
+        $htmlLines[] = '<link rel="alternate" hreflang="x-default" href="' . $langUrlDefault . '" />';
+
+        return $htmlLines;
     }
 
 
