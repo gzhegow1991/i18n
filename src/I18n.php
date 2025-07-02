@@ -87,9 +87,14 @@ class I18n
     }
 
 
-    public static function getLang() : string
+    public function hasLang(string $lang) : bool
     {
-        return static::$facade->getLang();
+        return static::$facade->hasLang($lang);
+    }
+
+    public static function getLangCurrent() : string
+    {
+        return static::$facade->getLangCurrent();
     }
 
     public static function getLangDefault() : string
@@ -102,9 +107,10 @@ class I18n
         return static::$facade->getLangForUrl($lang);
     }
 
-    public static function setLang(string $lang) : I18nInterface
+
+    public static function setLangCurrent(string $lang) : I18nInterface
     {
-        return static::$facade->setLang($lang);
+        return static::$facade->setLangCurrent($lang);
     }
 
     public static function setLangDefault(string $lang) : I18nInterface
@@ -114,26 +120,32 @@ class I18n
 
 
     /**
-     * @return I18nLanguageInterface[]
+     * @return array<string, I18nLanguageInterface>
      */
     public static function getLanguages() : array
     {
         return static::$facade->getLanguages();
     }
 
-    public static function getLanguage() : I18nLanguageInterface
+
+    public static function hasLanguage(string $lang, ?I18nLanguageInterface &$language = null) : bool
     {
-        return static::$facade->getLanguage();
+        return static::$facade->hasLanguage($lang, $language);
+    }
+
+    public static function getLanguage(string $lang) : I18nLanguageInterface
+    {
+        return static::$facade->getLanguage($lang);
+    }
+
+    public static function getLanguageCurrent() : I18nLanguageInterface
+    {
+        return static::$facade->getLanguageCurrent();
     }
 
     public static function getLanguageDefault() : I18nLanguageInterface
     {
         return static::$facade->getLanguageDefault();
-    }
-
-    public static function getLanguageFor(string $lang) : ?I18nLanguageInterface
-    {
-        return static::$facade->getLanguageFor($lang);
     }
 
 

@@ -317,9 +317,9 @@ $fn = function () use ($i18n, $ffn) {
     $ffn->print('TEST 4');
     echo PHP_EOL;
 
-    $langBefore = $i18n->getLang();
+    $langBefore = $i18n->getLangCurrent();
 
-    $i18n->setLang('ru');
+    $i18n->setLangCurrent('ru');
 
     $i18n->clearUsesLoaded();
     $i18n->useGroups([ 'main' ]);
@@ -345,7 +345,7 @@ $fn = function () use ($i18n, $ffn) {
         );
     }
 
-    $i18n->setLang($langBefore);
+    $i18n->setLangCurrent($langBefore);
 };
 $test = $ffn->test($fn);
 $test->expectStdout('
@@ -365,9 +365,9 @@ $fn = function () use ($i18n, $ffn) {
     $ffn->print('TEST 5');
     echo PHP_EOL;
 
-    $langBefore = $i18n->getLang();
+    $langBefore = $i18n->getLangCurrent();
 
-    $i18n->setLang('ru');
+    $i18n->setLangCurrent('ru');
 
     $i18n->clearUsesLoaded();
     $i18n->useGroups([ 'main' ]);
@@ -385,7 +385,7 @@ $fn = function () use ($i18n, $ffn) {
     );
     $ffn->print($result);
 
-    $i18n->setLang($langBefore);
+    $i18n->setLangCurrent($langBefore);
 };
 $test = $ffn->test($fn);
 $test->expectStdout('
@@ -402,10 +402,10 @@ $fn = function () use ($i18n, $ffn) {
     $ffn->print('TEST 6');
     echo PHP_EOL;
 
-    $langBefore = $i18n->getLang();
+    $langBefore = $i18n->getLangCurrent();
     $langDefaultBefore = $i18n->getLangDefault();
 
-    $i18n->setLang('en');
+    $i18n->setLangCurrent('en');
     $i18n->setLangDefault('ru');
 
     $i18n->clearUsesLoaded();
@@ -418,7 +418,7 @@ $fn = function () use ($i18n, $ffn) {
     $ffn->print($result);
 
     $i18n->setLangDefault($langDefaultBefore);
-    $i18n->setLang($langBefore);
+    $i18n->setLangCurrent($langBefore);
 };
 $test = $ffn->test($fn);
 $test->expectStdout('
@@ -436,9 +436,9 @@ $fn = function () use ($i18n, $ffn) {
     $ffn->print('TEST 7');
     echo PHP_EOL;
 
-    $langBefore = $i18n->getLang();
+    $langBefore = $i18n->getLangCurrent();
 
-    $i18n->setLang('en');
+    $i18n->setLangCurrent('en');
 
     $i18n->clearUsesLoaded();
     $i18n->useGroups([ 'main' ]);
@@ -458,7 +458,7 @@ $fn = function () use ($i18n, $ffn) {
     );
     $ffn->print_array_multiline($result, 2);
 
-    $i18n->setLang($langBefore);
+    $i18n->setLangCurrent($langBefore);
 };
 $test = $ffn->test($fn);
 $test->expectStdout('
@@ -505,9 +505,9 @@ $fn = function () use ($i18n, $ffn) {
     $ffn->print('TEST 8');
     echo PHP_EOL;
 
-    $langBefore = $i18n->getLang();
+    $langBefore = $i18n->getLangCurrent();
 
-    $i18n->setLang('ru');
+    $i18n->setLangCurrent('ru');
 
     $i18n->clearUsesLoaded();
     $i18n->useGroups([ 'main' ]);
@@ -527,7 +527,7 @@ $fn = function () use ($i18n, $ffn) {
     );
     $ffn->print_array_multiline($result, 2);
 
-    $i18n->setLang($langBefore);
+    $i18n->setLangCurrent($langBefore);
 };
 $test = $ffn->test($fn);
 $test->expectStdout('
@@ -603,9 +603,9 @@ $fn = function () use ($i18n, $ffn) {
         'main.title.apple_only_russian',
     ];
 
-    $langBefore = $i18n->getLang();
+    $langBefore = $i18n->getLangCurrent();
 
-    $i18n->setLang('en');
+    $i18n->setLangCurrent('en');
 
     $i18n->clearUsesLoaded();
     $i18n->useGroups([ 'main' ]);
@@ -616,7 +616,7 @@ $fn = function () use ($i18n, $ffn) {
     $result = $pool->has($words);
     $ffn->print_array_multiline($result, 2);
 
-    $i18n->setLang($langBefore);
+    $i18n->setLangCurrent($langBefore);
 };
 $test = $ffn->test($fn);
 $test->expectStdout('
@@ -653,9 +653,9 @@ $fn = function () use ($i18n, $ffn) {
         'main.title.apple_only_russian',
     ];
 
-    $langBefore = $i18n->getLang();
+    $langBefore = $i18n->getLangCurrent();
 
-    $i18n->setLang('en');
+    $i18n->setLangCurrent('en');
 
     $i18n->clearUsesLoaded();
     $i18n->useGroups([ 'main' ]);
@@ -670,7 +670,7 @@ $fn = function () use ($i18n, $ffn) {
     }
     $ffn->print_array($result, 2);
 
-    $i18n->setLang($langBefore);
+    $i18n->setLangCurrent($langBefore);
 };
 $test = $ffn->test($fn);
 $test->expectStdout('

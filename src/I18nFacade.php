@@ -50,7 +50,7 @@ class I18nFacade implements I18nInterface
     /**
      * @var string
      */
-    protected $lang;
+    protected $langCurrent;
     /**
      * @var string
      */
@@ -150,7 +150,7 @@ class I18nFacade implements I18nInterface
         }
 
         if ($lang) {
-            $this->setLang($lang);
+            $this->setLangCurrent($lang);
         }
 
         if ($langDefault) {
@@ -300,9 +300,14 @@ class I18nFacade implements I18nInterface
     }
 
 
-    public function getLang() : string
+    public function hasLang(string $lang) : bool
     {
-        return $this->lang;
+        return isset($this->languages[ $lang ]);
+    }
+
+    public function getLangCurrent() : string
+    {
+        return $this->langCurrent;
     }
 
     public function getLangDefault() : string
@@ -312,7 +317,7 @@ class I18nFacade implements I18nInterface
 
     public function getLangForUrl(?string $lang = null) : ?string
     {
-        $lang = $lang ?? $this->lang;
+        $lang = $lang ?? $this->langCurrent;
 
         $result = ($lang === $this->langDefault)
             ? null
@@ -322,13 +327,13 @@ class I18nFacade implements I18nInterface
     }
 
 
-    public function setLang(string $lang) : I18nInterface
+    public function setLangCurrent(string $lang) : I18nInterface
     {
-        $language = $this->getLanguageFor($lang);
+        $language = $this->getLanguage($lang);
 
         $langString = $language->getLang();
 
-        $this->lang = $langString;
+        $this->langCurrent = $langString;
 
         if ($phpLocales = $language->hasPhpLocales()) {
             foreach ( $phpLocales as $category => $locales ) {
@@ -362,7 +367,7 @@ class I18nFacade implements I18nInterface
 
     public function setLangDefault(string $lang) : I18nInterface
     {
-        $language = $this->getLanguageFor($lang);
+        $language = $this->getLanguage($lang);
 
         $langDefaultString = $language->getLang();
 
@@ -372,43 +377,48 @@ class I18nFacade implements I18nInterface
     }
 
 
+    /**
+     * @return array<string, I18nLanguageInterface>
+     */
     public function getLanguages() : array
     {
         return $this->languages;
     }
 
-    public function getLanguage() : I18nLanguageInterface
+
+    public function hasLanguage(string $lang, ?I18nLanguageInterface &$language = null) : bool
     {
-        return $this->getLanguageFor($this->lang);
+        $language = null;
+
+        if (isset($this->languages[ $lang ])) {
+            $language = $this->languages[ $lang ];
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getLanguage(string $lang) : I18nLanguageInterface
+    {
+        return $this->languages[ $lang ];
+    }
+
+
+    public function getLanguageCurrent() : I18nLanguageInterface
+    {
+        return $this->getLanguage($this->langCurrent);
     }
 
     public function getLanguageDefault() : I18nLanguageInterface
     {
-        return $this->getLanguageFor($this->langDefault);
-    }
-
-    public function getLanguageFor(string $lang) : I18nLanguageInterface
-    {
-        if ('' === $lang) {
-            throw new LogicException('The `lang` should be not empty');
-        }
-
-        if (! isset($this->languages[ $lang ])) {
-            throw new RuntimeException(
-                [
-                    'Language not found',
-                    $lang,
-                ]
-            );
-        }
-
-        return $this->languages[ $lang ];
+        return $this->getLanguage($this->langDefault);
     }
 
 
     public function getLocale() : string
     {
-        return $this->getLocaleFor($this->lang);
+        return $this->getLocaleFor($this->langCurrent);
     }
 
     public function getLocaleDefault() : string
@@ -420,7 +430,7 @@ class I18nFacade implements I18nInterface
     {
         $locale = null;
 
-        if ($language = $this->getLanguageFor($lang)) {
+        if ($language = $this->getLanguage($lang)) {
             $locale = $language->getLocale();
         }
 
@@ -533,9 +543,9 @@ class I18nFacade implements I18nInterface
     protected function loadUsesGroups() : void
     {
         foreach ( $this->loadGroupsQueue as $i => [ $groups, $lang ] ) {
-            $lang = $lang ?? $this->lang;
+            $lang = $lang ?? $this->langCurrent;
 
-            $this->getLanguageFor($lang);
+            $this->getLanguage($lang);
 
             foreach ( $groups as $groupIdx => $group ) {
                 $loadedKey = "{$group}\0{$lang}";
@@ -577,10 +587,10 @@ class I18nFacade implements I18nInterface
     protected function loadUsesAwords() : void
     {
         foreach ( $this->loadWordsQueue as $i => [ $awords, $groups, $langs ] ) {
-            $langs = $langs ?? [ $this->lang ];
+            $langs = $langs ?? [ $this->langCurrent ];
 
             foreach ( $langs as $lang ) {
-                $this->getLanguageFor($lang);
+                $this->getLanguage($lang);
             }
 
             $awordList = [];
@@ -995,7 +1005,7 @@ class I18nFacade implements I18nInterface
             $number = $numberList[ $i ];
 
             $poolItemLang = $poolItem->getLang();
-            $poolItemLanguage = $this->getLanguageFor($poolItemLang);
+            $poolItemLanguage = $this->getLanguage($poolItemLang);
             $poolItemChoice = $poolItemLanguage->getChoice();
 
             $n = $poolItemChoice->choice($number);
@@ -1109,7 +1119,7 @@ class I18nFacade implements I18nInterface
             $number = $_numbers[ $i ];
 
             $poolItemLang = $poolItem->getLang();
-            $poolItemLanguage = $this->getLanguageFor($poolItemLang);
+            $poolItemLanguage = $this->getLanguage($poolItemLang);
             $poolItemChoice = $poolItemLanguage->getChoice();
 
             $n = $poolItemChoice->choice($number);
@@ -1207,7 +1217,7 @@ class I18nFacade implements I18nInterface
 
         $this->loadUses();
 
-        $langs = $langs ?? [ $this->lang ];
+        $langs = $langs ?? [ $this->langCurrent ];
 
         $groups = $groups ?? $this->getGroupsLoaded($langs);
 

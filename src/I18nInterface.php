@@ -42,28 +42,33 @@ interface I18nInterface
     ) : array;
 
 
-    public function getLang() : string;
+    public function hasLang(string $lang) : bool;
+
+    public function getLangCurrent() : string;
 
     public function getLangDefault() : string;
 
     public function getLangForUrl(?string $lang = null) : ?string;
 
 
-    public function setLang(string $lang) : I18nInterface;
+    public function setLangCurrent(string $lang) : I18nInterface;
 
     public function setLangDefault(string $lang) : I18nInterface;
 
 
     /**
-     * @return I18nLanguageInterface[]
+     * @return array<string, I18nLanguageInterface>
      */
     public function getLanguages() : array;
 
-    public function getLanguage() : I18nLanguageInterface;
+
+    public function hasLanguage(string $lang, ?I18nLanguageInterface &$language = null) : bool;
+
+    public function getLanguage(string $lang) : I18nLanguageInterface;
+
+    public function getLanguageCurrent() : I18nLanguageInterface;
 
     public function getLanguageDefault() : I18nLanguageInterface;
-
-    public function getLanguageFor(string $lang) : ?I18nLanguageInterface;
 
 
     public function getLocale() : string;
