@@ -33,16 +33,13 @@ interface I18nInterface
         ?string $regexGroupName = null, string $regexBraces = '/', string $regexFlags = ''
     ) : ?string;
 
-    /**
-     * @return string[]
-     */
-    public function getLangsHtmlMetaHreflangLines(
-        string $stringPrefix = '', string $stringSuffix = '',
-        $url = '', $query = null, $fragment = null
-    ) : array;
 
+    public function hasLang(?string $lang) : bool;
 
-    public function hasLang(string $lang) : bool;
+    public function isLangCurrent(?string $lang) : bool;
+
+    public function isLangDefault(?string $lang) : bool;
+
 
     public function getLangCurrent() : string;
 

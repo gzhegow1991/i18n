@@ -40,12 +40,12 @@ class I18n
     }
 
 
-    public function getRepository() : I18nRepositoryInterface
+    public static function getRepository() : I18nRepositoryInterface
     {
         return static::$facade->getRepository();
     }
 
-    public function getPool() : I18nPoolInterface
+    public static function getPool() : I18nPoolInterface
     {
         return static::$facade->getPool();
     }
@@ -72,25 +72,22 @@ class I18n
         );
     }
 
-    /**
-     * @return string[]
-     */
-    public static function getLangsMetaHreflangForSeo(
-        string $stringPrefix = '', string $stringSuffix = '',
-        $url = '', $query = null, $fragment = null
-    ) : array
-    {
-        return static::$facade->getLangsHtmlMetaHreflangLines(
-            $stringPrefix, $stringSuffix,
-            $url, $query, $fragment
-        );
-    }
 
-
-    public function hasLang(string $lang) : bool
+    public static function hasLang(?string $lang) : bool
     {
         return static::$facade->hasLang($lang);
     }
+
+    public static function isLangCurrent(?string $lang) : bool
+    {
+        return static::$facade->isLangCurrent($lang);
+    }
+
+    public static function isLangDefault(?string $lang) : bool
+    {
+        return static::$facade->isLangDefault($lang);
+    }
+
 
     public static function getLangCurrent() : string
     {

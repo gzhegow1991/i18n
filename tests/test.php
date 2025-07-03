@@ -176,7 +176,7 @@ $test = $ffn->test($fn);
 $test->expectStdout('
 "TEST 1"
 
-NULL
+""
 "ru"
 ');
 $test->run();
@@ -192,6 +192,17 @@ $fn = function () use ($i18n, $ffn) {
     $result = $i18n->getLangsRegex();
     $ffn->print($result);
 
+    $result = $i18n->getLangsRegex('/', '');
+    $ffn->print($result);
+
+    $result = $i18n->getLangsRegex('', '/');
+    $ffn->print($result);
+
+    $result = $i18n->getLangsRegex('/', '/');
+    $ffn->print($result);
+
+    echo "\n";
+
     $result = $i18n->getLangsRegex(
         '', '',
         $regexGroupName = 'lang',
@@ -199,39 +210,17 @@ $fn = function () use ($i18n, $ffn) {
         $regexFlags = 'iu'
     );
     $ffn->print($result);
-
-    echo "\n";
-
-
-    $before = [
-        $_SERVER[ 'HTTP_HOST' ] ?? null,
-        $_SERVER[ 'REQUEST_URI' ] ?? null,
-    ];
-
-    $_SERVER[ 'HTTP_HOST' ] = 'localhost';
-    $_SERVER[ 'REQUEST_URI' ] = '/ru/hello-world';
-    $result = $i18n->getLangsHtmlMetaHreflangLines();
-    $ffn->print_array_multiline($result);
-
-    [
-        $_SERVER[ 'HTTP_HOST' ],
-        $_SERVER[ 'REQUEST_URI' ],
-    ] = $before;
 };
 $test = $ffn->test($fn);
 $test->expectStdout('
 "TEST 2"
 
 "/(?:(en|ru))/"
-"/(?:(?<lang>en|ru))/iu"
+"/(?:\/(en|ru))/"
+"/(?:(en|ru)\/)/"
+"/(?:\/(en|ru)\/)/"
 
-###
-[
-  "<link rel=\"alternate\" hreflang=\"en\" href=\"http://localhost/hello-world\" />",
-  "<link rel=\"alternate\" hreflang=\"ru\" href=\"http://localhost/ru/hello-world\" />",
-  "<link rel=\"alternate\" hreflang=\"x-default\" href=\"http://localhost/hello-world\" />"
-]
-###
+"/(?:(?<lang>en|ru))/iu"
 ');
 $test->run();
 
@@ -300,7 +289,7 @@ $test->expectStdout('
 "Привет"
 NULL
 "123"
-"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 284
+"[ CATCH ] This word is missing in the dictionary for languages: main.message.missing / ( ru ) / { object(stringable) # Gzhegow\I18n\Struct\I18nAword }" | "tests/test.php" | 273
 ');
 $test->run();
 

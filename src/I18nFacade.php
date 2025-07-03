@@ -254,56 +254,30 @@ class I18nFacade implements I18nInterface
         return $regex;
     }
 
-    /**
-     * @return string[]
-     */
-    public function getLangsHtmlMetaHreflangLines(
-        string $stringPrefix = '', string $stringSuffix = '',
-        $url = '', $query = null, $fragment = null
-    ) : array
-    {
-        $theUrl = Lib::url();
 
-        $regex = $this->getLangsRegex();
-
-        $link = $theUrl->link($url, $query, $fragment);
-
-        $split = preg_split($regex, $link, 2);
-        if (count($split) > 1) {
-            $link = implode('{{lang}}', $split);
-        }
-
-        $link = ltrim($link, '/');
-
-        $htmlLines = [];
-
-        $langUrlDefault = null;
-        foreach ( $this->languages as $lang => $language ) {
-            if ($this->langDefault === $lang) {
-                $langLink = str_replace('{{lang}}', "{$stringPrefix}{$stringSuffix}", $link);
-
-                $langUrl = $theUrl->url($langLink);
-                $langUrlDefault = $langUrl;
-
-            } else {
-                $langLink = str_replace('{{lang}}', "{$stringPrefix}{$lang}{$stringSuffix}", $link);
-
-                $langUrl = $theUrl->url("{$langLink}");
-            }
-
-            $htmlLines[] = '<link rel="alternate" hreflang="' . $lang . '" href="' . $langUrl . '" />';
-        }
-
-        $htmlLines[] = '<link rel="alternate" hreflang="x-default" href="' . $langUrlDefault . '" />';
-
-        return $htmlLines;
-    }
-
-
-    public function hasLang(string $lang) : bool
+    public function hasLang(?string $lang) : bool
     {
         return isset($this->languages[ $lang ]);
     }
+
+    public function isLangCurrent(?string $lang) : bool
+    {
+        if (null === $lang) {
+            return false;
+        }
+
+        return $this->langCurrent === $lang;
+    }
+
+    public function isLangDefault(?string $lang) : bool
+    {
+        if (null === $lang) {
+            return false;
+        }
+
+        return $this->langDefault === $lang;
+    }
+
 
     public function getLangCurrent() : string
     {
@@ -315,12 +289,12 @@ class I18nFacade implements I18nInterface
         return $this->langDefault;
     }
 
-    public function getLangForUrl(?string $lang = null) : ?string
+    public function getLangForUrl(?string $lang = null) : string
     {
         $lang = $lang ?? $this->langCurrent;
 
         $result = ($lang === $this->langDefault)
-            ? null
+            ? ''
             : $lang;
 
         return $result;
