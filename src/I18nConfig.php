@@ -338,12 +338,9 @@ class I18nConfig extends AbstractConfig
         // 'yav'         => [ 'yav', 'Latn', 'Yangben', 'Nuasue' ],
     ];
     /**
-     * @var array<string, I18nChoiceInterface|class-string<I18nChoiceInterface>>
+     * @var array<string, I18nChoiceInterface>
      */
-    protected $choices = [
-        'en' => DefaultChoice::class,
-        'ru' => RuChoice::class,
-    ];
+    protected $choices;
 
     /**
      * @var array<string, array<string, string[]>>
@@ -401,28 +398,12 @@ class I18nConfig extends AbstractConfig
 
     public function __construct()
     {
-        foreach ( $this->choices as $lang => $choice ) {
-            if ($choice instanceof I18nChoiceInterface) {
-                continue;
-
-            } elseif (true
-                && (is_string($choice))
-                && ('' !== $choice)
-                && (is_subclass_of($choice, I18nChoiceInterface::class))
-            ) {
-                $this->choices[ $lang ] = new $choice();
-
-            } else {
-                throw new LogicException(
-                    [
-                        'Each of `choices` should be class-string or instance of: ' . I18nChoiceInterface::class,
-                        //
-                        $choice,
-                        $lang,
-                    ]
-                );
-            }
-        }
+        $this->choices = null
+            ?? $this->choices
+            ?? [
+                'ru' => new RuChoice(),
+                'en' => new DefaultChoice(),
+            ];
 
         parent::__construct();
     }
