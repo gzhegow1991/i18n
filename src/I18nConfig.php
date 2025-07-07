@@ -338,11 +338,11 @@ class I18nConfig extends AbstractConfig
         // 'yav'         => [ 'yav', 'Latn', 'Yangben', 'Nuasue' ],
     ];
     /**
-     * @var array<string, I18nChoiceInterface>
+     * @var array<string, I18nChoiceInterface|class-string<I18nChoiceInterface>>
      */
     protected $choices = [
-        'en' => null,
-        'ru' => null,
+        'en' => DefaultChoice::class,
+        'ru' => RuChoice::class,
     ];
 
     /**
@@ -401,8 +401,28 @@ class I18nConfig extends AbstractConfig
 
     public function __construct()
     {
-        $this->choices[ 'en' ] = new DefaultChoice();
-        $this->choices[ 'ru' ] = new RuChoice();
+        foreach ( $this->choices as $lang => $choice ) {
+            if ($choice instanceof I18nChoiceInterface) {
+                continue;
+
+            } elseif (true
+                && (is_string($choice))
+                && ('' !== $choice)
+                && (is_subclass_of($choice, I18nChoiceInterface::class))
+            ) {
+                $this->choices[ $lang ] = new $choice();
+
+            } else {
+                throw new LogicException(
+                    [
+                        'Each of `choices` should be class-string or instance of: ' . I18nChoiceInterface::class,
+                        //
+                        $choice,
+                        $lang,
+                    ]
+                );
+            }
+        }
 
         parent::__construct();
     }
@@ -410,6 +430,8 @@ class I18nConfig extends AbstractConfig
 
     protected function validation(array &$context = []) : bool
     {
+        $theType = Lib::type();
+
         foreach ( $this->languages as $array ) {
             [
                 $locale,
@@ -418,7 +440,7 @@ class I18nConfig extends AbstractConfig
                 $titleNative,
             ] = $array;
 
-            if (null === Lib::parse()->string_not_empty($locale)) {
+            if (! $theType->string_not_empty($r, $locale)) {
                 throw new LogicException(
                     [
                         'The `locale` should be non-empty string',
@@ -428,7 +450,7 @@ class I18nConfig extends AbstractConfig
                 );
             }
 
-            if (null === Lib::parse()->string_not_empty($script)) {
+            if (! $theType->string_not_empty($r, $script)) {
                 throw new LogicException(
                     [
                         'The `script` should be non-empty string',
@@ -438,7 +460,7 @@ class I18nConfig extends AbstractConfig
                 );
             }
 
-            if (null === Lib::parse()->string_not_empty($titleEnglish)) {
+            if (! $theType->string_not_empty($r, $titleEnglish)) {
                 throw new LogicException(
                     [
                         'The `titleEnglish` should be non-empty string',
@@ -448,7 +470,7 @@ class I18nConfig extends AbstractConfig
                 );
             }
 
-            if (null === Lib::parse()->string_not_empty($titleNative)) {
+            if (! $theType->string_not_empty($r, $titleNative)) {
                 throw new LogicException(
                     [
                         'The `titleNative` should be non-empty string',
@@ -502,7 +524,7 @@ class I18nConfig extends AbstractConfig
                 while ( count($phpLocaleArr) ) {
                     $phpLocale = array_shift($phpLocaleArr);
 
-                    if (null === Lib::parse()->string_not_empty($phpLocale)) {
+                    if (! $theType->string_not_empty($r, $phpLocale)) {
                         throw new LogicException(
                             [
                                 'The `phpLocale` should be non-empty string',
