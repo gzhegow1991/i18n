@@ -4,9 +4,10 @@
  * @noinspection PhpUndefinedClassInspection
  */
 
-namespace Gzhegow\I18n;
+namespace Gzhegow\I18n\Config;
 
 use Gzhegow\Lib\Lib;
+use Gzhegow\I18n\I18n;
 use Gzhegow\I18n\Choice\RuChoice;
 use Gzhegow\Lib\Config\AbstractConfig;
 use Gzhegow\I18n\Choice\DefaultChoice;
@@ -15,6 +16,8 @@ use Gzhegow\I18n\Choice\I18nChoiceInterface;
 
 
 /**
+ * @property bool                                   $isDebug
+ *
  * @property array<string, array{
  *     0: string,
  *     1: string,
@@ -25,7 +28,7 @@ use Gzhegow\I18n\Choice\I18nChoiceInterface;
  *
  * @property array<string, array<string, string[]>> $phpLocales
  *
- * @property string                                 $lang
+ * @property string                                 $langCurrent
  * @property string                                 $langDefault
  *
  * @property \Psr\Log\LoggerInterface               $logger
@@ -33,6 +36,11 @@ use Gzhegow\I18n\Choice\I18nChoiceInterface;
  */
 class I18nConfig extends AbstractConfig
 {
+    /**
+     * @var bool
+     */
+    protected $isDebug = false;
+
     /**
      * @var array<string, array{
      *      0: string,
@@ -373,7 +381,7 @@ class I18nConfig extends AbstractConfig
     /**
      * @var string
      */
-    protected $lang;
+    protected $langCurrent;
     /**
      * @var string
      */
@@ -543,13 +551,13 @@ class I18nConfig extends AbstractConfig
             }
         }
 
-        if (null !== $this->lang) {
-            if (! isset($this->languages[ $this->lang ])) {
+        if (null !== $this->langCurrent) {
+            if (! isset($this->languages[ $this->langCurrent ])) {
                 throw new LogicException(
                     [
                         'The `lang` should be existing language',
                         //
-                        $this->lang,
+                        $this->langCurrent,
                         $this,
                     ]
                 );

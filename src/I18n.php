@@ -1,11 +1,14 @@
 <?php
+
 /**
- * @noinspection PhpUndefinedNamespaceInspection
+ * @noinspection PhpFullyQualifiedNameUsageInspection
  * @noinspection PhpUndefinedClassInspection
+ * @noinspection PhpUndefinedNamespaceInspection
  */
 
 namespace Gzhegow\I18n;
 
+use Gzhegow\I18n\Store\I18nStore;
 use Gzhegow\I18n\Pool\I18nPoolInterface;
 use Gzhegow\I18n\Struct\I18nLangInterface;
 use Gzhegow\I18n\Struct\I18nAwordInterface;
@@ -45,9 +48,16 @@ class I18n
         return static::$facade->getRepository();
     }
 
+
     public static function getPool() : I18nPoolInterface
     {
         return static::$facade->getPool();
+    }
+
+
+    public static function getStore() : I18nStore
+    {
+        return static::$facade->getStore();
     }
 
 
@@ -94,25 +104,40 @@ class I18n
         return static::$facade->getLangCurrent();
     }
 
+    /**
+     * @return I18nInterface
+     */
+    public static function setLangCurrent(string $lang)
+    {
+        return static::$facade->setLangCurrent($lang);
+    }
+
+    /**
+     * @return I18nInterface
+     */
+    public function setFnOnSetLangCurrent(?\Closure $fnOnSetLangCurrent)
+    {
+        return static::$facade->setFnOnSetLangCurrent($fnOnSetLangCurrent);
+    }
+
+
     public static function getLangDefault() : string
     {
         return static::$facade->getLangDefault();
     }
 
+    /**
+     * @return I18nInterface
+     */
+    public static function setLangDefault(string $lang)
+    {
+        return static::$facade->setLangDefault($lang);
+    }
+
+
     public static function getLangForUrl(?string $lang = null) : ?string
     {
         return static::$facade->getLangForUrl($lang);
-    }
-
-
-    public static function setLangCurrent(string $lang) : I18nInterface
-    {
-        return static::$facade->setLangCurrent($lang);
-    }
-
-    public static function setLangDefault(string $lang) : I18nInterface
-    {
-        return static::$facade->setLangDefault($lang);
     }
 
 
@@ -181,27 +206,42 @@ class I18n
     }
 
 
-    public static function resetUses() : I18nInterface
+    /**
+     * @return I18nInterface
+     */
+    public static function resetUsesQueue()
     {
-        return static::$facade->resetUses();
+        return static::$facade->resetUsesQueue();
     }
 
-    public static function useAwords(array $awords, ?array $groups = null, ?array $langs = null) : I18nInterface
+    /**
+     * @return I18nInterface
+     */
+    public static function resetUsesState(?bool $withQueue = null)
+    {
+        return static::$facade->resetUsesState($withQueue);
+    }
+
+    /**
+     * @return I18nInterface
+     */
+    public static function useAwords(array $awords, ?array $groups = null, ?array $langs = null)
     {
         return static::$facade->useAwords($awords, $groups, $langs);
     }
 
-    public static function useGroups(array $groups, ?string $lang = null) : I18nInterface
+    /**
+     * @return I18nInterface
+     */
+    public static function useGroups(array $groups, ?string $lang = null)
     {
         return static::$facade->useGroups($groups, $lang);
     }
 
-    public static function clearUsesLoaded() : I18nInterface
-    {
-        return static::$facade->clearUsesLoaded();
-    }
-
-    public static function loadUses() : I18nInterface
+    /**
+     * @return I18nInterface
+     */
+    public static function loadUses()
     {
         return static::$facade->loadUses();
     }

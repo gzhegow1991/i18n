@@ -132,8 +132,8 @@ $repositoryPhp = new \Gzhegow\I18n\Repository\File\PhpFileRepository($langDir);
 // $repositoryYaml = new \Gzhegow\I18n\Repo\File\YamlFileRepository($langDir);
 
 // > создаем конфигурацию
-$config = new \Gzhegow\I18n\I18nConfig();
-$config->configure(function (\Gzhegow\I18n\I18nConfig $config) {
+$config = new \Gzhegow\I18n\Config\I18nConfig();
+$config->configure(function (\Gzhegow\I18n\Config\I18nConfig $config) {
     // > посмотрите на класс конфига, чтобы увидеть примеры заполнения
 
     // > можно добавить другие поддерживаемые языки
@@ -174,7 +174,7 @@ $config->configure(function (\Gzhegow\I18n\I18nConfig $config) {
     // $config->choices['ru'] = new \Gzhegow\I18n\Choice\RuChoice();
 
     // > устанавливаем язык (текущий)
-    $config->lang = 'ru';
+    $config->langCurrent = 'ru';
 
     // > устанавливаем язык (по-умолчанию) - фразы из этого языка будут выдаваться, если на текущем языке текста нет
     $config->langDefault = 'en';
@@ -310,7 +310,7 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLangCurrent('ru');
 
-    $i18n->clearUsesLoaded();
+    $i18n->resetUsesState();
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->phrase('@main.message.hello');
@@ -358,7 +358,7 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLangCurrent('ru');
 
-    $i18n->clearUsesLoaded();
+    $i18n->resetUsesState();
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->phrases(
@@ -397,7 +397,7 @@ $fn = function () use ($i18n, $ffn) {
     $i18n->setLangCurrent('en');
     $i18n->setLangDefault('ru');
 
-    $i18n->clearUsesLoaded();
+    $i18n->resetUsesState();
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->phrase('@main.title.apple_only_russian', [ null ]);
@@ -429,7 +429,7 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLangCurrent('en');
 
-    $i18n->clearUsesLoaded();
+    $i18n->resetUsesState();
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->choice(1, '@main.title.apple');
@@ -498,7 +498,7 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLangCurrent('ru');
 
-    $i18n->clearUsesLoaded();
+    $i18n->resetUsesState();
     $i18n->useGroups([ 'main' ]);
 
     $result = $i18n->choice(1, '@main.title.apple');
@@ -596,7 +596,7 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLangCurrent('en');
 
-    $i18n->clearUsesLoaded();
+    $i18n->resetUsesState();
     $i18n->useGroups([ 'main' ]);
     $i18n->loadUses();
 
@@ -646,7 +646,7 @@ $fn = function () use ($i18n, $ffn) {
 
     $i18n->setLangCurrent('en');
 
-    $i18n->clearUsesLoaded();
+    $i18n->resetUsesState();
     $i18n->useGroups([ 'main' ]);
     $i18n->loadUses();
 

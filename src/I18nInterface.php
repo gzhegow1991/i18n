@@ -1,11 +1,14 @@
 <?php
+
 /**
- * @noinspection PhpUndefinedNamespaceInspection
+ * @noinspection PhpFullyQualifiedNameUsageInspection
  * @noinspection PhpUndefinedClassInspection
+ * @noinspection PhpUndefinedNamespaceInspection
  */
 
 namespace Gzhegow\I18n;
 
+use Gzhegow\I18n\Store\I18nStore;
 use Gzhegow\I18n\Pool\I18nPoolInterface;
 use Gzhegow\I18n\Struct\I18nLangInterface;
 use Gzhegow\I18n\Struct\I18nAwordInterface;
@@ -20,7 +23,11 @@ interface I18nInterface
 {
     public function getRepository() : I18nRepositoryInterface;
 
+
     public function getPool() : I18nPoolInterface;
+
+
+    public function getStore() : I18nStore;
 
 
     /**
@@ -43,14 +50,26 @@ interface I18nInterface
 
     public function getLangCurrent() : string;
 
+    /**
+     * @return static
+     */
+    public function setLangCurrent(string $lang);
+
+    /**
+     * @return static
+     */
+    public function setFnOnSetLangCurrent(?\Closure $fnOnSetLangCurrent);
+
+
     public function getLangDefault() : string;
 
+    /**
+     * @return static
+     */
+    public function setLangDefault(string $lang);
+
+
     public function getLangForUrl(?string $lang = null) : ?string;
-
-
-    public function setLangCurrent(string $lang) : I18nInterface;
-
-    public function setLangDefault(string $lang) : I18nInterface;
 
 
     /**
@@ -88,15 +107,30 @@ interface I18nInterface
     public function setLoggables(array $loggables) : array;
 
 
-    public function resetUses() : I18nInterface;
+    /**
+     * @return static
+     */
+    public function resetUsesQueue();
 
-    public function useAwords(array $awords, ?array $groups = null, ?array $langs = null) : I18nInterface;
+    /**
+     * @return static
+     */
+    public function resetUsesState(?bool $withQueue = null);
 
-    public function useGroups(array $groups, ?string $lang = null) : I18nInterface;
+    /**
+     * @return static
+     */
+    public function useAwords(array $awords, ?array $groups = null, ?array $langs = null);
 
-    public function clearUsesLoaded() : I18nInterface;
+    /**
+     * @return static
+     */
+    public function useGroups(array $groups, ?string $lang = null);
 
-    public function loadUses() : I18nInterface;
+    /**
+     * @return static
+     */
+    public function loadUses();
 
 
     /**

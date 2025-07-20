@@ -1,7 +1,9 @@
 <?php
+
 /**
- * @noinspection PhpUndefinedNamespaceInspection
+ * @noinspection PhpFullyQualifiedNameUsageInspection
  * @noinspection PhpUndefinedClassInspection
+ * @noinspection PhpUndefinedNamespaceInspection
  */
 
 namespace Gzhegow\I18n;
@@ -9,8 +11,10 @@ namespace Gzhegow\I18n;
 use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Type\I18nType;
 use Gzhegow\I18n\Struct\I18nLang;
+use Gzhegow\I18n\Store\I18nStore;
 use Gzhegow\I18n\Struct\I18nAword;
 use Gzhegow\I18n\Struct\I18nGroup;
+use Gzhegow\I18n\Config\I18nConfig;
 use Gzhegow\I18n\Pool\I18nPoolInterface;
 use Gzhegow\I18n\Struct\I18nLangInterface;
 use Gzhegow\I18n\Exception\LogicException;
@@ -28,33 +32,25 @@ class I18nFacade implements I18nInterface
      * @var I18nFactoryInterface
      */
     protected $factory;
+
     /**
      * @var I18nRepositoryInterface
      */
     protected $repository;
+
     /**
      * @var I18nConfig
      */
     protected $config;
 
     /**
+     * @var I18nStore
+     */
+    protected $store;
+    /**
      * @var I18nPoolInterface
      */
     protected $pool;
-
-    /**
-     * @var array<string, I18nLanguageInterface>
-     */
-    protected $languages = [];
-
-    /**
-     * @var string
-     */
-    protected $langCurrent;
-    /**
-     * @var string
-     */
-    protected $langDefault;
 
     /**
      * @var array{0: string[], 1: string}
@@ -90,6 +86,15 @@ class I18nFacade implements I18nInterface
         I18n::E_WRONG_AWORD     => 0,
     ];
 
+    /**
+     * @var \Closure|null
+     */
+    protected $fnOnSetLangCurrent;
+    /**
+     * @var bool
+     */
+    protected $lockFnOnSetLangCurrent = false;
+
 
     public function __construct(
         I18nFactoryInterface $factory,
@@ -102,12 +107,15 @@ class I18nFacade implements I18nInterface
         $this->factory = $factory;
         $this->repository = $repository;
 
-        $this->config = $config;
-        $this->config->validate();
-
         $this->pool = $this->factory->newPool();
 
+        $this->store = $this->factory->newStore();
+
+        $this->config = $config;
+        $this->config->validate();
         $this->initializeConfig();
+
+        $this->store->isDebug = $this->config->isDebug;
     }
 
 
@@ -120,7 +128,7 @@ class I18nFacade implements I18nInterface
         $choices = $this->config->choices ?? [];
         $phpLocales = $this->config->phpLocales ?? [];
 
-        $lang = $this->config->lang ?? null;
+        $lang = $this->config->langCurrent ?? null;
         $langDefault = $this->config->langDefault ?? null;
 
         $logger = $this->config->logger ?? null;
@@ -146,7 +154,7 @@ class I18nFacade implements I18nInterface
             $languageObject->setPhpLocales($phpLocales[ $langString ]);
             $languageObject->setChoice($choices[ $langString ]);
 
-            $this->languages[ $langString ] = $languageObject;
+            $this->store->languages[ $langString ] = $languageObject;
         }
 
         if ($lang) {
@@ -174,9 +182,16 @@ class I18nFacade implements I18nInterface
         return $this->repository;
     }
 
+
     public function getPool() : I18nPoolInterface
     {
         return $this->pool;
+    }
+
+
+    public function getStore() : I18nStore
+    {
+        return $this->store;
     }
 
 
@@ -185,7 +200,7 @@ class I18nFacade implements I18nInterface
      */
     public function getLangs() : array
     {
-        return array_keys($this->languages);
+        return array_keys($this->store->languages);
     }
 
     public function getLangsRegex(
@@ -214,7 +229,7 @@ class I18nFacade implements I18nInterface
         }
 
         $regex = [];
-        foreach ( $this->languages as $lang => $language ) {
+        foreach ( $this->store->languages as $lang => $language ) {
             $regex[] = preg_quote($lang, $regexBraces[ 0 ] ?? '/');
         }
 
@@ -257,7 +272,7 @@ class I18nFacade implements I18nInterface
 
     public function hasLang(?string $lang) : bool
     {
-        return isset($this->languages[ $lang ]);
+        return isset($this->store->languages[ $lang ]);
     }
 
     public function isLangCurrent(?string $lang) : bool
@@ -266,7 +281,7 @@ class I18nFacade implements I18nInterface
             return false;
         }
 
-        return $this->langCurrent === $lang;
+        return $this->store->langCurrent === $lang;
     }
 
     public function isLangDefault(?string $lang) : bool
@@ -275,35 +290,27 @@ class I18nFacade implements I18nInterface
             return false;
         }
 
-        return $this->langDefault === $lang;
+        return $this->store->langDefault === $lang;
     }
 
 
     public function getLangCurrent() : string
     {
-        return $this->langCurrent;
+        return $this->store->langCurrent;
     }
 
-    public function getLangDefault() : string
+    /**
+     * @return static
+     */
+    public function setLangCurrent(string $lang)
     {
-        return $this->langDefault;
-    }
+        if ($this->lockFnOnSetLangCurrent) {
+            throw new RuntimeException(
+                [ 'Unable to call ' . __FUNCTION__ . ' if `lockFnOnSetLangCurrent` is TRUE' ]
+            );
+        }
 
-    public function getLangForUrl(?string $lang = null) : string
-    {
-        $lang = $lang ?? $this->langCurrent;
-
-        $result = ($lang === $this->langDefault)
-            ? ''
-            : $lang;
-
-        return $result;
-    }
-
-
-    public function setLangCurrent(string $lang) : I18nInterface
-    {
-        if ($lang === $this->langCurrent) {
+        if ($lang === $this->store->langCurrent) {
             return $this;
         }
 
@@ -311,7 +318,7 @@ class I18nFacade implements I18nInterface
 
         $langString = $language->getLang();
 
-        $this->langCurrent = $langString;
+        $this->store->langCurrent = $langString;
 
         if ($phpLocales = $language->hasPhpLocales()) {
             foreach ( $phpLocales as $category => $locales ) {
@@ -340,18 +347,59 @@ class I18nFacade implements I18nInterface
             }
         }
 
+        if (null !== $this->fnOnSetLangCurrent) {
+            $this->lockFnOnSetLangCurrent = true;
+
+            $fn = $this->fnOnSetLangCurrent;
+
+            $fn($langString, $this);
+
+            $this->lockFnOnSetLangCurrent = false;
+        }
+
         return $this;
     }
 
-    public function setLangDefault(string $lang) : I18nInterface
+    /**
+     * @return static
+     */
+    public function setFnOnSetLangCurrent(?\Closure $fnOnSetLangCurrent)
+    {
+        $this->fnOnSetLangCurrent = $fnOnSetLangCurrent;
+
+        return $this;
+    }
+
+
+    public function getLangDefault() : string
+    {
+        return $this->store->langDefault;
+    }
+
+    /**
+     * @return static
+     */
+    public function setLangDefault(string $lang)
     {
         $language = $this->getLanguage($lang);
 
         $langDefaultString = $language->getLang();
 
-        $this->langDefault = $langDefaultString;
+        $this->store->langDefault = $langDefaultString;
 
         return $this;
+    }
+
+
+    public function getLangForUrl(?string $lang = null) : string
+    {
+        $lang = $lang ?? $this->store->langCurrent;
+
+        $result = ($lang === $this->store->langDefault)
+            ? ''
+            : $lang;
+
+        return $result;
     }
 
 
@@ -360,7 +408,7 @@ class I18nFacade implements I18nInterface
      */
     public function getLanguages() : array
     {
-        return $this->languages;
+        return $this->store->languages;
     }
 
 
@@ -368,8 +416,8 @@ class I18nFacade implements I18nInterface
     {
         $language = null;
 
-        if (isset($this->languages[ $lang ])) {
-            $language = $this->languages[ $lang ];
+        if (isset($this->store->languages[ $lang ])) {
+            $language = $this->store->languages[ $lang ];
 
             return true;
         }
@@ -379,29 +427,29 @@ class I18nFacade implements I18nInterface
 
     public function getLanguage(string $lang) : I18nLanguageInterface
     {
-        return $this->languages[ $lang ];
+        return $this->store->languages[ $lang ];
     }
 
 
     public function getLanguageCurrent() : I18nLanguageInterface
     {
-        return $this->getLanguage($this->langCurrent);
+        return $this->getLanguage($this->store->langCurrent);
     }
 
     public function getLanguageDefault() : I18nLanguageInterface
     {
-        return $this->getLanguage($this->langDefault);
+        return $this->getLanguage($this->store->langDefault);
     }
 
 
     public function getLocale() : string
     {
-        return $this->getLocaleFor($this->langCurrent);
+        return $this->getLocaleFor($this->store->langCurrent);
     }
 
     public function getLocaleDefault() : string
     {
-        return $this->getLocaleFor($this->langDefault);
+        return $this->getLocaleFor($this->store->langDefault);
     }
 
     public function getLocaleFor(string $lang) : ?string
@@ -423,6 +471,8 @@ class I18nFacade implements I18nInterface
      */
     public function setLogger($logger)
     {
+        $last = $this->logger;
+
         if (null !== $logger) {
             if (! is_a($logger, $class = '\Psr\Log\LoggerInterface')) {
                 throw new LogicException(
@@ -431,11 +481,9 @@ class I18nFacade implements I18nInterface
             }
         }
 
-        $loggerCurrent = $this->logger;
-
         $this->logger = $logger;
 
-        return $loggerCurrent;
+        return $last;
     }
 
     /**
@@ -443,18 +491,23 @@ class I18nFacade implements I18nInterface
      */
     public function setLoggables(array $loggables) : array
     {
-        $loggablesCurrent = $this->loggables;
+        $theParse = Lib::parse();
+
+        $last = $this->loggables;
 
         $this->loggables = [];
-        $this->loggables[ I18n::E_FORGOTTEN_GROUP ] = $loggables[ I18n::E_FORGOTTEN_GROUP ] ?? null;
-        $this->loggables[ I18n::E_MISSING_WORD ] = $loggables[ I18n::E_MISSING_WORD ] ?? null;
-        $this->loggables[ I18n::E_WRONG_AWORD ] = $loggables[ I18n::E_WRONG_AWORD ] ?? null;
+        $this->loggables[ I18n::E_FORGOTTEN_GROUP ] = $theParse->int_non_negative($loggables[ I18n::E_FORGOTTEN_GROUP ] ?? null) ?? 0;
+        $this->loggables[ I18n::E_MISSING_WORD ] = $theParse->int_non_negative($loggables[ I18n::E_MISSING_WORD ] ?? null) ?? 0;
+        $this->loggables[ I18n::E_WRONG_AWORD ] = $theParse->int_non_negative($loggables[ I18n::E_WRONG_AWORD ] ?? null) ?? 0;
 
-        return $loggablesCurrent;
+        return $last;
     }
 
 
-    public function resetUses() : I18nInterface
+    /**
+     * @return static
+     */
+    public function resetUsesQueue()
     {
         $this->loadGroupsQueue = [];
         $this->loadWordsQueue = [];
@@ -462,7 +515,31 @@ class I18nFacade implements I18nInterface
         return $this;
     }
 
-    public function useAwords(array $awords, ?array $groups = null, ?array $langs = null) : I18nInterface
+    /**
+     * @return static
+     */
+    public function resetUsesState(?bool $withQueue = null)
+    {
+        $withQueue = $withQueue ?? false;
+
+        if ($withQueue) {
+            $this->resetUsesQueue();
+        }
+
+        $this->loadedGroupsLangs = [];
+
+        $this->loadedGroupLangIndex = [];
+        $this->loadedLangGroupIndex = [];
+
+        $this->pool->clear();
+
+        return $this;
+    }
+
+    /**
+     * @return static
+     */
+    public function useAwords(array $awords, ?array $groups = null, ?array $langs = null)
     {
         if (! $awords) {
             throw new LogicException(
@@ -478,7 +555,13 @@ class I18nFacade implements I18nInterface
         return $this;
     }
 
-    public function useGroups(array $groups, ?string $lang = null) : I18nInterface
+    /**
+     * @param array       $groups
+     * @param string|null $lang
+     *
+     * @return static
+     */
+    public function useGroups(array $groups, ?string $lang = null)
     {
         if (! $groups) {
             throw new LogicException(
@@ -494,23 +577,10 @@ class I18nFacade implements I18nInterface
         return $this;
     }
 
-
-    public function clearUsesLoaded() : I18nInterface
-    {
-        $this->loadGroupsQueue = [];
-        $this->loadWordsQueue = [];
-
-        $this->loadedGroupsLangs = [];
-
-        $this->loadedGroupLangIndex = [];
-        $this->loadedLangGroupIndex = [];
-
-        $this->pool->clear();
-
-        return $this;
-    }
-
-    public function loadUses() : I18nInterface
+    /**
+     * @return static
+     */
+    public function loadUses()
     {
         $this->loadUsesGroups();
         $this->loadUsesAwords();
@@ -518,10 +588,11 @@ class I18nFacade implements I18nInterface
         return $this;
     }
 
+
     protected function loadUsesGroups() : void
     {
         foreach ( $this->loadGroupsQueue as $i => [ $groups, $lang ] ) {
-            $lang = $lang ?? $this->langCurrent;
+            $lang = $lang ?? $this->store->langCurrent;
 
             $this->getLanguage($lang);
 
@@ -565,7 +636,7 @@ class I18nFacade implements I18nInterface
     protected function loadUsesAwords() : void
     {
         foreach ( $this->loadWordsQueue as $i => [ $awords, $groups, $langs ] ) {
-            $langs = $langs ?? [ $this->langCurrent ];
+            $langs = $langs ?? [ $this->store->langCurrent ];
 
             foreach ( $langs as $lang ) {
                 $this->getLanguage($lang);
@@ -1195,7 +1266,7 @@ class I18nFacade implements I18nInterface
 
         $this->loadUses();
 
-        $langs = $langs ?? [ $this->langCurrent ];
+        $langs = $langs ?? [ $this->store->langCurrent ];
 
         $groups = $groups ?? $this->getGroupsLoaded($langs);
 
@@ -1309,10 +1380,14 @@ class I18nFacade implements I18nInterface
             $awordsLangDefault = array_intersect_key($awords, $errors);
             $groupsLangDefault = $this->getGroupsLoaded($langs);
 
-            $this->useGroups($groupsLangDefault, $this->langDefault);
+            $this->useGroups($groupsLangDefault, $this->store->langDefault);
             $this->loadUses();
 
-            [ , $itemsDefault ] = $this->get($awordsLangDefault, $groupsLangDefault, [ $this->langDefault ]);
+            [ , $itemsDefault ] = $this->get(
+                $awordsLangDefault,
+                $groupsLangDefault,
+                [ $this->store->langDefault ]
+            );
 
             foreach ( $itemsDefault as $i => $item ) {
                 unset($errors[ $i ]);
