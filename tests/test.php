@@ -409,7 +409,7 @@ $fn = function () use ($i18n, $ffn) {
     $langDefaultBefore = $i18n->setLangDefault('ru');
     $langCurrentBefore = $i18n->setLangCurrent('en');
 
-    $i18n->resetPool();
+    $i18n->resetUses();
     $i18n->useGroups([ 'main' ]);
     $i18n->loadUses();
 
@@ -546,12 +546,14 @@ $fn = function () use ($i18n, $ffn) {
     $ffn->print('TEST 7');
     echo PHP_EOL;
 
-    $langBefore = $i18n->getLangCurrent();
+    $langDefaultBefore = $i18n->setLangDefault('en');
+    $langCurrentBefore = $i18n->setLangCurrent('ru');
 
-    $i18n->setLangCurrent('ru');
-
-    $i18n->resetPool();
+    $i18n->resetUses();
     $i18n->useGroups([ 'main' ]);
+
+    // > загрузка групп и слов из очереди будет вызвана при запросе фразы
+    // $i18n->loadUses();
 
     $result = $i18n->phrase('@main.message.hello');
     $ffn->print($result);
@@ -574,7 +576,8 @@ $fn = function () use ($i18n, $ffn) {
         );
     }
 
-    $i18n->setLangCurrent($langBefore);
+    $i18n->setLangCurrent($langCurrentBefore);
+    $i18n->setLangDefault($langDefaultBefore);
 };
 $test = $ffn->test($fn);
 $test->expectStdout('
@@ -598,8 +601,11 @@ $fn = function () use ($i18n, $ffn) {
     $langDefaultBefore = $i18n->setLangDefault('en');
     $langCurrentBefore = $i18n->setLangCurrent('ru');
 
-    $i18n->resetPool();
+    $i18n->resetUses();
     $i18n->useGroups([ 'main' ]);
+
+    // > загрузка групп и слов из очереди будет вызвана при запросе фразы
+    // $i18n->loadUses();
 
     $result = $i18n->phrases(
         $awords = [
@@ -635,8 +641,11 @@ $fn = function () use ($i18n, $ffn) {
     $langDefaultBefore = $i18n->setLangDefault('ru');
     $langCurrentBefore = $i18n->setLangCurrent('en');
 
-    $i18n->resetPool();
+    $i18n->resetUses();
     $i18n->useGroups([ 'main' ]);
+
+    // > загрузка групп и слов из очереди будет вызвана при запросе фразы
+    // $i18n->loadUses();
 
     $result = $i18n->phrase('@main.title.apple_only_russian', [ null ]);
     $ffn->print($result);
@@ -666,8 +675,11 @@ $fn = function () use ($i18n, $ffn) {
     $langDefaultBefore = $i18n->setLangDefault('ru');
     $langCurrentBefore = $i18n->setLangCurrent('en');
 
-    $i18n->resetPool();
+    $i18n->resetUses();
     $i18n->useGroups([ 'main' ]);
+
+    // > загрузка групп и слов из очереди будет вызвана при запросе фразы
+    // $i18n->loadUses();
 
     $result = $i18n->choice(1, '@main.title.apple');
     $ffn->print($result);
@@ -732,13 +744,14 @@ $fn = function () use ($i18n, $ffn) {
     $ffn->print('TEST 11');
     echo PHP_EOL;
 
-    $langBefore = $i18n->getLangCurrent();
-
     $langDefaultBefore = $i18n->setLangDefault('en');
     $langCurrentBefore = $i18n->setLangCurrent('ru');
 
-    $i18n->resetPool();
+    $i18n->resetUses();
     $i18n->useGroups([ 'main' ]);
+
+    // > загрузка групп и слов из очереди будет вызвана при запросе фразы
+    // $i18n->loadUses();
 
     $result = $i18n->choice(1, '@main.title.apple');
     $ffn->print($result);
