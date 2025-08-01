@@ -9,32 +9,37 @@
 namespace Gzhegow\I18n;
 
 use Gzhegow\I18n\Store\I18nStore;
+use Gzhegow\I18n\Config\I18nConfig;
 use Gzhegow\I18n\Pool\I18nPoolInterface;
 use Gzhegow\I18n\Struct\I18nLangInterface;
 use Gzhegow\I18n\Struct\I18nAwordInterface;
 use Gzhegow\I18n\Struct\I18nGroupInterface;
-use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
 use Gzhegow\I18n\Language\I18nLanguageInterface;
 use Gzhegow\I18n\Repository\I18nRepositoryInterface;
+use Gzhegow\I18n\Pool\PoolItem\I18nPoolItemInterface;
+use Gzhegow\I18n\Interpolator\I18nInterpolatorInterface;
 
 
 class I18n
 {
     const AWORD_PREFIX = '@';
 
-    const WORD_SEPARATOR = '.';
+    const WORD_SEPARATOR  = '.';
+    const INDEX_SEPARATOR = '|';
 
     const PLACEHOLDER_BRACES = [ '[:', ':]' ];
 
-    const E_WRONG_AWORD     = 1 << 0;
-    const E_FORGOTTEN_GROUP = 1 << 1;
-    const E_MISSING_WORD    = 1 << 2;
+    const E_EXCLUDED_GROUP  = 1;
+    const E_FORGOTTEN_GROUP = 2;
+    const E_MISSING_WORD    = 3;
+    const E_WRONG_AWORD     = 4;
 
     const E_LIST = [
-        self::E_WRONG_AWORD     => 'E_WRONG_AWORD',
+        self::E_EXCLUDED_GROUP  => 'E_EXCLUDED_GROUP',
         self::E_FORGOTTEN_GROUP => 'E_FORGOTTEN_GROUP',
         self::E_MISSING_WORD    => 'E_MISSING_WORD',
+        self::E_WRONG_AWORD     => 'E_WRONG_AWORD',
     ];
 
 
@@ -43,15 +48,32 @@ class I18n
     }
 
 
-    public static function getRepository() : I18nRepositoryInterface
+    public static function getConfig() : I18nConfig
     {
-        return static::$facade->getRepository();
+        return static::$facade->getConfig();
+    }
+
+
+    public static function getFactory() : I18nFactoryInterface
+    {
+        return static::$facade->getFactory();
     }
 
 
     public static function getPool() : I18nPoolInterface
     {
         return static::$facade->getPool();
+    }
+
+    public static function getRepository() : I18nRepositoryInterface
+    {
+        return static::$facade->getRepository();
+    }
+
+
+    public static function getInterpolator() : I18nInterpolatorInterface
+    {
+        return static::$facade->getInterpolator();
     }
 
 
@@ -69,7 +91,8 @@ class I18n
         return static::$facade->getLangs();
     }
 
-    public static function getLangsRegexForRoute(
+
+    public static function getLangsRegex(
         string $stringPrefix = '', string $stringSuffix = '',
         ?string $regexGroupName = null,
         string $regexBraces = '/',
@@ -104,10 +127,7 @@ class I18n
         return static::$facade->getLangCurrent();
     }
 
-    /**
-     * @return I18nInterface
-     */
-    public static function setLangCurrent(string $lang)
+    public static function setLangCurrent(string $lang) : string
     {
         return static::$facade->setLangCurrent($lang);
     }
@@ -115,7 +135,7 @@ class I18n
     /**
      * @return I18nInterface
      */
-    public function setFnOnSetLangCurrent(?\Closure $fnOnSetLangCurrent)
+    public static function setFnOnSetLangCurrent(?\Closure $fnOnSetLangCurrent)
     {
         return static::$facade->setFnOnSetLangCurrent($fnOnSetLangCurrent);
     }
@@ -126,18 +146,20 @@ class I18n
         return static::$facade->getLangDefault();
     }
 
-    /**
-     * @return I18nInterface
-     */
-    public static function setLangDefault(string $lang)
+    public static function setLangDefault(string $lang) : string
     {
         return static::$facade->setLangDefault($lang);
     }
 
 
-    public static function getLangForUrl(?string $lang = null) : ?string
+    public static function getLangUrlFor(string $lang) : string
     {
-        return static::$facade->getLangForUrl($lang);
+        return static::$facade->getLangUrlFor($lang);
+    }
+
+    public static function getLangUrlCurrent() : string
+    {
+        return static::$facade->getLangUrlCurrent();
     }
 
 
@@ -171,9 +193,9 @@ class I18n
     }
 
 
-    public static function getLocale() : string
+    public static function getLocaleCurrent() : string
     {
-        return static::$facade->getLocale();
+        return static::$facade->getLocaleCurrent();
     }
 
     public static function getLocaleDefault() : string
@@ -209,17 +231,25 @@ class I18n
     /**
      * @return I18nInterface
      */
-    public static function resetUsesQueue()
+    public static function resetUses()
     {
-        return static::$facade->resetUsesQueue();
+        return static::$facade->resetUses();
     }
 
     /**
      * @return I18nInterface
      */
-    public static function resetUsesState(?bool $withQueue = null)
+    public static function resetQueue()
     {
-        return static::$facade->resetUsesState($withQueue);
+        return static::$facade->resetQueue();
+    }
+
+    /**
+     * @return I18nInterface
+     */
+    public static function resetPool()
+    {
+        return static::$facade->resetPool();
     }
 
     /**
@@ -237,6 +267,7 @@ class I18n
     {
         return static::$facade->useGroups($groups, $lang);
     }
+
 
     /**
      * @return I18nInterface
@@ -395,7 +426,7 @@ class I18n
         ?array $groups = null, ?array $langs = null
     ) : array
     {
-        return static::$facade->choicesOrDefault(
+        return static::$facade->choices(
             $numbers, $awords, $fallbacks,
             $placeholders,
             $groups, $langs

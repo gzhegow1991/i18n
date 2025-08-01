@@ -2,22 +2,32 @@
 
 namespace Gzhegow\I18n\Struct;
 
-interface I18nAwordInterface
+use Gzhegow\Lib\Modules\Php\Interfaces\ToArrayInterface;
+use Gzhegow\Lib\Modules\Php\Interfaces\ToStringInterface;
+
+
+interface I18nAwordInterface extends
+    ToArrayInterface,
+    ToStringInterface
 {
     public function getValue() : string;
 
 
-    public function hasWord() : ?string;
-
-    public function getWord() : string;
+    public function getWordOrPhrase() : string;
 
 
-    public function hasGroup() : ?string;
+    /**
+     * @param I18nWordInterface $refWord
+     */
+    public function isWord(&$refWord = null) : bool;
 
-    public function getGroup() : string;
+    public function getWord() : I18nWordInterface;
 
 
-    public function hasPhrase() : ?string;
+    /**
+     * @param string $refPhrase
+     */
+    public function isPhrase(&$refPhrase = null) : bool;
 
     public function getPhrase() : string;
 }

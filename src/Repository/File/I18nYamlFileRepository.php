@@ -4,14 +4,13 @@
 namespace Gzhegow\I18n\Repository\File;
 
 use Gzhegow\I18n\Type\I18nType;
-use Gzhegow\I18n\Pool\I18nPoolItem;
-use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
+use Gzhegow\I18n\Pool\PoolItem\I18nPoolItemInterface;
 use Gzhegow\I18n\Repository\File\FileSource\I18nFileSource;
 use Gzhegow\I18n\Repository\File\FileSource\I18nFileSourceInterface;
 
 
-class YamlFileRepository extends AbstractI18nFileRepository
+class I18nYamlFileRepository extends AbstractI18nFileRepository
 {
     public function __construct(string $langDir)
     {
@@ -33,27 +32,27 @@ class YamlFileRepository extends AbstractI18nFileRepository
         $langObject = I18nType::lang($lang);
         $groupObject = I18nType::group($group);
 
-        $filepath = ''
-            . $this->langDir
-            . '/' . $langObject->getValue()
-            . '/' . $groupObject->getValue()
-            . '.yaml';
+        $langString = $langObject->getValue();
+        $groupString = $groupObject->getValue();
 
-        $fileSource = I18nFileSource::from([
-            'filepath' => $filepath,
+        $filepath = $langString . '/' . $groupString;
+
+        $fileSource = [
+            'filepath' => $this->langDir . '/' . $filepath . '.yaml',
             //
             'lang'     => $langObject,
             'group'    => $groupObject,
-        ]);
+        ];
+
+        $fileSource = I18nFileSource::fromArray($fileSource)->orThrow();
 
         return $fileSource;
     }
 
-
     /**
      * @return array<string, I18nPoolItemInterface>
      */
-    public function loadItemsFromFile(I18nFileSourceInterface $fileSource) : array
+    public function loadPoolItemsFromFile(I18nFileSourceInterface $fileSource) : array
     {
         $poolItems = [];
 
@@ -71,20 +70,25 @@ class YamlFileRepository extends AbstractI18nFileRepository
 
             if ($poolItemGroup !== $fileSourceGroup) {
                 throw new RuntimeException(
-                    'Stored `word` has group that is not match with `poolItem` group: '
-                    . $poolItemGroup
-                    . ' / ' . $fileSourceGroup
+                    [
+                        'Stored `word` has group that is not match with `poolItem` group',
+                        //
+                        $poolItemGroup,
+                        $fileSourceGroup,
+                    ]
                 );
             }
 
-            $poolItem = I18nPoolItem::from([
+            $poolItem = [
                 'word'    => $poolItemWord,
                 //
                 'lang'    => $fileSourceLang,
                 //
                 'phrase'  => $poolItemPhrase,
                 'choices' => $poolItemChoices,
-            ]);
+            ];
+
+            $poolItem = I18nType::poolItem($poolItem);
 
             $poolItems[ $word ] = $poolItem;
         }
@@ -92,14 +96,10 @@ class YamlFileRepository extends AbstractI18nFileRepository
         return $poolItems;
     }
 
-
     /**
-     * @param I18nFileSourceInterface $fileSource
      * @param array<string, string[]> $choicesArray
-     *
-     * @return bool
      */
-    public static function saveChoicesArrayToFile(I18nFileSourceInterface $fileSource, array $choicesArray) : bool
+    public function saveChoicesArrayToFile(I18nFileSourceInterface $fileSource, array $choicesArray) : bool
     {
         $fileSourcePath = $fileSource->getValue();
 

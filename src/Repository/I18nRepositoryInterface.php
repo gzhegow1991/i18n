@@ -5,7 +5,7 @@ namespace Gzhegow\I18n\Repository;
 use Gzhegow\I18n\Struct\I18nWordInterface;
 use Gzhegow\I18n\Struct\I18nLangInterface;
 use Gzhegow\I18n\Struct\I18nGroupInterface;
-use Gzhegow\I18n\Pool\I18nPoolItemInterface;
+use Gzhegow\I18n\Pool\PoolItem\I18nPoolItemInterface;
 
 
 interface I18nRepositoryInterface

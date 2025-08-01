@@ -3,14 +3,14 @@
 namespace Gzhegow\I18n\Repository\File;
 
 use Gzhegow\I18n\I18n;
-use Gzhegow\I18n\Pool\I18nPoolItem;
 use Gzhegow\I18n\Struct\I18nWordInterface;
 use Gzhegow\I18n\Struct\I18nLangInterface;
 use Gzhegow\I18n\Exception\LogicException;
 use Gzhegow\I18n\Struct\I18nGroupInterface;
-use Gzhegow\I18n\Pool\I18nPoolItemInterface;
+use Gzhegow\I18n\Pool\PoolItem\I18nPoolItem;
 use Gzhegow\I18n\Exception\RuntimeException;
 use Gzhegow\I18n\Repository\I18nRepositoryInterface;
+use Gzhegow\I18n\Pool\PoolItem\I18nPoolItemInterface;
 use Gzhegow\I18n\Repository\File\FileSource\I18nFileSourceInterface;
 
 
@@ -188,21 +188,18 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
      * @return iterable<I18nPoolItemInterface[]>
      */
     public function getGroupsIt(
-        ?array $andGroupsIn = null,
-        ?array $andLangsIn = null,
-        //
-        ?int $limit = null,
-        int $offset = 0
+        ?array $andGroupsIn = null, ?array $andLangsIn = null,
+        ?int $limit = null, int $offset = 0
     ) : iterable
     {
-        if (! ($andLangsIn && $andGroupsIn)) {
+        if (false
+            || (! $andGroupsIn)
+            || (! $andLangsIn)
+        ) {
             // > @gzhegow, file repository cannot select by keys, so the languages and groups is required
 
             return;
         }
-
-        $andGroupsIn = $andGroupsIn ?? [];
-        $andLangsIn = $andLangsIn ?? [];
 
         if ($limit < 1) $limit = null;
         if ($offset < 0) $offset = 0;
@@ -291,15 +288,16 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
         int $offset = 0
     ) : iterable
     {
-        if (! ($andLangsIn && $andGroupsIn)) {
+        if (false
+            || (! $andGroupsIn)
+            || (! $andLangsIn)
+        ) {
             // > @gzhegow, file repository cannot select by keys, so the languages and groups is required
 
             return;
         }
 
         $andWordsIn = $andWordsIn ?? [];
-        $andGroupsIn = $andGroupsIn ?? [];
-        $andLangsIn = $andLangsIn ?? [];
 
         if ($limit < 1) $limit = null;
         if ($offset < 0) $offset = 0;
@@ -372,16 +370,17 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
     {
         $poolItemList = [];
         foreach ( $poolItems as $i => $poolItem ) {
-            $poolItemList[ $i ] = I18nPoolItem::from($poolItem);
+            $poolItemList[ $i ] = I18nPoolItem::from($poolItem)->orThrow();
         }
 
         $fileSources = [];
         $poolItemsByFileSource = [];
         foreach ( $poolItemList as $i => $poolItem ) {
             $poolItemLang = $poolItem->getLang();
-            $poolItemGroup = $poolItem->getGroup();
+            $poolItemWord = $poolItem->getWord();
+            $poolItemWordGroup = $poolItemWord->getGroup();
 
-            $fileSource = $this->buildFileSource($poolItemLang, $poolItemGroup);
+            $fileSource = $this->buildFileSource($poolItemLang, $poolItemWordGroup);
 
             $fileSourcePath = $fileSource->getValue();
             $fileSources[ $fileSourcePath ] = $fileSource;
@@ -428,16 +427,17 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
     {
         $poolItemList = [];
         foreach ( $poolItems as $i => $poolItem ) {
-            $poolItemList[ $i ] = I18nPoolItem::from($poolItem);
+            $poolItemList[ $i ] = I18nPoolItem::from($poolItem)->orThrow();
         }
 
         $fileSources = [];
         $poolItemsByFileSource = [];
         foreach ( $poolItemList as $i => $poolItem ) {
             $poolItemLang = $poolItem->getLang();
-            $poolItemGroup = $poolItem->getGroup();
+            $poolItemWord = $poolItem->getWord();
+            $poolItemWordGroup = $poolItemWord->getGroup();
 
-            $fileSource = $this->buildFileSource($poolItemLang, $poolItemGroup);
+            $fileSource = $this->buildFileSource($poolItemLang, $poolItemWordGroup);
 
             $fileSourcePath = $fileSource->getValue();
             $fileSources[ $fileSourcePath ] = $fileSource;
@@ -547,7 +547,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
                 );
             }
 
-            $items = $this->loadItemsFromFile($fileSource);
+            $items = $this->loadPoolItemsFromFile($fileSource);
 
             yield [
                 'fileSource' => $fileSource,
@@ -559,7 +559,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
     /**
      * @return array<string, I18nPoolItemInterface>
      */
-    abstract public function loadItemsFromFile(I18nFileSourceInterface $fileSource) : array;
+    abstract public function loadPoolItemsFromFile(I18nFileSourceInterface $fileSource) : array;
 
 
     /**
@@ -583,7 +583,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
         $poolItemsCurrent = [];
 
         if ($fileExists) {
-            $poolItemsCurrent = $this->loadItemsFromFile($fileSource);
+            $poolItemsCurrent = $this->loadPoolItemsFromFile($fileSource);
         }
 
         if ($poolItems) {
@@ -600,17 +600,18 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
 
             $isWrite = false;
             foreach ( $poolItems as $i => $poolItem ) {
-                $itemGroup = $poolItem->getGroup();
+                $poolItemWord = $poolItem->getWord();
+                $poolItemGroup = $poolItemWord->getGroup();
 
-                if ($itemGroup !== $fileSourceGroup) {
+                if ($poolItemGroup !== $fileSourceGroup) {
                     $report[ $i ] = false;
 
                     continue;
                 }
 
-                $itemWord = $poolItem->getWord();
+                $poolItemWordString = $poolItemWord->toString();
 
-                $poolItemsCurrent[ $itemWord ] = $poolItem;
+                $poolItemsCurrent[ $poolItemWordString ] = $poolItem;
 
                 $report[ $i ] = true;
 
@@ -663,7 +664,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
         $poolItemsCurrent = [];
 
         if ($fileExists) {
-            $poolItemsCurrent = $this->loadItemsFromFile($fileSource);
+            $poolItemsCurrent = $this->loadPoolItemsFromFile($fileSource);
         }
 
         if ($poolItems) {
@@ -680,15 +681,16 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
 
             $isWrite = false;
             foreach ( $poolItems as $i => $poolItem ) {
-                $itemWord = $poolItem->getWord();
+                $poolItemWord = $poolItem->getWord();
+                $poolItemWordString = $poolItemWord->toString();
 
-                if (! array_key_exists($itemWord, $poolItemsCurrent)) {
+                if (! array_key_exists($poolItemWordString, $poolItemsCurrent)) {
                     $report[ $i ] = false;
 
                     continue;
                 }
 
-                unset($poolItemsCurrent[ $itemWord ]);
+                unset($poolItemsCurrent[ $poolItemWordString ]);
 
                 $report[ $i ] = true;
 
@@ -732,5 +734,5 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
     /**
      * @param array<string, string[]> $choicesArray
      */
-    abstract public static function saveChoicesArrayToFile(I18nFileSourceInterface $fileSource, array $choicesArray) : bool;
+    abstract public function saveChoicesArrayToFile(I18nFileSourceInterface $fileSource, array $choicesArray) : bool;
 }

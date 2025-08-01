@@ -1,16 +1,18 @@
 <?php
+
 /**
- * @noinspection PhpUndefinedNamespaceInspection
+ * @noinspection PhpFullyQualifiedNameUsageInspection
  * @noinspection PhpUndefinedClassInspection
+ * @noinspection PhpUndefinedNamespaceInspection
  */
 
 namespace Gzhegow\I18n\Config;
 
 use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\I18n;
-use Gzhegow\I18n\Choice\RuChoice;
+use Gzhegow\I18n\Choice\I18nRuChoice;
 use Gzhegow\Lib\Config\AbstractConfig;
-use Gzhegow\I18n\Choice\DefaultChoice;
+use Gzhegow\I18n\Choice\I18nDefaultChoice;
 use Gzhegow\I18n\Exception\LogicException;
 use Gzhegow\I18n\Choice\I18nChoiceInterface;
 
@@ -409,15 +411,15 @@ class I18nConfig extends AbstractConfig
         $this->choices = null
             ?? $this->choices
             ?? [
-                'ru' => new RuChoice(),
-                'en' => new DefaultChoice(),
+                'ru' => new I18nRuChoice(),
+                'en' => new I18nDefaultChoice(),
             ];
 
         parent::__construct();
     }
 
 
-    protected function validation(array &$context = []) : bool
+    protected function validation(array $context = []) : bool
     {
         $theType = Lib::type();
 
@@ -429,45 +431,10 @@ class I18nConfig extends AbstractConfig
                 $titleNative,
             ] = $array;
 
-            if (! $theType->string_not_empty($r, $locale)) {
-                throw new LogicException(
-                    [
-                        'The `locale` should be non-empty string',
-                        //
-                        $locale,
-                    ]
-                );
-            }
-
-            if (! $theType->string_not_empty($r, $script)) {
-                throw new LogicException(
-                    [
-                        'The `script` should be non-empty string',
-                        //
-                        $locale,
-                    ]
-                );
-            }
-
-            if (! $theType->string_not_empty($r, $titleEnglish)) {
-                throw new LogicException(
-                    [
-                        'The `titleEnglish` should be non-empty string',
-                        //
-                        $locale,
-                    ]
-                );
-            }
-
-            if (! $theType->string_not_empty($r, $titleNative)) {
-                throw new LogicException(
-                    [
-                        'The `titleNative` should be non-empty string',
-                        //
-                        $locale,
-                    ]
-                );
-            }
+            $theType->string_not_empty($locale)->orThrow();
+            $theType->string_not_empty($script)->orThrow();
+            $theType->string_not_empty($titleEnglish)->orThrow();
+            $theType->string_not_empty($titleNative)->orThrow();
         }
 
         $phpLocalesIndex = [
@@ -498,7 +465,7 @@ class I18nConfig extends AbstractConfig
                 );
             }
 
-            foreach ( $arr as $phpLocale => $phpLocaleArr ) {
+            foreach ( $arr as $phpLocale => $phpLocaleArray ) {
                 if (! isset($phpLocalesIndex[ $phpLocale ])) {
                     throw new LogicException(
                         [
@@ -510,19 +477,10 @@ class I18nConfig extends AbstractConfig
                     );
                 }
 
-                while ( count($phpLocaleArr) ) {
-                    $phpLocale = array_shift($phpLocaleArr);
+                while ( [] !== $phpLocaleArray ) {
+                    $phpLocale = array_shift($phpLocaleArray);
 
-                    if (! $theType->string_not_empty($r, $phpLocale)) {
-                        throw new LogicException(
-                            [
-                                'The `phpLocale` should be non-empty string',
-                                //
-                                $phpLocale,
-                                $this,
-                            ]
-                        );
-                    }
+                    $theType->string_not_empty($phpLocale)->orThrow();
                 }
             }
         }

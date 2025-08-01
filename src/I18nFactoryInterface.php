@@ -2,10 +2,10 @@
 
 namespace Gzhegow\I18n;
 
-use Gzhegow\I18n\Pool\I18nPoolInterface;
+use Gzhegow\I18n\Store\I18nStore;
 
 
 interface I18nFactoryInterface
 {
-    public function newPool() : I18nPoolInterface;
+    public function newStore() : I18nStore;
 }

@@ -6,7 +6,7 @@ use Gzhegow\Lib\Lib;
 use Gzhegow\Lib\Modules\Type\Ret;
 
 
-class I18nLang implements I18nLangInterface
+class I18nLocale implements I18nLocaleInterface
 {
     /**
      * @var string
@@ -80,12 +80,12 @@ class I18nLang implements I18nLangInterface
             );
         }
 
-        $regexLang = '/' . static::getRegex() . '/';
+        $regex = '/' . static::getRegex() . '/';
 
-        if (! preg_match($regexLang, $fromString)) {
+        if (! preg_match($regex, $fromString)) {
             return Ret::throw(
                 $fallback,
-                [ 'The `from` should be string that is match regex: ' . $regexLang, $from ],
+                [ 'The `from` should be string that is match regex: ' . $regex, $from ],
                 [ __FILE__, __LINE__ ]
             );
         }
@@ -105,6 +105,6 @@ class I18nLang implements I18nLangInterface
 
     public static function getRegex() : string
     {
-        return '[a-z]+';
+        return '\b[a-z]{2,3}(?:_[A-Z]{2,3})?(?:\.[A-Za-z0-9._-]+)?(?:@\w+)?\b';
     }
 }

@@ -1,0 +1,12 @@
+{
+    // [ "Привет" ]
+    "main.message.hello": [ "Hello" ],
+    // [ "Привет!\nКак ты?" ]
+    "main.message.hello_multiline": [ "Hello!\nHow are you?" ],
+    // [ "Привет, [:name:]" ]
+    "main.message.hello_$": [ "Hello, [:name:]" ],
+    // [ "Привет, [:name1:] и [:name2:]" ]
+    "main.message.hello_$$": [ "Hello, [:name1:] and [:name2:]" ],
+    // [ "яблоко", "яблока", "яблок" ]
+    "main.title.apple": [ "apple", "apples" ]
+}

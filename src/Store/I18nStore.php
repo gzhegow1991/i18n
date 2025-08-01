@@ -19,9 +19,9 @@ class I18nStore
     /**
      * @var string
      */
-    public $langCurrent;
+    public $langCurrent = '';
     /**
      * @var string
      */
-    public $langDefault;
+    public $langDefault = '';
 }

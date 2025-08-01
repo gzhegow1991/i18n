@@ -3,9 +3,8 @@
 namespace Gzhegow\I18n\Struct;
 
 use Gzhegow\Lib\Lib;
-use Gzhegow\I18n\Type\I18nType;
-use Gzhegow\Lib\Modules\Php\Result\Ret;
-use Gzhegow\Lib\Modules\Php\Result\Result;
+use Gzhegow\I18n\I18n;
+use Gzhegow\Lib\Modules\Type\Ret;
 
 
 class I18nWord implements I18nWordInterface
@@ -19,6 +18,14 @@ class I18nWord implements I18nWordInterface
      * @var string
      */
     protected $group;
+    /**
+     * @var string
+     */
+    protected $section;
+    /**
+     * @var string
+     */
+    protected $key;
 
 
     private function __construct()
@@ -28,93 +35,108 @@ class I18nWord implements I18nWordInterface
 
     public function __toString()
     {
+        return $this->toString();
+    }
+
+
+    public function toArray(array $options = []) : array
+    {
+        return get_object_vars($this);
+    }
+
+    public function toString(array $options = []) : string
+    {
         return $this->value;
     }
 
 
     /**
-     * @param Ret $ret
-     *
-     * @return static|bool|null
+     * @return static|Ret<static>
      */
-    public static function from($from, $ret = null)
+    public static function from($from, ?array $fallback = null)
     {
-        $retCur = Result::asValue();
+        $ret = Ret::new();
 
         $instance = null
-            ?? static::fromStatic($from, $retCur)
-            ?? static::fromString($from, $retCur);
+            ?? static::fromStatic($from)->orNull($ret)
+            ?? static::fromString($from)->orNull($ret);
 
-        if ($retCur->isErr()) {
-            return Result::err($ret, $retCur);
+        if ($ret->isFail()) {
+            return Ret::throw($fallback, $ret);
         }
 
-        return Result::ok($ret, $instance);
+        return Ret::ok($fallback, $instance);
     }
 
     /**
-     * @param Ret $ret
-     *
-     * @return static|bool|null
+     * @return static|Ret<static>
      */
-    public static function fromStatic($from, $ret = null)
+    public static function fromStatic($from, ?array $fallback = null)
     {
         if ($from instanceof static) {
-            return Result::ok($ret, $from);
+            return Ret::ok($fallback, $from);
         }
 
-        return Result::err(
-            $ret,
+        return Ret::throw(
+            $fallback,
             [ 'The `from` should be instance of: ' . static::class, $from ],
             [ __FILE__, __LINE__ ]
         );
     }
 
     /**
-     * @param Ret $ret
-     *
-     * @return static|bool|null
+     * @return static|Ret<static>
      */
-    public static function fromString($from, $ret = null)
+    public static function fromString($from, ?array $fallback = null)
     {
-        if (! Lib::type()->string_not_empty($fromString, $from)) {
-            return Result::err(
-                $ret,
+        $thePreg = Lib::preg();
+        $theType = Lib::type();
+
+        if (! $theType->string_not_empty($from)->isOk([ &$fromString ])) {
+            return Ret::throw(
+                $fallback,
                 [ 'The `from` should be non-empty string', $from ],
                 [ __FILE__, __LINE__ ]
             );
         }
 
-        $regexPart = '[a-z][a-z0-9_-]*[a-z0-9]';
+        $wordString = $fromString;
+
+        $regexWordSeparator = $thePreg->preg_quote_ord(I18n::WORD_SEPARATOR);
+
+        $regexGroup = I18nGroup::getRegex();
+        $regexSection = I18nSection::getRegex();
+        $regexKey = I18nKey::getRegex();
+
         $regex = ''
             . '/^'
-            . $regexPart
-            . '[.]'
-            . $regexPart
-            . '[.]'
-            . $regexPart
-            . '([_][\$]*)?'
+            . $regexGroup
+            . $regexWordSeparator
+            . $regexSection
+            . $regexWordSeparator
+            . $regexKey
             . '$/';
 
-        if (! preg_match($regex, $fromString)) {
-            return Result::err(
-                $ret,
+        if (! preg_match($regex, $wordString)) {
+            return Ret::throw(
+                $fallback,
                 [ 'The `from` should be string that match regex: ' . $regex, $from ],
                 [ __FILE__, __LINE__ ]
             );
         }
 
-        [ $group ] = explode('.', $fromString, 2);
+        $split = preg_split('/' . $regexWordSeparator . '/', $fromString, 3);
 
-        $groupObject = I18nType::group($group);
-
-        $groupString = $groupObject->getValue();
+        [ $groupString, $sectionString, $keyString ] = $split;
 
         $instance = new static();
         $instance->value = $fromString;
-        $instance->group = $groupString;
 
-        return Result::ok($ret, $instance);
+        $instance->group = $groupString;
+        $instance->section = $sectionString;
+        $instance->key = $keyString;
+
+        return Ret::ok($fallback, $instance);
     }
 
 
@@ -127,5 +149,21 @@ class I18nWord implements I18nWordInterface
     public function getGroup() : string
     {
         return $this->group;
+    }
+
+
+    public function getSectionKey() : string
+    {
+        return $this->section . I18n::WORD_SEPARATOR . $this->key;
+    }
+
+    public function getSection() : string
+    {
+        return $this->section;
+    }
+
+    public function getKey() : string
+    {
+        return $this->key;
     }
 }

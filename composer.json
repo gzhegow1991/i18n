@@ -20,7 +20,11 @@
     "ext-bcmath": "*",
     "ext-mbstring": "*",
 
-    "gzhegow/lib": "~1.1.0"
+    "gzhegow/lib": "~1.2.0"
+  },
+  "suggest": {
+    "ext-json": "*",
+    "ext-yaml": "*"
   },
 
   "autoload": {

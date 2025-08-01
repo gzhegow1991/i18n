@@ -10,68 +10,46 @@ namespace Gzhegow\I18n;
 
 use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Type\I18nType;
-use Gzhegow\I18n\Struct\I18nLang;
 use Gzhegow\I18n\Store\I18nStore;
-use Gzhegow\I18n\Struct\I18nAword;
-use Gzhegow\I18n\Struct\I18nGroup;
 use Gzhegow\I18n\Config\I18nConfig;
 use Gzhegow\I18n\Pool\I18nPoolInterface;
 use Gzhegow\I18n\Struct\I18nLangInterface;
 use Gzhegow\I18n\Exception\LogicException;
 use Gzhegow\I18n\Struct\I18nGroupInterface;
 use Gzhegow\I18n\Struct\I18nAwordInterface;
-use Gzhegow\I18n\Pool\I18nPoolItemInterface;
 use Gzhegow\I18n\Exception\RuntimeException;
 use Gzhegow\I18n\Language\I18nLanguageInterface;
 use Gzhegow\I18n\Repository\I18nRepositoryInterface;
+use Gzhegow\I18n\Pool\PoolItem\I18nPoolItemInterface;
+use Gzhegow\I18n\PoolManager\I18nPoolManagerInterface;
+use Gzhegow\I18n\Interpolator\I18nInterpolatorInterface;
 
 
 class I18nFacade implements I18nInterface
 {
-    /**
-     * @var I18nFactoryInterface
-     */
-    protected $factory;
-
-    /**
-     * @var I18nRepositoryInterface
-     */
-    protected $repository;
-
     /**
      * @var I18nConfig
      */
     protected $config;
 
     /**
+     * @var I18nFactoryInterface
+     */
+    protected $factory;
+
+    /**
+     * @var I18nPoolManagerInterface
+     */
+    protected $poolManager;
+    /**
+     * @var I18nInterpolatorInterface
+     */
+    protected $interpolator;
+
+    /**
      * @var I18nStore
      */
     protected $store;
-    /**
-     * @var I18nPoolInterface
-     */
-    protected $pool;
-
-    /**
-     * @var array{0: string[], 1: string}
-     */
-    protected $loadGroupsQueue = [];
-    /**
-     * @var array{0: string[], 1: string[], 2: string[]}
-     */
-    protected $loadWordsQueue = [];
-    /**
-     * @var array<string, bool>
-     */
-    protected $loadedGroupsLangs = [];
-    /**
-     * @var array<string, array<string, bool>>
-     */
-    protected $loadedGroupLangIndex = [];
-    /**
-     * @var array<string, array<string, bool>>
-     */
-    protected $loadedLangGroupIndex = [];
 
     /**
      * @var \Psr\Log\LoggerInterface
@@ -81,6 +59,7 @@ class I18nFacade implements I18nInterface
      * @var array<int, int>
      */
     protected $loggables = [
+        I18n::E_EXCLUDED_GROUP  => 0,
         I18n::E_FORGOTTEN_GROUP => 0,
         I18n::E_MISSING_WORD    => 0,
         I18n::E_WRONG_AWORD     => 0,
@@ -99,44 +78,49 @@ class I18nFacade implements I18nInterface
     public function __construct(
         I18nFactoryInterface $factory,
         //
-        I18nRepositoryInterface $repository,
+        I18nPoolManagerInterface $poolManager,
+        I18nInterpolatorInterface $interpolator,
         //
         I18nConfig $config
     )
     {
         $this->factory = $factory;
-        $this->repository = $repository;
 
-        $this->pool = $this->factory->newPool();
+        $this->poolManager = $poolManager;
+        $this->interpolator = $interpolator;
 
         $this->store = $this->factory->newStore();
 
         $this->config = $config;
         $this->config->validate();
-        $this->initializeConfig();
 
         $this->store->isDebug = $this->config->isDebug;
-    }
 
+        $this->initialize();
+    }
 
     /**
      * @return static
      */
-    protected function initializeConfig()
+    protected function initialize()
     {
+        $this->poolManager->initialize($this);
+
         $languages = $this->config->languages ?? [];
         $choices = $this->config->choices ?? [];
         $phpLocales = $this->config->phpLocales ?? [];
 
-        $lang = $this->config->langCurrent ?? null;
+        $langCurrent = $this->config->langCurrent ?? null;
         $langDefault = $this->config->langDefault ?? null;
 
         $logger = $this->config->logger ?? null;
 
         $loggables = [];
+        $loggables[ I18n::E_EXCLUDED_GROUP ] = $this->config->loggables[ I18n::E_EXCLUDED_GROUP ] ?? null;
         $loggables[ I18n::E_FORGOTTEN_GROUP ] = $this->config->loggables[ I18n::E_FORGOTTEN_GROUP ] ?? null;
         $loggables[ I18n::E_MISSING_WORD ] = $this->config->loggables[ I18n::E_MISSING_WORD ] ?? null;
         $loggables[ I18n::E_WRONG_AWORD ] = $this->config->loggables[ I18n::E_WRONG_AWORD ] ?? null;
+        $loggablesFiltered = array_filter($loggables);
 
         foreach ( $languages as $key => $array ) {
             $languageArray = [
@@ -157,19 +141,19 @@ class I18nFacade implements I18nInterface
             $this->store->languages[ $langString ] = $languageObject;
         }
 
-        if ($lang) {
-            $this->setLangCurrent($lang);
+        if (null !== $langCurrent) {
+            $this->setLangCurrent($langCurrent);
         }
 
-        if ($langDefault) {
+        if (null !== $langDefault) {
             $this->setLangDefault($langDefault);
         }
 
-        if ($logger) {
+        if (null !== $logger) {
             $this->setLogger($logger);
         }
 
-        if ($loggables) {
+        if ([] !== $loggablesFiltered) {
             $this->setLoggables($loggables);
         }
 
@@ -177,15 +161,32 @@ class I18nFacade implements I18nInterface
     }
 
 
-    public function getRepository() : I18nRepositoryInterface
+    public function getConfig() : I18nConfig
     {
-        return $this->repository;
+        return $this->config;
+    }
+
+
+    public function getFactory() : I18nFactoryInterface
+    {
+        return $this->factory;
     }
 
 
     public function getPool() : I18nPoolInterface
     {
-        return $this->pool;
+        return $this->poolManager->getPool();
+    }
+
+    public function getRepository() : I18nRepositoryInterface
+    {
+        return $this->poolManager->getRepository();
+    }
+
+
+    public function getInterpolator() : I18nInterpolatorInterface
+    {
+        return $this->interpolator;
     }
 
 
@@ -202,6 +203,7 @@ class I18nFacade implements I18nInterface
     {
         return array_keys($this->store->languages);
     }
+
 
     public function getLangsRegex(
         string $stringPrefix = '', string $stringSuffix = '',
@@ -270,26 +272,18 @@ class I18nFacade implements I18nInterface
     }
 
 
-    public function hasLang(?string $lang) : bool
+    public function hasLang(string $lang) : bool
     {
         return isset($this->store->languages[ $lang ]);
     }
 
-    public function isLangCurrent(?string $lang) : bool
+    public function isLangCurrent(string $lang) : bool
     {
-        if (null === $lang) {
-            return false;
-        }
-
         return $this->store->langCurrent === $lang;
     }
 
-    public function isLangDefault(?string $lang) : bool
+    public function isLangDefault(string $lang) : bool
     {
-        if (null === $lang) {
-            return false;
-        }
-
         return $this->store->langDefault === $lang;
     }
 
@@ -299,10 +293,7 @@ class I18nFacade implements I18nInterface
         return $this->store->langCurrent;
     }
 
-    /**
-     * @return static
-     */
-    public function setLangCurrent(string $lang)
+    public function setLangCurrent(string $lang) : string
     {
         if ($this->lockFnOnSetLangCurrent) {
             throw new RuntimeException(
@@ -310,18 +301,19 @@ class I18nFacade implements I18nInterface
             );
         }
 
+        $last = $this->store->langCurrent;
+
         if ($lang === $this->store->langCurrent) {
-            return $this;
+            return $lang;
         }
 
         $language = $this->getLanguage($lang);
 
-        $langString = $language->getLang();
+        $languageLang = $language->getLang();
+        $languagePhpLocales = $language->hasPhpLocales();
 
-        $this->store->langCurrent = $langString;
-
-        if ($phpLocales = $language->hasPhpLocales()) {
-            foreach ( $phpLocales as $category => $locales ) {
+        if ([] !== $languagePhpLocales) {
+            foreach ( $languagePhpLocales as $category => $locales ) {
                 $status = setlocale($category, $locales);
 
                 if ($status === false) {
@@ -347,17 +339,19 @@ class I18nFacade implements I18nInterface
             }
         }
 
+        $this->store->langCurrent = $language->getLang();
+
         if (null !== $this->fnOnSetLangCurrent) {
             $this->lockFnOnSetLangCurrent = true;
 
             $fn = $this->fnOnSetLangCurrent;
 
-            $fn($langString, $this);
+            $fn($languageLang, $this);
 
             $this->lockFnOnSetLangCurrent = false;
         }
 
-        return $this;
+        return $last;
     }
 
     /**
@@ -376,30 +370,15 @@ class I18nFacade implements I18nInterface
         return $this->store->langDefault;
     }
 
-    /**
-     * @return static
-     */
-    public function setLangDefault(string $lang)
+    public function setLangDefault(string $lang) : string
     {
+        $last = $this->store->langDefault;
+
         $language = $this->getLanguage($lang);
 
-        $langDefaultString = $language->getLang();
+        $this->store->langDefault = $language->getLang();
 
-        $this->store->langDefault = $langDefaultString;
-
-        return $this;
-    }
-
-
-    public function getLangForUrl(?string $lang = null) : string
-    {
-        $lang = $lang ?? $this->store->langCurrent;
-
-        $result = ($lang === $this->store->langDefault)
-            ? ''
-            : $lang;
-
-        return $result;
+        return $last;
     }
 
 
@@ -430,7 +409,6 @@ class I18nFacade implements I18nInterface
         return $this->store->languages[ $lang ];
     }
 
-
     public function getLanguageCurrent() : I18nLanguageInterface
     {
         return $this->getLanguage($this->store->langCurrent);
@@ -442,7 +420,16 @@ class I18nFacade implements I18nInterface
     }
 
 
-    public function getLocale() : string
+    public function getLocaleFor(string $lang) : string
+    {
+        $language = $this->getLanguage($lang);
+
+        $locale = $language->getLocale();
+
+        return $locale;
+    }
+
+    public function getLocaleCurrent() : string
     {
         return $this->getLocaleFor($this->store->langCurrent);
     }
@@ -452,15 +439,19 @@ class I18nFacade implements I18nInterface
         return $this->getLocaleFor($this->store->langDefault);
     }
 
-    public function getLocaleFor(string $lang) : ?string
+
+    public function getLangUrlFor(string $lang) : string
     {
-        $locale = null;
+        $langUrl = ($lang === $this->store->langDefault)
+            ? ''
+            : $lang;
 
-        if ($language = $this->getLanguage($lang)) {
-            $locale = $language->getLocale();
-        }
+        return $langUrl;
+    }
 
-        return $locale;
+    public function getLangUrlCurrent() : string
+    {
+        return $this->getLangUrlFor($this->store->langCurrent);
     }
 
 
@@ -487,18 +478,31 @@ class I18nFacade implements I18nInterface
     }
 
     /**
-     * @param array<int, int> $loggables
+     * @param array<int, int>|null $loggables
      */
-    public function setLoggables(array $loggables) : array
+    public function setLoggables(?array $loggables = null) : array
     {
-        $theParse = Lib::parse();
+        $theType = Lib::type();
 
         $last = $this->loggables;
 
-        $this->loggables = [];
-        $this->loggables[ I18n::E_FORGOTTEN_GROUP ] = $theParse->int_non_negative($loggables[ I18n::E_FORGOTTEN_GROUP ] ?? null) ?? 0;
-        $this->loggables[ I18n::E_MISSING_WORD ] = $theParse->int_non_negative($loggables[ I18n::E_MISSING_WORD ] ?? null) ?? 0;
-        $this->loggables[ I18n::E_WRONG_AWORD ] = $theParse->int_non_negative($loggables[ I18n::E_WRONG_AWORD ] ?? null) ?? 0;
+        if (null !== $loggables) {
+            $eExcludedGroup = $loggables[ I18n::E_EXCLUDED_GROUP ] ?? null;
+            $eForgottenGroup = $loggables[ I18n::E_FORGOTTEN_GROUP ] ?? null;
+            $eMissingWord = $loggables[ I18n::E_MISSING_WORD ] ?? null;
+            $eWrongAword = $loggables[ I18n::E_WRONG_AWORD ] ?? null;
+
+            $eExcludedGroup = $theType->int_non_negative($eExcludedGroup)->orNull();
+            $eForgottenGroup = $theType->int_non_negative($eForgottenGroup)->orNull();
+            $eMissingWord = $theType->int_non_negative($eMissingWord)->orNull();
+            $eWrongAword = $theType->int_non_negative($eWrongAword)->orNull();
+
+            $this->loggables = [];
+            $this->loggables[ I18n::E_EXCLUDED_GROUP ] = $eExcludedGroup ?? 0;
+            $this->loggables[ I18n::E_FORGOTTEN_GROUP ] = $eForgottenGroup ?? 0;
+            $this->loggables[ I18n::E_MISSING_WORD ] = $eMissingWord ?? 0;
+            $this->loggables[ I18n::E_WRONG_AWORD ] = $eWrongAword ?? 0;
+        }
 
         return $last;
     }
@@ -507,10 +511,10 @@ class I18nFacade implements I18nInterface
     /**
      * @return static
      */
-    public function resetUsesQueue()
+    public function resetUses()
     {
-        $this->loadGroupsQueue = [];
-        $this->loadWordsQueue = [];
+        $this->poolManager->resetQueue();
+        $this->poolManager->resetPool();
 
         return $this;
     }
@@ -518,20 +522,19 @@ class I18nFacade implements I18nInterface
     /**
      * @return static
      */
-    public function resetUsesState(?bool $withQueue = null)
+    public function resetQueue()
     {
-        $withQueue = $withQueue ?? false;
+        $this->poolManager->resetQueue();
 
-        if ($withQueue) {
-            $this->resetUsesQueue();
-        }
+        return $this;
+    }
 
-        $this->loadedGroupsLangs = [];
-
-        $this->loadedGroupLangIndex = [];
-        $this->loadedLangGroupIndex = [];
-
-        $this->pool->clear();
+    /**
+     * @return static
+     */
+    public function resetPool()
+    {
+        $this->poolManager->resetPool();
 
         return $this;
     }
@@ -541,16 +544,7 @@ class I18nFacade implements I18nInterface
      */
     public function useAwords(array $awords, ?array $groups = null, ?array $langs = null)
     {
-        if (! $awords) {
-            throw new LogicException(
-                [
-                    'The `words` should be not empty',
-                    $awords,
-                ]
-            );
-        }
-
-        $this->loadWordsQueue[] = [ $awords, $groups, $langs ];
+        $this->poolManager->useAwords($awords, $groups, $langs);
 
         return $this;
     }
@@ -563,112 +557,20 @@ class I18nFacade implements I18nInterface
      */
     public function useGroups(array $groups, ?string $lang = null)
     {
-        if (! $groups) {
-            throw new LogicException(
-                [
-                    'The `groups` should be not empty',
-                    $groups,
-                ]
-            );
-        }
-
-        $this->loadGroupsQueue[] = [ $groups, $lang ];
+        $this->poolManager->useGroups($groups, $lang);
 
         return $this;
     }
+
 
     /**
      * @return static
      */
     public function loadUses()
     {
-        $this->loadUsesGroups();
-        $this->loadUsesAwords();
+        $this->poolManager->loadUses();
 
         return $this;
-    }
-
-
-    protected function loadUsesGroups() : void
-    {
-        foreach ( $this->loadGroupsQueue as $i => [ $groups, $lang ] ) {
-            $lang = $lang ?? $this->store->langCurrent;
-
-            $this->getLanguage($lang);
-
-            foreach ( $groups as $groupIdx => $group ) {
-                $loadedKey = "{$group}\0{$lang}";
-
-                if (isset($this->loadedGroupsLangs[ $loadedKey ])) {
-                    unset($groups[ $groupIdx ]);
-                }
-            }
-
-            if ($groups) {
-                $it = $this->repository->getGroupsIt(
-                    $groups,
-                    [ $lang ]
-                );
-
-                $poolItems = [];
-                foreach ( $it as $poolItemsBatch ) {
-                    foreach ( $poolItemsBatch as $poolItem ) {
-                        $poolItems[] = $poolItem;
-                    }
-                }
-
-                $this->pool->set($poolItems);
-
-                foreach ( $groups as $group ) {
-                    $loadedKey = "{$group}\0{$lang}";
-
-                    $this->loadedGroupsLangs[ $loadedKey ] = true;
-
-                    $this->loadedLangGroupIndex[ $lang ][ $group ] = true;
-                    $this->loadedGroupLangIndex[ $group ][ $lang ] = true;
-                }
-            }
-
-            unset($this->loadGroupsQueue[ $i ]);
-        }
-    }
-
-    protected function loadUsesAwords() : void
-    {
-        foreach ( $this->loadWordsQueue as $i => [ $awords, $groups, $langs ] ) {
-            $langs = $langs ?? [ $this->store->langCurrent ];
-
-            foreach ( $langs as $lang ) {
-                $this->getLanguage($lang);
-            }
-
-            $awordList = [];
-            foreach ( $awords as $aword ) {
-                $awordList[ $i ] = I18nType::aword($aword);
-            }
-
-            $wordList = [];
-            foreach ( $awordList as $ii => $aword ) {
-                $wordList[ $ii ] = $aword->getWord();
-            }
-
-            $it = $this->repository->getWordsIt(
-                $wordList,
-                $groups,
-                $langs
-            );
-
-            $poolItems = [];
-            foreach ( $it as $poolItemsBatch ) {
-                foreach ( $poolItemsBatch as $poolItem ) {
-                    $poolItems[] = $poolItem;
-                }
-            }
-
-            $this->pool->set($poolItems);
-
-            unset($this->loadWordsQueue[ $i ]);
-        }
     }
 
 
@@ -679,24 +581,7 @@ class I18nFacade implements I18nInterface
      */
     public function getGroupsLoaded(?array $langs = null) : array
     {
-        if (null === $langs) {
-            $groups = $this->loadedGroupLangIndex;
-
-        } else {
-            $groups = [];
-
-            foreach ( $langs as $lang ) {
-                $langObject = I18nType::lang($lang);
-
-                $langString = $langObject->getValue();
-
-                $groups += $this->loadedLangGroupIndex[ $langString ] ?? [];
-            }
-        }
-
-        $groups = array_keys($groups);
-
-        return $groups;
+        return $this->poolManager->getGroupsLoaded($langs);
     }
 
     /**
@@ -706,52 +591,211 @@ class I18nFacade implements I18nInterface
      */
     public function getLangsLoaded(?array $groups = null) : array
     {
-        if (null === $groups) {
-            $langs = $this->loadedLangGroupIndex;
-
-        } else {
-            $langs = [];
-
-            foreach ( $groups as $group ) {
-                $groupObject = I18nType::group($group);
-
-                $groupString = $groupObject->getValue();
-
-                $langs += $this->loadedGroupLangIndex[ $groupString ] ?? [];
-            }
-        }
-
-        $langs = array_keys($langs);
-
-        return $langs;
+        return $this->poolManager->getLangsLoaded($groups);
     }
 
 
     public function interpolate(?string $phrase, ?array $placeholders = null) : ?string
     {
-        $placeholders = $placeholders ?? [];
+        return $this->interpolator->interpolate($phrase, $placeholders);
+    }
 
-        if (null === $phrase) {
-            return null;
+
+    /**
+     * @param array<I18nAwordInterface|string>                  $awords
+     * @param array<I18nGroupInterface|string>|null             $groups
+     * @param array<I18nLangInterface|string>|null              $langs
+     * @param array{ 0?: array{ 0: int, 1: string, 2: array } } $refs
+     *
+     * @return array<int, array<string, I18nPoolItemInterface>>
+     */
+    public function get(array $awords, ?array $groups = null, ?array $langs = null, array $refs = []) : array
+    {
+        if ([] === $awords) {
+            return [];
         }
 
-        $replacements = [];
-        foreach ( $placeholders as $variable => $replacement ) {
-            $replacementKey = ''
-                . I18n::PLACEHOLDER_BRACES[ 0 ]
-                . $variable
-                . I18n::PLACEHOLDER_BRACES[ 1 ];
+        $withErrors = array_key_exists(0, $refs);
+        if ($withErrors) {
+            $refErrors =& $refs[ 0 ];
+        }
+        $refErrors = [];
 
-            $replacements[ $replacementKey ] = $replacement;
+        $thePool = $this->poolManager->getPool();
+
+        $this->poolManager->loadUses();
+
+        $groupLoadedList = $this->getGroupsLoaded($langs);
+
+        if (null === $langs) $langs = [ $this->store->langCurrent ];
+        if (null === $groups) $groups = $groupLoadedList;
+
+        $groupIndex = [];
+        $groupLoadedIndex = [];
+
+        foreach ( $groupLoadedList as $groupString ) {
+            $groupLoadedIndex[ $groupString ] = true;
         }
 
-        $phraseInterpolated = str_replace(
-            array_keys($replacements),
-            array_values($replacements),
-            $phrase
+        $groupList = [];
+        foreach ( $groups as $i => $group ) {
+            $groupObject = I18nType::group($group);
+
+            $groupString = $groupObject->getValue();
+
+            $groupList[ $i ] = $groupObject;
+            $groupIndex[ $groupString ] = true;
+        }
+
+        $awordList = [];
+        foreach ( $awords as $i => $aword ) {
+            if (null === ($awordObject = I18nType::awordOrNull($aword))) {
+                $refErrors[ $i ][] = [
+                    I18n::E_WRONG_AWORD,
+                    'Each of `awords` should be valid aword: [:aword:]',
+                    [ 'aword' => $aword ],
+                ];
+
+                continue;
+            }
+
+            if ($awordObject->isPhrase()) {
+                $refErrors[ $i ][] = [
+                    I18n::E_WRONG_AWORD,
+                    'Each of `awords` should contain valid word, so `aword` have to be string that begins from: `[:prefix:]`',
+                    [
+                        'prefix' => I18n::AWORD_PREFIX,
+                        'aword'  => $aword->getValue(),
+                        'i'      => $i,
+                    ],
+                ];
+
+                continue;
+            }
+
+            $awordList[ $i ] = $awordObject;
+        }
+
+        $wordList = [];
+        foreach ( $awordList as $i => $aword ) {
+            $wordObject = $aword->getWord();
+
+            $groupString = $wordObject->getGroup();
+
+            if (! isset($groupLoadedIndex[ $groupString ])) {
+                $refErrors[ $i ][] = [
+                    I18n::E_FORGOTTEN_GROUP,
+                    'The group was not loaded: [:group:]',
+                    [ 'group' => $groupString ],
+                ];
+
+                continue;
+            }
+
+            if (! isset($groupIndex[ $groupString ])) {
+                $refErrors[ $i ][] = [
+                    I18n::E_EXCLUDED_GROUP,
+                    'The group is loaded but excluded: [:group:]',
+                    [ 'group' => $groupString ],
+                ];
+
+                continue;
+            }
+
+            $wordList[ $i ] = $wordObject;
+        }
+
+        $langList = [];
+        foreach ( $langs as $i => $lang ) {
+            $langList[ $i ] = I18nType::lang($lang);
+        }
+
+        $poolItemList = $thePool->get(
+            $wordList,
+            $groupList,
+            $langList
         );
 
-        return $phraseInterpolated;
+        $result = [];
+
+        foreach ( $langList as $langString ) {
+            foreach ( $wordList as $i => $word ) {
+                $groupString = $word->getGroup();
+                $sectionString = $word->getSection();
+                $keyString = $word->getKey();
+
+                $index = implode(I18n::INDEX_SEPARATOR, [
+                    $langString,
+                    $groupString,
+                    $sectionString,
+                    $keyString,
+                ]);
+
+                if (! isset($poolItemList[ $index ])) {
+                    $refErrors[ $i ][] = [
+                        I18n::E_FORGOTTEN_GROUP,
+                        'The word is missing in dictionary: [:index:] / [:langs:]',
+                        [
+                            'index' => '[ ' . $index . ' ]',
+                            'langs' => '[ ' . implode(' ][ ', $langList) . ' ]',
+                        ],
+                    ];
+
+                    continue;
+                }
+
+                $result[ $i ][ $index ] = $poolItemList[ $index ];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array<I18nAwordInterface|string>                  $awords
+     * @param array<I18nGroupInterface|string>|null             $groups
+     * @param array<I18nLangInterface|string>|null              $langs
+     * @param array{ 0?: array{ 0: int, 1: string, 2: array } } $refs
+     *
+     * @return array<int, array<string, I18nPoolItemInterface>>
+     */
+    public function getOrDefault(array $awords, ?array $groups = null, ?array $langs = null, array $refs = []) : array
+    {
+        if ([] === $awords) {
+            return [];
+        }
+
+        $withErrors = array_key_exists(0, $refs);
+        if ($withErrors) {
+            $refErrors =& $refs[ 0 ];
+        }
+        $refErrors = [];
+
+        $langDefault = $this->store->langDefault;
+
+        $poolItemList = $this->get($awords, $groups, $langs, $refs);
+
+        if ([] !== $refErrors) {
+            $awordsToTryLangDefault = array_intersect_key($awords, $refErrors);
+            $groupsToTryLangDefault = $this->getGroupsLoaded($langs);
+
+            $this->poolManager->useGroups($groupsToTryLangDefault, $langDefault);
+            $this->poolManager->loadUses();
+
+            $poolItemListLangDefault = $this->get(
+                $awordsToTryLangDefault,
+                $groupsToTryLangDefault,
+                [ $langDefault ]
+            );
+
+            foreach ( $poolItemListLangDefault as $i => $poolItems ) {
+                foreach ( $poolItems as $index => $poolItem ) {
+                    $poolItemList[ $i ][ $index ] = $poolItem;
+                }
+            }
+        }
+
+        return $poolItemList;
     }
 
 
@@ -769,74 +813,18 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : array
     {
-        if (! $awords) {
-            return [];
-        }
+        $theDebug = Lib::debug();
 
-        $result = [];
+        $fileLine = $theDebug->file_line();
 
-        $this->loadUses();
+        $phrasesInterpolated = $this->doPhrasesOrDefault(
+            $fileLine,
+            $awords,
+            $placeholders,
+            $groups, $langs
+        );
 
-        $placeholders = $placeholders ?? [];
-
-        $awordList = [];
-        foreach ( $awords as $i => $aword ) {
-            $awordList[ $i ] = I18nType::aword($aword);
-        }
-
-        [
-            $errorList,
-            $poolItemList,
-        ] = $this->getOrDefault($awordList, $groups, $langs);
-
-        $phraseList = [];
-
-        if ($errorList) {
-            $trace = []
-                + (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[ 1 ] ?? [])
-                + [ 'file' => '[:file:]', 'line' => '[:line:]' ];
-
-            [
-                'file' => $file,
-                'line' => $line,
-            ] = $trace;
-
-            foreach ( $errorList as $i => [ $errno, $errstr, $errdata ] ) {
-                $errLevel = $this->loggables[ $errno ] ?? 0;
-
-                $errMessage = [];
-                $errMessage[] = '[ ' . "{$file}: {$line}" . ' ]';
-                $errMessage[] = $errstr;
-                $errMessage = implode(' ', $errMessage);
-
-                $errMessage = $this->interpolate($errMessage, $errdata);
-
-                if ($this->logger && $errLevel) {
-                    $this->logger->log($errLevel, $errMessage);
-                }
-
-                $phraseList[ $i ] = $awordList[ $i ]->getValue();
-            }
-        }
-
-        foreach ( $poolItemList as $i => $poolItem ) {
-            $phraseList[ $i ] = $poolItem->getPhrase();
-        }
-
-        [
-            $placeholdersList,
-            $placeholdersDict,
-        ] = Lib::arr()->kwargs($placeholders);
-
-        foreach ( $phraseList as $i => $phrase ) {
-            $phrasePlaceholders = ($placeholdersList[ $i ] ?? []) + $placeholdersDict;
-
-            $phraseInterpolated = $this->interpolate($phrase, $phrasePlaceholders);
-
-            $result[ $i ] = $phraseInterpolated;
-        }
-
-        return $result;
+        return $phrasesInterpolated;
     }
 
     /**
@@ -855,71 +843,20 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : array
     {
-        if (! $awords) {
-            return [];
-        }
+        $theDebug = Lib::debug();
 
-        $result = [];
+        $fileLine = $theDebug->file_line();
 
-        $this->loadUses();
+        $phrasesInterpolated = $this->doPhrases(
+            $fileLine,
+            $awords, $fallbacks,
+            $placeholders,
+            $groups, $langs
+        );
 
-        $placeholders = $placeholders ?? [];
-
-        [
-            $errors,
-            $poolItems,
-        ] = $this->get($awords, $groups, $langs);
-
-        $phrases = [];
-
-        if ($errors) {
-            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-            $traceFile = $trace[ 1 ][ 'file' ] ?? '{file}';
-            $traceLine = $trace[ 1 ][ 'line' ] ?? 0;
-
-            foreach ( $errors as $i => [ $errno, $errstr, $errdata ] ) {
-                $errLevel = $this->loggables[ $errno ] ?? 0;
-
-                $errMessage = [];
-                $errMessage[] = $errstr;
-                $errMessage = implode(' ', $errMessage);
-
-                $errMessage = $this->interpolate($errMessage, $errdata);
-
-                if ($this->logger && $errLevel) {
-                    $this->logger->log($errLevel, $errMessage);
-                }
-
-                if (! array_key_exists($i, $fallbacks)) {
-                    $e = new RuntimeException($errMessage);
-                    $e->setFile($traceFile);
-                    $e->setLine($traceLine);
-
-                    throw $e;
-                }
-
-                $phrases[ $i ] = $fallbacks[ $i ];
-            }
-        }
-
-        foreach ( $poolItems as $i => $poolItem ) {
-            $phrases[ $i ] = $poolItem->getPhrase();
-        }
-
-        [ $args, $kwargs ] = Lib::arr()->kwargs($placeholders);
-        $placeholdersList = $args;
-        $placeholdersAll = $kwargs;
-
-        foreach ( $phrases as $i => $phrase ) {
-            $phrasePlaceholders = ($placeholdersList[ $i ] ?? []) + $placeholdersAll;
-
-            $phraseInterpolated = $this->interpolate($phrase, $phrasePlaceholders);
-
-            $result[ $i ] = $phraseInterpolated;
-        }
-
-        return $result;
+        return $phrasesInterpolated;
     }
+
 
     /**
      * @param I18nAwordInterface|string             $aword
@@ -933,18 +870,25 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : string
     {
-        [ $phraseInterpolated ] = $this->phrasesOrDefault(
+        $theDebug = Lib::debug();
+
+        $fileLine = $theDebug->file_line();
+
+        $phrasesInterpolated = $this->doPhrasesOrDefault(
+            $fileLine,
             [ $aword ],
             $placeholders,
             $groups, $langs
         );
+
+        [ $phraseInterpolated ] = $phrasesInterpolated;
 
         return $phraseInterpolated;
     }
 
     /**
      * @param I18nAwordInterface|string             $aword
-     * @param array{0?: string}                     $fallback
+     * @param array{ 0?: string }                   $fallback
      * @param array<string, string>|null            $placeholders
      * @param array<I18nGroupInterface|string>|null $groups
      * @param array<I18nLangInterface|string>|null  $langs
@@ -957,15 +901,201 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : ?string
     {
+        $theDebug = Lib::debug();
+
+        $fileLine = $theDebug->file_line();
+
         $fallbacks = $fallback ? [ $fallback[ 0 ] ] : [];
 
-        [ $phraseInterpolated ] = $this->phrases(
+        $phrasesInterpolated = $this->doPhrases(
+            $fileLine,
             [ $aword ], $fallbacks,
             $placeholders,
             $groups, $langs
         );
 
+        [ $phraseInterpolated ] = $phrasesInterpolated;
+
         return $phraseInterpolated;
+    }
+
+
+    /**
+     * @param array<I18nAwordInterface|string>      $awords
+     * @param array<string, string>[]|null          $placeholders
+     * @param array<I18nGroupInterface|string>|null $groups
+     * @param array<I18nLangInterface|string>|null  $langs
+     *
+     * @return string[]
+     */
+    protected function doPhrasesOrDefault(
+        array $fileLine,
+        array $awords,
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
+    ) : array
+    {
+        if (! $awords) {
+            return [];
+        }
+
+        $placeholders = $placeholders ?? [];
+
+        $theArr = Lib::arr();
+
+        $this->loadUses();
+
+        $awordList = [];
+        foreach ( $awords as $i => $aword ) {
+            $awordList[ $i ] = I18nType::aword($aword);
+        }
+
+        $poolItemLists = $this->getOrDefault($awordList, $groups, $langs, [ &$errorLists ]);
+
+        $phraseList = [];
+
+        if ([] !== $errorLists) {
+            foreach ( $errorLists as $i => $errorList ) {
+                foreach ( $errorList as [ $errno, $errstr, $errdata ] ) {
+                    $errLevel = $this->loggables[ $errno ] ?? 0;
+
+                    $errMessage = [];
+                    $errMessage[] = "[ {$fileLine[0]}: {$fileLine[1]} ]";
+                    $errMessage[] = $errstr;
+                    $errMessage = implode(' ', $errMessage);
+
+                    $errMessage = $this->interpolator->interpolate($errMessage, $errdata);
+
+                    if ($this->logger && $errLevel) {
+                        $this->logger->log($errLevel, $errMessage);
+                    }
+
+                    if (! isset($poolItemLists[ $i ])) {
+                        $phraseList[ $i ] = $awordList[ $i ]->getWordOrPhrase();
+                    }
+                }
+            }
+        }
+
+        foreach ( $poolItemLists as $i => $poolItemList ) {
+            if ([] !== $poolItemList) {
+                /** @var I18nPoolItemInterface $poolItemList */
+
+                $poolItem = reset($poolItemList);
+
+                $phraseList[ $i ] = $poolItem->getPhrase();
+            }
+        }
+
+        $phrasesInterpolated = [];
+
+        if ([] !== $phraseList) {
+            [
+                $placeholdersList,
+                $placeholdersDict,
+            ] = $theArr->kwargs($placeholders);
+
+            foreach ( $phraseList as $i => $phrase ) {
+                $phrasePlaceholders = ($placeholdersList[ $i ] ?? []) + $placeholdersDict;
+
+                $phraseInterpolated = $this->interpolator->interpolate($phrase, $phrasePlaceholders);
+
+                $phrasesInterpolated[ $i ] = $phraseInterpolated;
+            }
+        }
+
+        return $phrasesInterpolated;
+    }
+
+    /**
+     * @param array<I18nAwordInterface|string>      $awords
+     * @param string[]                              $fallbacks
+     * @param array<string, string>[]|null          $placeholders
+     * @param array<I18nGroupInterface|string>|null $groups
+     * @param array<I18nLangInterface|string>|null  $langs
+     *
+     * @return (string|null)[]
+     * @throws RuntimeException
+     */
+    protected function doPhrases(
+        array $fileLine,
+        array $awords, array $fallbacks = [],
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
+    ) : array
+    {
+        if (! $awords) {
+            return [];
+        }
+
+        $placeholders = $placeholders ?? [];
+
+        $theArr = Lib::arr();
+
+        $this->loadUses();
+
+        $poolItemLists = $this->get($awords, $groups, $langs, [ &$errorLists ]);
+
+        $phraseList = [];
+
+        if ([] !== $errorLists) {
+            foreach ( $errorLists as $i => $errorList ) {
+                foreach ( $errorList as [ $errno, $errstr, $errdata ] ) {
+                    $errLevel = $this->loggables[ $errno ] ?? 0;
+
+                    $errMessage = [];
+                    $errMessage[] = $errstr;
+                    $errMessage = implode(' ', $errMessage);
+
+                    $errMessage = $this->interpolator->interpolate($errMessage, $errdata);
+
+                    if ($this->logger && $errLevel) {
+                        $this->logger->log($errLevel, $errMessage);
+                    }
+
+                    if (! isset($poolItemLists[ $i ])) {
+                        if (! array_key_exists($i, $fallbacks)) {
+                            $e = new RuntimeException($errMessage);
+                            $e->setFile($fileLine[ 0 ]);
+                            $e->setLine($fileLine[ 1 ]);
+
+                            throw $e;
+                        }
+
+                        $phraseList[ $i ] = $fallbacks[ $i ];
+                    }
+                }
+            }
+        }
+
+        foreach ( $poolItemLists as $i => $poolItemList ) {
+            if ([] !== $poolItemList) {
+                /** @var I18nPoolItemInterface $poolItemList */
+
+                $poolItem = reset($poolItemList);
+
+                $phraseList[ $i ] = $poolItem->getPhrase();
+            }
+        }
+
+        $phrasesInterpolated = [];
+
+        if ([] !== $phraseList) {
+            [
+                $placeholdersList,
+                $placeholdersDict,
+            ] = $theArr->kwargs($placeholders);
+
+            foreach ( $phraseList as $i => $phrase ) {
+                $phrasePlaceholders = ($placeholdersList[ $i ] ?? []) + $placeholdersDict;
+
+                $phraseInterpolated = $this->interpolator->interpolate($phrase, $phrasePlaceholders);
+
+                $phrasesInterpolated[ $i ] = $phraseInterpolated;
+            }
+        }
+
+        return $phrasesInterpolated;
     }
 
 
@@ -976,7 +1106,7 @@ class I18nFacade implements I18nInterface
      * @param array<I18nGroupInterface|string>|null $groups
      * @param array<I18nLangInterface|string>|null  $langs
      *
-     * @return array{0: string, 1: string}[]
+     * @return array{ 0: string, 1: string }[]
      */
     public function choicesOrDefault(
         array $numbers, array $awords,
@@ -984,102 +1114,18 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : array
     {
-        if (! $awords) {
-            return [];
-        }
+        $theDebug = Lib::debug();
 
-        $result = [];
+        $fileLine = $theDebug->file_line();
 
-        $this->loadUses();
+        $choicesInterpolated = $this->doChoicesOrDefault(
+            $fileLine,
+            $numbers, $awords,
+            $placeholders,
+            $groups, $langs
+        );
 
-        $placeholders = $placeholders ?? [];
-
-        $numberList = [];
-        foreach ( $numbers as $i => $number ) {
-            if (null === ($_number = Lib::parse()->numeric($number))) {
-                throw new LogicException(
-                    [
-                        'Each of `numbers` should be valid number or number-string',
-                        $number,
-                    ]
-                );
-            }
-
-            $numberList[ $i ] = $_number;
-        }
-
-        $awordList = [];
-        foreach ( $awords as $i => $aword ) {
-            $awordList[ $i ] = I18nType::aword($aword);
-        }
-
-        [
-            $errorList,
-            $poolItems,
-        ] = $this->getOrDefault($awordList, $groups, $langs);
-
-        $phraseList = [];
-
-        if ($errorList) {
-            $trace = []
-                + (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[ 1 ] ?? [])
-                + [ 'file' => '[:file:]', 'line' => '[:line:]' ];
-
-            [
-                'file' => $file,
-                'line' => $line,
-            ] = $trace;
-
-            foreach ( $errorList as $i => [ $errno, $errstr, $errdata ] ) {
-                $errLevel = $this->loggables[ $errno ] ?? 0;
-
-                $errMessage = [];
-                $errMessage[] = '[ ' . "{$file}: {$line}" . ' ]';
-                $errMessage[] = $errstr;
-                $errMessage = implode(' ', $errMessage);
-
-                $errMessage = $this->interpolate($errMessage, $errdata);
-
-                if ($this->logger && $errLevel) {
-                    $this->logger->log($errLevel, $errMessage);
-                }
-
-                $phraseList[ $i ] = $awordList[ $i ]->getValue();
-            }
-        }
-
-        foreach ( $poolItems as $i => $poolItem ) {
-            /** @var I18nPoolItemInterface $poolItem */
-
-            $number = $numberList[ $i ];
-
-            $poolItemLang = $poolItem->getLang();
-            $poolItemLanguage = $this->getLanguage($poolItemLang);
-            $poolItemChoice = $poolItemLanguage->getChoice();
-
-            $n = $poolItemChoice->choice($number);
-
-            $phrase = $poolItem->getChoice($n);
-
-            $phraseList[ $i ] = $phrase;
-        }
-
-        [
-            $placeholdersList,
-            $placeholdersDict,
-        ] = Lib::arr()->kwargs($placeholders);
-
-        foreach ( $phraseList as $i => $phrase ) {
-            $number = $numberList[ $i ];
-
-            $phrasePlaceholders = ($placeholdersList[ $i ] ?? []) + $placeholdersDict;
-
-            $phraseInterpolated = $this->interpolate($phrase, $phrasePlaceholders);
-
-            $result[ $i ] = [ $number, $phraseInterpolated ];
-        }
-
-        return $result;
+        return $choicesInterpolated;
     }
 
     /**
@@ -1090,7 +1136,7 @@ class I18nFacade implements I18nInterface
      * @param array<I18nGroupInterface|string>|null $groups
      * @param array<I18nLangInterface|string>|null  $langs
      *
-     * @return array{0: string, 1: string|null}[]
+     * @return array{ 0: string, 1: string|null }[]
      * @throws RuntimeException
      */
     public function choices(
@@ -1099,100 +1145,18 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : array
     {
-        if (! $awords) {
-            return [];
-        }
+        $theDebug = Lib::debug();
 
-        $result = [];
+        $fileLine = $theDebug->file_line();
 
-        $this->loadUses();
+        $choicesInterpolated = $this->doChoices(
+            $fileLine,
+            $numbers, $awords, $fallbacks,
+            $placeholders,
+            $groups, $langs
+        );
 
-        $placeholders = $placeholders ?? [];
-
-        $_numbers = [];
-        foreach ( $numbers as $i => $number ) {
-            if (null === ($_number = Lib::parse()->numeric($number))) {
-                throw new LogicException(
-                    [
-                        'Each of `numbers` should be valid number or number-string',
-                        $number,
-                    ]
-                );
-            }
-
-            $_numbers[ $i ] = $_number;
-        }
-
-        [
-            $errors,
-            $poolItems,
-        ] = $this->get($awords, $groups, $langs);
-
-        $phrases = [];
-
-        if ($errors) {
-            $trace = []
-                + (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[ 1 ] ?? [])
-                + [ 'file' => '[:file:]', 'line' => '[:line:]' ];
-
-            [
-                'file' => $file,
-                'line' => $line,
-            ] = $trace;
-
-            foreach ( $errors as $i => [ $errno, $errstr, $errdata ] ) {
-                $errLevel = $this->loggables[ $errno ] ?? 0;
-
-                $errMessage = [];
-                $errMessage[] = '[ ' . "{$file}: {$line}" . ' ]';
-                $errMessage[] = $errstr;
-                $errMessage = implode(' ', $errMessage);
-
-                $errMessage = $this->interpolate($errMessage, $errdata);
-
-                if ($this->logger && $errLevel) {
-                    $this->logger->log($errLevel, $errMessage);
-                }
-
-                if (! array_key_exists($i, $fallbacks)) {
-                    throw new RuntimeException($errMessage);
-                }
-
-                $phrases[ $i ] = $fallbacks[ $i ];
-            }
-        }
-
-        foreach ( $poolItems as $i => $poolItem ) {
-            /** @var I18nPoolItemInterface $poolItem */
-
-            $number = $_numbers[ $i ];
-
-            $poolItemLang = $poolItem->getLang();
-            $poolItemLanguage = $this->getLanguage($poolItemLang);
-            $poolItemChoice = $poolItemLanguage->getChoice();
-
-            $n = $poolItemChoice->choice($number);
-
-            $phrase = $poolItem->getChoice($n);
-
-            $phrases[ $i ] = $phrase;
-        }
-
-        [ $args, $kwargs ] = Lib::arr()->kwargs($placeholders);
-        $placeholdersList = $args;
-        $placeholdersAll = $kwargs;
-
-        foreach ( $phrases as $i => $phrase ) {
-            $number = $_numbers[ $i ];
-
-            $phrasePlaceholders = ($placeholdersList[ $i ] ?? []) + $placeholdersAll;
-
-            $phraseInterpolated = $this->interpolate($phrase, $phrasePlaceholders);
-
-            $result[ $i ] = [ $number, $phraseInterpolated ];
-        }
-
-        return $result;
+        return $choicesInterpolated;
     }
 
     /**
@@ -1202,7 +1166,7 @@ class I18nFacade implements I18nInterface
      * @param array<I18nGroupInterface|string>|null $groups
      * @param array<I18nLangInterface|string>|null  $langs
      *
-     * @return array{0: string, 1: string}
+     * @return array{ 0: string, 1: string }
      */
     public function choiceOrDefault(
         $number, $aword,
@@ -1210,24 +1174,31 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : array
     {
-        [ $phraseInterpolated ] = $this->choicesOrDefault(
+        $theDebug = Lib::debug();
+
+        $fileLine = $theDebug->file_line();
+
+        $choicesInterpolated = $this->doChoicesOrDefault(
+            $fileLine,
             [ $number ], [ $aword ],
             $placeholders,
             $groups, $langs
         );
 
-        return $phraseInterpolated;
+        [ $choiceInterpolated ] = $choicesInterpolated;
+
+        return $choiceInterpolated;
     }
 
     /**
      * @param int|float|string                      $number
      * @param I18nAwordInterface|string             $aword
-     * @param array{0?: string}                     $fallback
+     * @param array{ 0?: string }                   $fallback
      * @param array<string, string>|null            $placeholders
      * @param array<I18nGroupInterface|string>|null $groups
      * @param array<I18nLangInterface|string>|null  $langs
      *
-     * @return array{0: string, 1: string|null}
+     * @return array{ 0: string, 1: string|null }
      * @throws RuntimeException
      */
     public function choice(
@@ -1236,166 +1207,241 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : array
     {
+        $theDebug = Lib::debug();
+
+        $fileLine = $theDebug->file_line();
+
         $fallbacks = $fallback ? [ $fallback[ 0 ] ] : [];
 
-        [ $phraseInterpolated ] = $this->choices(
+        $choicesInterpolated = $this->doChoices(
+            $fileLine,
             [ $number ], [ $aword ], $fallbacks,
             $placeholders,
             $groups, $langs
         );
 
-        return $phraseInterpolated;
+        [ $choiceInterpolated ] = $choicesInterpolated;
+
+        return $choiceInterpolated;
     }
 
-
     /**
+     * @param array<int|float|string>               $numbers
      * @param array<I18nAwordInterface|string>      $awords
+     * @param array<string, string>[]|null          $placeholders
      * @param array<I18nGroupInterface|string>|null $groups
      * @param array<I18nLangInterface|string>|null  $langs
      *
-     * @return array{
-     *     0: array{0: int, 1: string, 2?: array}[],
-     *     1: I18nPoolItemInterface[]
-     * }
+     * @return array{ 0: string, 1: string }[]
      */
-    public function get(array $awords, ?array $groups = null, ?array $langs = null) : array
+    protected function doChoicesOrDefault(
+        array $fileLine,
+        array $numbers, array $awords,
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
+    ) : array
     {
         if ([] === $awords) {
-            return [ [], [] ];
+            return [];
         }
+
+        $placeholders = $placeholders ?? [];
+
+        $theArr = Lib::arr();
+        $theType = Lib::type();
 
         $this->loadUses();
 
-        $langs = $langs ?? [ $this->store->langCurrent ];
+        $numberList = [];
+        foreach ( $numbers as $i => $number ) {
+            $numberValid = $theType->numeric($number)->orThrow();
 
-        $groups = $groups ?? $this->getGroupsLoaded($langs);
+            $numberList[ $i ] = $numberValid;
+        }
 
-
-        $awordsList = [];
+        $awordList = [];
         foreach ( $awords as $i => $aword ) {
-            $awordsList[ $i ] = I18nAword::from($aword);
+            $awordList[ $i ] = I18nType::aword($aword);
         }
 
-        $groupsList = [];
-        foreach ( $groups as $i => $aword ) {
-            $groupsList[ $i ] = I18nGroup::from($aword);
-        }
+        $poolItemLists = $this->getOrDefault($awordList, $groups, $langs, [ &$errorLists ]);
 
-        $langsList = [];
-        foreach ( $langs as $i => $aword ) {
-            $langsList[ $i ] = I18nLang::from($aword);
-        }
+        $phraseList = [];
 
-        $errorList = [];
-        $wordsList = [];
-        foreach ( $awordsList as $i => $aword ) {
-            $awordWord = $aword->hasWord();
+        if ([] !== $errorLists) {
+            foreach ( $errorLists as $i => $errorList ) {
+                foreach ( $errorList as [ $errno, $errstr, $errdata ] ) {
+                    $errLevel = $this->loggables[ $errno ] ?? 0;
 
-            if (null === $awordWord) {
-                $errno = I18n::E_WRONG_AWORD;
-                $errstr = 'Each `aword` should begin with `aword_prefix` symbol to be translated: [:aword_prefix:] / [:dump:]';
-                $errdata = [
-                    'aword_prefix' => I18n::AWORD_PREFIX,
-                    'dump'         => Lib::debug()->value($aword),
-                ];
+                    $errMessage = [];
+                    $errMessage[] = "[ {$fileLine[0]}: {$fileLine[1]} ]";
+                    $errMessage[] = $errstr;
+                    $errMessage = implode(' ', $errMessage);
 
-                $errorList[ $i ] = [ $errno, $errstr, $errdata ];
+                    $errMessage = $this->interpolator->interpolate($errMessage, $errdata);
 
-                continue;
-            }
+                    if ($this->logger && $errLevel) {
+                        $this->logger->log($errLevel, $errMessage);
+                    }
 
-            $awordGroup = $aword->getGroup();
-
-            $found = false;
-            foreach ( $groupsList as $group ) {
-                $groupString = $group->getValue();
-
-                if ($groupString === $awordGroup) {
-                    $found = true;
-
-                    break;
+                    if (! isset($poolItemLists[ $i ])) {
+                        $phraseList[ $i ] = $awordList[ $i ]->getWordOrPhrase();
+                    }
                 }
             }
-            if (! $found) {
-                $errno = I18n::E_FORGOTTEN_GROUP;
-                $errstr = 'You forgot to load groups for languages: [:groups:] / [:languages:] / [:dump:]';
-                $errdata = [
-                    'groups'    => '( ' . implode(', ', $groupsList) . ' )',
-                    'languages' => '( ' . implode(', ', $langsList) . ' )',
-                    'dump'      => Lib::debug()->value($aword),
-                ];
-
-                $errorList[ $i ] = [ $errno, $errstr, $errdata ];
-
-                continue;
-            }
-
-            $wordsList[ $i ] = $awordWord;
         }
 
-        $poolItemList = $this->pool->get(
-            $wordsList,
-            $groupsList,
-            $langsList
-        );
+        foreach ( $poolItemLists as $i => $poolItemList ) {
+            if ([] !== $poolItemList) {
+                /** @var I18nPoolItemInterface $poolItemList */
 
-        foreach ( $wordsList as $i => $word ) {
-            if (! isset($poolItemList[ $i ])) {
-                $aword = $awordsList[ $i ];
+                $poolItem = reset($poolItemList);
 
-                $errno = I18n::E_MISSING_WORD;
-                $errstr = 'This word is missing in the dictionary for languages: [:word:] / [:languages:] / [:dump:]';
-                $errdata = [
-                    'word'      => $word,
-                    'languages' => '( ' . implode(', ', $langsList) . ' )',
-                    'dump'      => Lib::debug()->value($aword),
-                ];
+                $number = $numberList[ $i ];
 
-                $errorList[ $i ] = [ $errno, $errstr, $errdata ];
+                $poolItemLang = $poolItem->getLang();
+                $poolItemLanguage = $this->getLanguage($poolItemLang);
+                $poolItemLanguageChoice = $poolItemLanguage->getChoice();
+
+                $n = $poolItemLanguageChoice->choice($number);
+
+                $phrase = $poolItem->getChoice($n);
+
+                $phraseList[ $i ] = $phrase;
             }
         }
 
-        return [ $errorList, $poolItemList ];
+        $choicesInterpolated = [];
+
+        if ([] !== $phraseList) {
+            [
+                $placeholdersList,
+                $placeholdersDict,
+            ] = $theArr->kwargs($placeholders);
+
+            foreach ( $phraseList as $i => $phrase ) {
+                $number = $numberList[ $i ];
+
+                $phrasePlaceholders = ($placeholdersList[ $i ] ?? []) + $placeholdersDict;
+
+                $phraseInterpolated = $this->interpolator->interpolate($phrase, $phrasePlaceholders);
+
+                $choicesInterpolated[ $i ] = [ $number, $phraseInterpolated ];
+            }
+        }
+
+        return $choicesInterpolated;
     }
 
     /**
+     * @param array<int|float|string>               $numbers
      * @param array<I18nAwordInterface|string>      $awords
+     * @param string[]                              $fallbacks
+     * @param array<string, string>[]|null          $placeholders
      * @param array<I18nGroupInterface|string>|null $groups
      * @param array<I18nLangInterface|string>|null  $langs
      *
-     * @return array{
-     *     0: array{0: int, 1: string, 2?: array}[],
-     *     1: I18nPoolItemInterface[]
-     * }
+     * @return array{ 0: string, 1: string|null }[]
+     * @throws RuntimeException
      */
-    public function getOrDefault(array $awords, ?array $groups = null, ?array $langs = null) : array
+    protected function doChoices(
+        array $fileLine,
+        array $numbers, array $awords, array $fallbacks = [],
+        ?array $placeholders = null,
+        ?array $groups = null, ?array $langs = null
+    ) : array
     {
-        if (! $awords) {
-            return [ [], [] ];
+        if ([] === $awords) {
+            return [];
         }
 
-        [ $errors, $items ] = $this->get($awords, $groups, $langs);
+        $placeholders = $placeholders ?? [];
 
-        if ($errors) {
-            $awordsLangDefault = array_intersect_key($awords, $errors);
-            $groupsLangDefault = $this->getGroupsLoaded($langs);
+        $theArr = Lib::arr();
+        $theType = Lib::type();
 
-            $this->useGroups($groupsLangDefault, $this->store->langDefault);
-            $this->loadUses();
+        $this->loadUses();
 
-            [ , $itemsDefault ] = $this->get(
-                $awordsLangDefault,
-                $groupsLangDefault,
-                [ $this->store->langDefault ]
-            );
+        $numberList = [];
+        foreach ( $numbers as $i => $number ) {
+            $numberValid = $theType->numeric($number)->orThrow();
 
-            foreach ( $itemsDefault as $i => $item ) {
-                unset($errors[ $i ]);
+            $numberList[ $i ] = $numberValid;
+        }
 
-                $items[ $i ] = $item;
+        $poolItemLists = $this->get($awords, $groups, $langs, [ &$errorLists ]);
+
+        $phraseList = [];
+
+        if ([] !== $errorLists) {
+            foreach ( $errorLists as $i => $errorList ) {
+                foreach ( $errorList as [ $errno, $errstr, $errdata ] ) {
+                    $errLevel = $this->loggables[ $errno ] ?? 0;
+
+                    $errMessage = [];
+                    $errMessage[] = $errstr;
+                    $errMessage = implode(' ', $errMessage);
+
+                    $errMessage = $this->interpolator->interpolate($errMessage, $errdata);
+
+                    if ($this->logger && $errLevel) {
+                        $this->logger->log($errLevel, $errMessage);
+                    }
+
+                    if (! isset($poolItemLists[ $i ])) {
+                        if (! array_key_exists($i, $fallbacks)) {
+                            $e = new RuntimeException($errMessage);
+                            $e->setFile($fileLine[ 0 ]);
+                            $e->setLine($fileLine[ 1 ]);
+
+                            throw $e;
+                        }
+
+                        $phraseList[ $i ] = $fallbacks[ $i ];
+                    }
+                }
             }
         }
 
-        return [ $errors, $items ];
+        foreach ( $poolItemLists as $i => $poolItemList ) {
+            if ([] !== $poolItemList) {
+                /** @var I18nPoolItemInterface $poolItemList */
+
+                $poolItem = reset($poolItemList);
+
+                $number = $numberList[ $i ];
+
+                $poolItemLang = $poolItem->getLang();
+                $poolItemLanguage = $this->getLanguage($poolItemLang);
+                $poolItemLanguageChoice = $poolItemLanguage->getChoice();
+
+                $n = $poolItemLanguageChoice->choice($number);
+
+                $phrase = $poolItem->getChoice($n);
+
+                $phraseList[ $i ] = $phrase;
+            }
+        }
+
+        $choicesInterpolated = [];
+
+        if ([] !== $phraseList) {
+            [
+                $placeholdersList,
+                $placeholdersDict,
+            ] = $theArr->kwargs($placeholders);
+
+            foreach ( $phraseList as $i => $phrase ) {
+                $number = $numberList[ $i ];
+
+                $phrasePlaceholders = ($placeholdersList[ $i ] ?? []) + $placeholdersDict;
+
+                $phraseInterpolated = $this->interpolator->interpolate($phrase, $phrasePlaceholders);
+
+                $choicesInterpolated[ $i ] = [ $number, $phraseInterpolated ];
+            }
+        }
+
+        return $choicesInterpolated;
     }
 }

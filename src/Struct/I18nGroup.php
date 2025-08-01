@@ -3,8 +3,7 @@
 namespace Gzhegow\I18n\Struct;
 
 use Gzhegow\Lib\Lib;
-use Gzhegow\Lib\Modules\Php\Result\Ret;
-use Gzhegow\Lib\Modules\Php\Result\Result;
+use Gzhegow\Lib\Modules\Type\Ret;
 
 
 class I18nGroup implements I18nGroupInterface
@@ -22,67 +21,71 @@ class I18nGroup implements I18nGroupInterface
 
     public function __toString()
     {
+        return $this->toString();
+    }
+
+
+    public function toString(array $options = []) : string
+    {
         return $this->value;
     }
 
 
     /**
-     * @param Ret $ret
-     *
-     * @return static|bool|null
+     * @return static|Ret<static>
      */
-    public static function from($from, $ret = null)
+    public static function from($from, ?array $fallback = null)
     {
-        $retCur = Result::asValue();
+        $ret = Ret::new();
 
         $instance = null
-            ?? static::fromStatic($from, $retCur)
-            ?? static::fromString($from, $retCur);
+            ?? static::fromStatic($from)->orNull($ret)
+            ?? static::fromString($from)->orNull($ret);
 
-        if ($retCur->isErr()) {
-            return Result::err($ret, $retCur);
+        if ($ret->isFail()) {
+            return Ret::throw($fallback, $ret);
         }
 
-        return Result::ok($ret, $instance);
+        return Ret::ok($fallback, $instance);
     }
 
     /**
-     * @param Ret $ret
-     *
-     * @return static|bool|null
+     * @return static|Ret<static>
      */
-    public static function fromStatic($from, $ret = null)
+    public static function fromStatic($from, ?array $fallback = null)
     {
         if ($from instanceof static) {
-            return Result::ok($ret, $from);
+            return Ret::ok($fallback, $from);
         }
 
-        return Result::err(
-            $ret,
+        return Ret::throw(
+            $fallback,
             [ 'The `from` should be instance of: ' . static::class, $from ],
             [ __FILE__, __LINE__ ]
         );
     }
 
     /**
-     * @param Ret $ret
-     *
-     * @return static|bool|null
+     * @return static|Ret<static>
      */
-    public static function fromString($from, $ret = null)
+    public static function fromString($from, ?array $fallback = null)
     {
-        if (! Lib::type()->string_not_empty($fromString, $from)) {
-            return Result::err(
-                $ret,
+        $theType = Lib::type();
+
+        if (! $theType->string_not_empty($from)->isOk([ &$fromString ])) {
+            return Ret::throw(
+                $fallback,
                 [ 'The `from` should be non-empty string', $from ],
                 [ __FILE__, __LINE__ ]
             );
         }
 
-        if (! preg_match($regex = '/^[a-z][a-z0-9_-]*[a-z0-9]$/i', $fromString)) {
-            return Result::err(
-                $ret,
-                [ 'The `from` should be string that is match regex: ' . $regex, $from ],
+        $regexGroup = '/^' . static::getRegex() . '$/';
+
+        if (! preg_match($regexGroup, $fromString)) {
+            return Ret::throw(
+                $fallback,
+                [ 'The `from` should be string that is match regex: ' . $regexGroup, $from ],
                 [ __FILE__, __LINE__ ]
             );
         }
@@ -90,12 +93,18 @@ class I18nGroup implements I18nGroupInterface
         $instance = new static();
         $instance->value = $fromString;
 
-        return Result::ok($ret, $instance);
+        return Ret::ok($fallback, $instance);
     }
 
 
     public function getValue() : string
     {
         return $this->value;
+    }
+
+
+    public static function getRegex() : string
+    {
+        return '[a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9]';
     }
 }

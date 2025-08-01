@@ -2,7 +2,11 @@
 
 namespace Gzhegow\I18n\Struct;
 
-interface I18nGroupInterface
+use Gzhegow\Lib\Modules\Php\Interfaces\ToStringInterface;
+
+
+interface I18nGroupInterface extends
+    ToStringInterface
 {
     public function getValue() : string;
 }

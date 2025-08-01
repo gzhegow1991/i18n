@@ -4,8 +4,7 @@ namespace Gzhegow\I18n\Language;
 
 use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\Type\I18nType;
-use Gzhegow\Lib\Modules\Php\Result\Ret;
-use Gzhegow\Lib\Modules\Php\Result\Result;
+use Gzhegow\Lib\Modules\Type\Ret;
 use Gzhegow\I18n\Choice\I18nChoiceInterface;
 
 
@@ -49,54 +48,54 @@ class I18nLanguage implements I18nLanguageInterface
     }
 
 
-    /**
-     * @param Ret $ret
-     *
-     * @return static|bool|null
-     */
-    public static function from($from, $ret = null)
+    public function toArray(array $options = []) : array
     {
-        $retCur = Result::asValue();
+        return get_object_vars($this);
+    }
+
+
+    /**
+     * @return static|Ret<static>
+     */
+    public static function from($from, ?array $fallback = null)
+    {
+        $ret = Ret::new();
 
         $instance = null
-            ?? static::fromStatic($from, $retCur)
-            ?? static::fromArray($from, $retCur);
+            ?? static::fromStatic($from)->orNull($ret)
+            ?? static::fromArray($from)->orNull($ret);
 
-        if ($retCur->isErr()) {
-            return Result::err($ret, $retCur);
+        if ($ret->isFail()) {
+            return Ret::throw($fallback, $ret);
         }
 
-        return Result::ok($ret, $instance);
+        return Ret::ok($fallback, $instance);
     }
 
     /**
-     * @param Ret $ret
-     *
-     * @return static|bool|null
+     * @return static|Ret<static>
      */
-    public static function fromStatic($from, $ret = null)
+    public static function fromStatic($from, ?array $fallback = null)
     {
         if ($from instanceof static) {
-            return Result::ok($ret, $from);
+            return Ret::ok($fallback, $from);
         }
 
-        return Result::err(
-            $ret,
+        return Ret::throw(
+            $fallback,
             [ 'The `from` should be instance of: ' . static::class, $from ],
             [ __FILE__, __LINE__ ]
         );
     }
 
     /**
-     * @param Ret $ret
-     *
-     * @return static|bool|null
+     * @return static|Ret<static>
      */
-    public static function fromArray($from, $ret = null)
+    public static function fromArray($from, ?array $fallback = null)
     {
         if (! is_array($from)) {
-            return Result::err(
-                $ret,
+            return Ret::throw(
+                $fallback,
                 [ 'The `from` should be non-empty string', $from ],
                 [ __FILE__, __LINE__ ]
             );
@@ -116,41 +115,48 @@ class I18nLanguage implements I18nLanguageInterface
 
         $titleNative = $titleNative ?? $titleEnglish;
 
-        $langObject = I18nType::lang($lang);
-
-        if (! $theType->string_not_empty($localeString, $locale)) {
-            return Result::err(
-                $ret,
-                [ 'The `from[locale]` should be non-empty string', $from ],
+        if (null === ($langObject = I18nType::langOrNull($lang))) {
+            return Ret::throw(
+                $fallback,
+                [ 'The `from[lang]` should be valid lang', $from ],
                 [ __FILE__, __LINE__ ]
             );
         }
 
-        if (! $theType->string_not_empty($scriptString, $script)) {
-            return Result::err(
-                $ret,
+        if (null === ($localeObject = I18nType::locale($locale))) {
+            return Ret::throw(
+                $fallback,
+                [ 'The `from[locale]` should be valid locale', $from ],
+                [ __FILE__, __LINE__ ]
+            );
+        }
+
+        if (! $theType->string_not_empty($script)->isOk([ &$scriptString ])) {
+            return Ret::throw(
+                $fallback,
                 [ 'The `from[script]` should be non-empty string', $from ],
                 [ __FILE__, __LINE__ ]
             );
         }
 
-        if (! $theType->string_not_empty($titleEnglishString, $titleEnglish)) {
-            return Result::err(
-                $ret,
+        if (! $theType->string_not_empty($titleEnglish)->isOk([ &$titleEnglishString ])) {
+            return Ret::throw(
+                $fallback,
                 [ 'The `from[titleEnglish]` should be non-empty string', $from ],
                 [ __FILE__, __LINE__ ]
             );
         }
 
-        if (! $theType->string_not_empty($titleNativeString, $titleNative)) {
-            return Result::err(
-                $ret,
+        if (! $theType->string_not_empty($titleNative)->isOk([ &$titleNativeString ])) {
+            return Ret::throw(
+                $fallback,
                 [ 'The `from[titleNative]` should be non-empty string', $from ],
                 [ __FILE__, __LINE__ ]
             );
         }
 
         $langString = $langObject->getValue();
+        $localeString = $localeObject->getValue();
 
         $instance = new static();
         $instance->lang = $langString;
@@ -160,9 +166,9 @@ class I18nLanguage implements I18nLanguageInterface
         $instance->titleNative = $titleNativeString;
 
         if (null !== $phpLocales) {
-            if ((! is_array($phpLocales)) || ([] === $phpLocales)) {
-                return Result::err(
-                    $ret,
+            if (! (is_array($phpLocales) && ([] !== $phpLocales))) {
+                return Ret::throw(
+                    $fallback,
                     [ 'The `from[phpLocales]` should be non-empty array', $from ],
                     [ __FILE__, __LINE__ ]
                 );
@@ -173,8 +179,8 @@ class I18nLanguage implements I18nLanguageInterface
 
         if (null !== $choice) {
             if (! is_a($choice, I18nChoiceInterface::class)) {
-                return Result::err(
-                    $ret,
+                return Ret::throw(
+                    $fallback,
                     [ 'The `from[choice]` should be instance of: ' . I18nChoiceInterface::class, $choice ],
                     [ __FILE__, __LINE__ ]
                 );
@@ -183,7 +189,7 @@ class I18nLanguage implements I18nLanguageInterface
             $instance->setChoice($choice);
         }
 
-        return Result::ok($ret, $instance);
+        return Ret::ok($fallback, $instance);
     }
 
 
@@ -253,10 +259,12 @@ class I18nLanguage implements I18nLanguageInterface
      *     LC_MONETARY?: string|string[],
      *     LC_MESSAGES?: string|string[],
      * } $phpLocales
+     *
+     * @return static
      */
-    public function setPhpLocales(array $phpLocales) : void
+    public function setPhpLocales(array $phpLocales)
     {
-        $_phpLocales = [
+        $phpLocalesMap = [
             LC_COLLATE  => $phpLocales[ LC_COLLATE ] ?? null,
             LC_CTYPE    => $phpLocales[ LC_CTYPE ] ?? null,
             LC_MONETARY => $phpLocales[ LC_MONETARY ] ?? null,
@@ -265,12 +273,14 @@ class I18nLanguage implements I18nLanguageInterface
         ];
 
         if (defined('LC_MESSAGES')) {
-            $_phpLocales[ LC_MESSAGES ] = $phpLocales[ LC_MESSAGES ] ?? null;
+            $phpLocalesMap[ LC_MESSAGES ] = $phpLocales[ LC_MESSAGES ] ?? null;
         }
 
-        $_phpLocales = array_filter($_phpLocales);
+        $phpLocalesMap = array_filter($phpLocalesMap);
 
-        $this->phpLocales = $_phpLocales;
+        $this->phpLocales = $phpLocalesMap;
+
+        return $this;
     }
 
 
@@ -279,8 +289,13 @@ class I18nLanguage implements I18nLanguageInterface
         return $this->choice;
     }
 
-    public function setChoice(I18nChoiceInterface $choice) : void
+    /**
+     * @return static
+     */
+    public function setChoice(I18nChoiceInterface $choice)
     {
         $this->choice = $choice;
+
+        return $this;
     }
 }

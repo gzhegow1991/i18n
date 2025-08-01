@@ -3,9 +3,11 @@
 namespace Gzhegow\I18n\Language;
 
 use Gzhegow\I18n\Choice\I18nChoiceInterface;
+use Gzhegow\Lib\Modules\Php\Interfaces\ToArrayInterface;
 
 
-interface I18nLanguageInterface
+interface I18nLanguageInterface extends
+    ToArrayInterface
 {
     public function getLang() : string;
 
@@ -52,11 +54,16 @@ interface I18nLanguageInterface
      *     LC_MONETARY?: string|string[],
      *     LC_MESSAGES?: string|string[],
      * } $phpLocales
+     *
+     * @return static
      */
-    public function setPhpLocales(array $phpLocales) : void;
+    public function setPhpLocales(array $phpLocales);
 
 
     public function getChoice() : I18nChoiceInterface;
 
-    public function setChoice(I18nChoiceInterface $choice) : void;
+    /**
+     * @return static
+     */
+    public function setChoice(I18nChoiceInterface $choice);
 }

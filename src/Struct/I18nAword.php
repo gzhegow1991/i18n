@@ -4,10 +4,8 @@ namespace Gzhegow\I18n\Struct;
 
 use Gzhegow\Lib\Lib;
 use Gzhegow\I18n\I18n;
-use Gzhegow\I18n\I18nFacade;
 use Gzhegow\I18n\Type\I18nType;
-use Gzhegow\Lib\Modules\Php\Result\Ret;
-use Gzhegow\Lib\Modules\Php\Result\Result;
+use Gzhegow\Lib\Modules\Type\Ret;
 
 
 class I18nAword implements I18nAwordInterface
@@ -18,14 +16,9 @@ class I18nAword implements I18nAwordInterface
     protected $value;
 
     /**
-     * @var string
+     * @var I18nWordInterface
      */
     protected $word;
-    /**
-     * @var string
-     */
-    protected $group;
-
     /**
      * @var string
      */
@@ -39,87 +32,98 @@ class I18nAword implements I18nAwordInterface
 
     public function __toString()
     {
-        return $this->value;
+        return $this->toString();
+    }
+
+
+    public function toArray(array $options = []) : array
+    {
+        $vars = get_object_vars($this);
+
+        if (null !== $this->word) {
+            $vars[ 'word' ] = $this->word->toArray();
+        }
+
+        return $vars;
+    }
+
+    public function toString(array $options = []) : string
+    {
+        return $this->word
+            ? $this->word->toString($options)
+            : $this->phrase;
     }
 
 
     /**
-     * @param Ret $ret
-     *
-     * @return static|bool|null
+     * @return static|Ret<static>
      */
-    public static function from($from, $ret = null)
+    public static function from($from, ?array $fallback = null)
     {
-        $retCur = Result::asValue();
+        $ret = Ret::new();
 
         $instance = null
-            ?? static::fromStatic($from, $retCur)
-            ?? static::fromString($from, $retCur);
+            ?? static::fromStatic($from)->orNull($ret)
+            ?? static::fromString($from)->orNull($ret);
 
-        if ($retCur->isErr()) {
-            return Result::err($ret, $retCur);
+        if ($ret->isFail()) {
+            return Ret::throw($fallback, $ret);
         }
 
-        return Result::ok($ret, $instance);
+        return Ret::ok($fallback, $instance);
     }
 
     /**
-     * @param Ret $ret
-     *
-     * @return static|bool|null
+     * @return static|Ret<static>
      */
-    public static function fromStatic($from, $ret = null)
+    public static function fromStatic($from, ?array $fallback = null)
     {
         if ($from instanceof static) {
-            return Result::ok($ret, $from);
+            return Ret::ok($fallback, $from);
         }
 
-        return Result::err(
-            $ret,
+        return Ret::throw(
+            $fallback,
             [ 'The `from` should be instance of: ' . static::class, $from ],
             [ __FILE__, __LINE__ ]
         );
     }
 
     /**
-     * @param Ret $ret
-     *
-     * @return static|bool|null
+     * @return static|Ret<static>
      */
-    public static function fromString($from, $ret = null)
+    public static function fromString($from, ?array $fallback = null)
     {
-        if (! Lib::type()->string_not_empty($fromString, $from)) {
-            return Result::err(
-                $ret,
+        $theStr = Lib::str();
+        $theType = Lib::type();
+
+        if (! $theType->string_not_empty($from)->isOk([ &$fromString ])) {
+            return Ret::throw(
+                $fallback,
                 [ 'The `from` should be non-empty string', $from ],
                 [ __FILE__, __LINE__ ]
             );
         }
 
-        $wordString = null;
-        $groupString = null;
-        if ($fromString[ 0 ] === I18n::AWORD_PREFIX) {
-            $word = substr($fromString, 1);
-            $word = I18nType::wordOrNull($word);
+        $phraseString = null;
+        $wordObject = null;
+        if (true
+            && $theStr->str_starts($fromString, I18n::AWORD_PREFIX, false, [ &$substr ])
+            && (null !== ($wordValid = I18nType::wordOrNull($substr)))
+        ) {
+            $wordObject = $wordValid;
 
-            if (null !== $word) {
-                $wordString = $word->getValue();
-                $groupString = $word->getGroup();
-            }
-        }
-
-        $phrase = null;
-        if (null === $wordString) {
-            $phrase = $fromString;
+        } else {
+            $phraseString = $fromString;
         }
 
         $instance = new static();
         $instance->value = $fromString;
-        $instance->word = $wordString;
-        $instance->group = $groupString;
-        $instance->phrase = $phrase;
 
-        return Result::ok($ret, $instance);
+        $instance->word = $wordObject;
+        $instance->phrase = $phraseString;
+
+        return Ret::ok($fallback, $instance);
     }
 
 
@@ -129,31 +133,48 @@ class I18nAword implements I18nAwordInterface
     }
 
 
-    public function hasWord() : ?string
+    public function getWordOrPhrase() : string
+    {
+        return $this->value;
+    }
+
+
+    /**
+     * @param I18nWordInterface $refWord
+     */
+    public function isWord(&$refWord = null) : bool
+    {
+        $refWord = null;
+
+        if (null !== $this->word) {
+            $refWord = $this->word;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getWord() : I18nWordInterface
     {
         return $this->word;
     }
 
-    public function getWord() : string
+
+    /**
+     * @param string $refPhrase
+     */
+    public function isPhrase(&$refPhrase = null) : bool
     {
-        return $this->word;
-    }
+        $refPhrase = null;
 
+        if (null !== $this->phrase) {
+            $refPhrase = $this->phrase;
 
-    public function hasGroup() : ?string
-    {
-        return $this->group;
-    }
+            return true;
+        }
 
-    public function getGroup() : string
-    {
-        return $this->group;
-    }
-
-
-    public function hasPhrase() : ?string
-    {
-        return $this->phrase;
+        return false;
     }
 
     public function getPhrase() : string
