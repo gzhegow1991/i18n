@@ -178,6 +178,7 @@ $config->configure(
 
         // > и указать уровень логирования для ошибок, которые регистрирует модуль
         // $config->loggables = [
+        //     // \Gzhegow\I18n\I18n::E_EXCLUDED_GROUP  => \Psr\Log\LogLevel::WARNING,
         //     // \Gzhegow\I18n\I18n::E_FORGOTTEN_GROUP => \Psr\Log\LogLevel::WARNING,
         //     // \Gzhegow\I18n\I18n::E_MISSING_WORD    => \Psr\Log\LogLevel::WARNING,
         //     // \Gzhegow\I18n\I18n::E_WRONG_AWORD     => \Psr\Log\LogLevel::WARNING,
@@ -186,15 +187,16 @@ $config->configure(
 );
 
 // > создаем репозиторий, который будет получать переводы из удаленного источника
-$langDir = $ffn->root() . '/disc/i18n';
-
 // > в пакете поставляются несколько готовых репозиториев: JSON, PHP, YAML, и всегда можно написать свой собственный
+// > задаем папку, где лежат переводы
+$langDir = $ffn->root() . '/disc/i18n';
+// > создаем нужный объект
 // $repositoryJson = new \Gzhegow\I18n\Repository\File\I18nJsonFileRepository($langDir);
 $repositoryJsonc = new \Gzhegow\I18n\Repository\File\I18nJsoncFileRepository($langDir);
 // $repositoryPhp = new \Gzhegow\I18n\Repository\File\I18nI18nPhpFileRepository($langDir);
 // $repositoryYaml = new \Gzhegow\I18n\Repository\File\I18nYamlFileRepository($langDir);
 
-// > создаем пул, который будет хранить запрошенные из репозитория переводы в виде пригодном для повторного быстрого запроса
+// > создаем пул, который будет хранить запрошенные из репозитория переводы в виде пригодном для повторного запроса из оперативной памяти
 $poolMemory = new \Gzhegow\I18n\Pool\I18nMemoryPool();
 
 // > создаем мост между пулом и репозиторием, который управляет очередью вызовов
