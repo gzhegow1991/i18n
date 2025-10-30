@@ -640,7 +640,7 @@ $test->expectStdout('
 "Привет"
 NULL
 "123"
-"[ CATCH ] The word is missing in dictionary: [ ru|main|message|missing ] / [ ru ]" | "tests/test.php" | 565
+"[ CATCH ] The word is missing in dictionary: [ ru|main|message|missing ] / [ ru ]" | "tests/test.php" | 569
 ');
 $test->run();
 
