@@ -1056,8 +1056,8 @@ class I18nFacade implements I18nInterface
                     if (! isset($poolItemLists[ $i ])) {
                         if (! array_key_exists($i, $fallbacks)) {
                             $e = new RuntimeException($errMessage);
-                            $e->setFile($fileLine[ 0 ]);
-                            $e->setLine($fileLine[ 1 ]);
+                            $e->setFileOverride($fileLine[ 0 ]);
+                            $e->setLineOverride($fileLine[ 1 ]);
 
                             throw $e;
                         }
@@ -1391,8 +1391,8 @@ class I18nFacade implements I18nInterface
                     if (! isset($poolItemLists[ $i ])) {
                         if (! array_key_exists($i, $fallbacks)) {
                             $e = new RuntimeException($errMessage);
-                            $e->setFile($fileLine[ 0 ]);
-                            $e->setLine($fileLine[ 1 ]);
+                            $e->setFileOverride($fileLine[ 0 ]);
+                            $e->setLineOverride($fileLine[ 1 ]);
 
                             throw $e;
                         }

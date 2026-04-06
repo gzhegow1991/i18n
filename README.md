@@ -55,9 +55,11 @@ php test.php
 <?php
 
 // > настраиваем PHP
-\Gzhegow\Lib\Lib::entrypoint()
-    ->setDirRoot(__DIR__ . '/..')
-    ->useAllRecommended()
+($ent = \Gzhegow\Lib\Lib::entrypoint())
+    ->setAllRecommended()
+    ->setOpt($ent::OPT_CUSTOM_DIR_ROOT, __DIR__ . '/..')
+    //
+    ->useAll()
 ;
 
 
@@ -626,7 +628,7 @@ $fn = function () use ($i18n, $ffn) {
         $ffn->print(
             '[ CATCH ] ' . $e->getMessage(),
             $e->getFileOverride($ffn->root()),
-            $e->getLine()
+            $e->getLineOverride()
         );
     }
 
@@ -640,7 +642,7 @@ $test->expectStdout('
 "Привет"
 NULL
 "123"
-"[ CATCH ] The word is missing in dictionary: [ ru|main|message|missing ] / [ ru ]" | "tests/test.php" | 569
+"[ CATCH ] The word is missing in dictionary: [ ru|main|message|missing ] / [ ru ]" | "tests/test.php" | 571
 ');
 $test->run();
 
