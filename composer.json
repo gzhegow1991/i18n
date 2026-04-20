@@ -19,7 +19,7 @@
     "ext-bcmath": "*",
     "ext-mbstring": "*",
 
-    "gzhegow/lib": "~1.0.0"
+    "gzhegow/lib": "^1.0.0"
   },
   "suggest": {
     "ext-json": "*",
@@ -47,6 +47,6 @@
   },
 
   "extra": {
-    "version": "v1.0.0"
+    "version": "v1.1.0"
   }
 }
