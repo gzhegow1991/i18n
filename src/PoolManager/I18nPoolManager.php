@@ -111,7 +111,7 @@ class I18nPoolManager implements I18nPoolManagerInterface
      */
     public function useAwords(array $awords, ?array $groups = null, ?array $langs = null)
     {
-        if ([] === $awords) {
+        if ( [] === $awords ) {
             throw new LogicException(
                 [ 'The `words` should be array not empty', $awords ]
             );
@@ -127,7 +127,7 @@ class I18nPoolManager implements I18nPoolManagerInterface
      */
     public function useGroups(array $groups, ?string $lang = null)
     {
-        if ([] === $groups) {
+        if ( [] === $groups ) {
             throw new LogicException(
                 [ 'The `groups` should be array not empty', $groups ]
             );
@@ -154,10 +154,10 @@ class I18nPoolManager implements I18nPoolManagerInterface
     {
         $theType = Lib::type();
 
-        foreach ( $this->loadQueueGroups as $i => [ $groups, $lang ] ) {
+        foreach ( $this->loadQueueGroups as $i => [$groups, $lang] ) {
             $lang = $lang ?? $this->store->langCurrent;
 
-            $theType->key_exists($lang, $this->store->languages)->orThrow();
+            $theType->array_key_exists($this->store->languages, $lang)->orThrow();
 
             foreach ( $groups as $ii => $group ) {
                 $index = implode(I18n::INDEX_SEPARATOR, [
@@ -165,12 +165,12 @@ class I18nPoolManager implements I18nPoolManagerInterface
                     $group,
                 ]);
 
-                if (isset($this->loadedLangGroupList[ $index ])) {
-                    unset($groups[ $ii ]);
+                if ( isset($this->loadedLangGroupList[$index]) ) {
+                    unset($groups[$ii]);
                 }
             }
 
-            if ([] === $groups) {
+            if ( [] === $groups ) {
                 continue;
             }
 
@@ -194,10 +194,10 @@ class I18nPoolManager implements I18nPoolManagerInterface
                     $group,
                 ]);
 
-                $this->loadedLangGroupList[ $index ] = [ $lang, $group ];
+                $this->loadedLangGroupList[$index] = [ $lang, $group ];
             }
 
-            unset($this->loadQueueGroups[ $i ]);
+            unset($this->loadQueueGroups[$i]);
         }
     }
 
@@ -205,21 +205,21 @@ class I18nPoolManager implements I18nPoolManagerInterface
     {
         $theType = Lib::type();
 
-        foreach ( $this->loadQueueWords as $i => [ $awords, $groups, $langs ] ) {
+        foreach ( $this->loadQueueWords as $i => [$awords, $groups, $langs] ) {
             $langs = $langs ?? [ $this->store->langCurrent ];
 
             foreach ( $langs as $lang ) {
-                $theType->key_exists($lang, $this->store->languages)->orThrow();
+                $theType->array_key_exists($this->store->languages, $lang)->orThrow();
             }
 
             $awordList = [];
             foreach ( $awords as $ii => $aword ) {
-                $awordList[ $ii ] = I18nType::aword($aword);
+                $awordList[$ii] = I18nType::aword($aword);
             }
 
             $wordList = [];
             foreach ( $awordList as $ii => $aword ) {
-                $wordList[ $ii ] = $aword->getWord();
+                $wordList[$ii] = $aword->getWord();
             }
 
             $it = $this->repository->getWordsIt(
@@ -237,7 +237,7 @@ class I18nPoolManager implements I18nPoolManagerInterface
 
             $this->pool->set($poolItems);
 
-            unset($this->loadQueueWords[ $i ]);
+            unset($this->loadQueueWords[$i]);
         }
     }
 
@@ -251,8 +251,8 @@ class I18nPoolManager implements I18nPoolManagerInterface
     {
         $groupsLoaded = [];
 
-        if (null === $langs) {
-            foreach ( $this->loadedLangGroupList as [ $lang, $group ] ) {
+        if ( null === $langs ) {
+            foreach ( $this->loadedLangGroupList as [$lang, $group] ) {
                 $groupsLoaded[] = $group;
             }
 
@@ -263,11 +263,11 @@ class I18nPoolManager implements I18nPoolManagerInterface
             foreach ( $langs as $lang ) {
                 $langString = $theType->string_not_empty($lang)->orThrow();
 
-                $langIndex[ $langString ] = true;
+                $langIndex[$langString] = true;
             }
 
-            foreach ( $this->loadedLangGroupList as [ $lang, $group ] ) {
-                if (! isset($langIndex[ $lang ])) {
+            foreach ( $this->loadedLangGroupList as [$lang, $group] ) {
+                if ( ! isset($langIndex[$lang]) ) {
                     continue;
                 }
 
@@ -287,8 +287,8 @@ class I18nPoolManager implements I18nPoolManagerInterface
     {
         $langsLoaded = [];
 
-        if (null === $groups) {
-            foreach ( $this->loadedLangGroupList as [ $lang, $group ] ) {
+        if ( null === $groups ) {
+            foreach ( $this->loadedLangGroupList as [$lang, $group] ) {
                 $langsLoaded[] = $lang;
             }
 
@@ -299,11 +299,11 @@ class I18nPoolManager implements I18nPoolManagerInterface
             foreach ( $groups as $group ) {
                 $groupString = $theType->string_not_empty($group)->orThrow();
 
-                $groupIndex[ $groupString ] = true;
+                $groupIndex[$groupString] = true;
             }
 
-            foreach ( $this->loadedLangGroupList as [ $lang, $group ] ) {
-                if (! isset($groupIndex[ $group ])) {
+            foreach ( $this->loadedLangGroupList as [$lang, $group] ) {
+                if ( ! isset($groupIndex[$group]) ) {
                     continue;
                 }
 

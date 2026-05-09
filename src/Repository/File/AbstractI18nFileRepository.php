@@ -346,7 +346,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
     /**
      * @param I18nPoolItemInterface[] $poolItems
      *
-     * @return iterable<bool[]>
+     * @return bool[]
      */
     public function save(array $poolItems) : array
     {
@@ -364,7 +364,7 @@ abstract class AbstractI18nFileRepository implements I18nRepositoryInterface
     /**
      * @param I18nPoolItemInterface[] $poolItems
      *
-     * @return bool[]
+     * @return iterable<bool[]>
      */
     public function saveIt(array $poolItems) : iterable
     {

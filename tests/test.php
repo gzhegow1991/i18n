@@ -1,11 +1,14 @@
 <?php
 
 // > настраиваем PHP
-($ent = \Gzhegow\Lib\Lib::entrypoint())
+\Gzhegow\Lib\Lib::entrypoint()
     ->setAllRecommended()
-    ->setOpt($ent::OPT_CUSTOM_DIR_ROOT, __DIR__ . '/..')
+    //
+    ->setCustomDirRoot(__DIR__ . '/..')
     //
     ->useAll()
+    //
+    ->lock()
 ;
 
 
@@ -299,7 +302,7 @@ $fn = function () use ($i18n, $ffn) {
     $poolItems = $pool->get($words, $andGroupsIn = null, $andLangsIn = null); // array[]
     $result = [];
     foreach ( $poolItems as $i => $poolItem ) {
-        $result[ $i ] = $poolItem->getChoices();
+        $result[$i] = $poolItem->getChoices();
     }
     $ffn->print_array($result, 2);
 
@@ -419,7 +422,7 @@ $fn = function () use ($i18n, $ffn) {
     $result = [];
     foreach ( $poolItemsLists as $i => $poolItemList ) {
         foreach ( $poolItemList as $ii => $poolItem ) {
-            $result[ $i ][ $ii ] = $poolItem->toArray();
+            $result[$i][$ii] = $poolItem->toArray();
         }
     }
     $ffn->print_array_multiline($result, 4);
@@ -433,7 +436,7 @@ $fn = function () use ($i18n, $ffn) {
     $result = [];
     foreach ( $poolItemsLists as $i => $poolItemList ) {
         foreach ( $poolItemList as $ii => $poolItem ) {
-            $result[ $i ][ $ii ] = $poolItem->toArray();
+            $result[$i][$ii] = $poolItem->toArray();
         }
     }
     $ffn->print_array_multiline($result, 4);
@@ -588,7 +591,7 @@ $test->expectStdout('
 "Привет"
 NULL
 "123"
-"[ CATCH ] The word is missing in dictionary: [ ru|main|message|missing ] / [ ru ]" | "tests/test.php" | 571
+"[ CATCH ] The word is missing in dictionary: [ ru|main|message|missing ] / [ ru ]" | "tests/test.php" | 574
 ');
 $test->run();
 
@@ -880,9 +883,9 @@ $fn = function () use ($i18n, $langDir, $ffn) {
 
     $it = new \DirectoryIterator($langDir . '/by');
     foreach ( $it as $spl ) {
-        if ($spl->isDot()) continue;
-        if ($spl->isDir()) continue;
-        if ('.gitignore' === $spl->getFilename()) continue;
+        if ( $spl->isDot() ) continue;
+        if ( $spl->isDir() ) continue;
+        if ( '.gitignore' === $spl->getFilename() ) continue;
 
         unlink($spl->getRealPath());
     }
