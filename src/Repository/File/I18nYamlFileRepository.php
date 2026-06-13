@@ -6,6 +6,7 @@ namespace Gzhegow\I18n\Repository\File;
 use Gzhegow\I18n\Type\I18nType;
 use Gzhegow\I18n\Exception\RuntimeException;
 use Gzhegow\I18n\Pool\PoolItem\I18nPoolItemInterface;
+use Gzhegow\I18n\Exception\Runtime\ExtensionException;
 use Gzhegow\I18n\Repository\File\FileSource\I18nFileSource;
 use Gzhegow\I18n\Repository\File\FileSource\I18nFileSourceInterface;
 
@@ -14,12 +15,9 @@ class I18nYamlFileRepository extends AbstractI18nFileRepository
 {
     public function __construct(string $langDir)
     {
-        if (! extension_loaded('yaml')) {
-            throw new RuntimeException(
-                [
-                    'Extension `ext-yaml` is required to use this repository',
-                    $this,
-                ]
+        if ( ! extension_loaded('yaml') ) {
+            throw new ExtensionException(
+                [ 'The extension is missing: yaml' ]
             );
         }
 
@@ -63,12 +61,12 @@ class I18nYamlFileRepository extends AbstractI18nFileRepository
         $choicesArray = yaml_parse_file($fileSourceRealpath);
 
         foreach ( $choicesArray as $word => $poolItemChoices ) {
-            $poolItemPhrase = $poolItemChoices[ 0 ];
+            $poolItemPhrase = $poolItemChoices[0];
             $poolItemWord = I18nType::word($word);
 
             $poolItemGroup = $poolItemWord->getGroup();
 
-            if ($poolItemGroup !== $fileSourceGroup) {
+            if ( $poolItemGroup !== $fileSourceGroup ) {
                 throw new RuntimeException(
                     [
                         'Stored `word` has group that is not match with `poolItem` group',
@@ -90,7 +88,7 @@ class I18nYamlFileRepository extends AbstractI18nFileRepository
 
             $poolItem = I18nType::poolItem($poolItem);
 
-            $poolItems[ $word ] = $poolItem;
+            $poolItems[$word] = $poolItem;
         }
 
         return $poolItems;

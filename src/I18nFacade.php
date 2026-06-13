@@ -23,6 +23,7 @@ use Gzhegow\I18n\Repository\I18nRepositoryInterface;
 use Gzhegow\I18n\Pool\PoolItem\I18nPoolItemInterface;
 use Gzhegow\I18n\PoolManager\I18nPoolManagerInterface;
 use Gzhegow\I18n\Interpolator\I18nInterpolatorInterface;
+use Gzhegow\I18n\Exception\Runtime\MissingPhraseException;
 
 
 class I18nFacade implements I18nInterface
@@ -813,7 +814,7 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : array
     {
-        $fileLine = Lib::file_line([], 1);
+        $fileLine = Lib::file_line();
 
         $phrasesInterpolated = $this->doPhrasesOrDefault(
             $fileLine,
@@ -841,7 +842,7 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : array
     {
-        $fileLine = Lib::file_line([], 1);
+        $fileLine = Lib::file_line();
 
         $phrasesInterpolated = $this->doPhrases(
             $fileLine,
@@ -866,7 +867,7 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : string
     {
-        $fileLine = Lib::file_line([], 1);
+        $fileLine = Lib::file_line();
 
         $phrasesInterpolated = $this->doPhrasesOrDefault(
             $fileLine,
@@ -895,7 +896,7 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : ?string
     {
-        $fileLine = Lib::file_line([], 1);
+        $fileLine = Lib::file_line();
 
         $fallbacks = $fallback ? [ $fallback[0] ] : [];
 
@@ -1051,7 +1052,7 @@ class I18nFacade implements I18nInterface
 
                     if ( ! isset($poolItemLists[$i]) ) {
                         if ( ! array_key_exists($i, $fallbacks) ) {
-                            $e = new RuntimeException($errMessage);
+                            $e = new MissingPhraseException($errMessage);
                             $e->setFileOverride($file);
                             $e->setLineOverride($line);
 
@@ -1110,7 +1111,7 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : array
     {
-        $fileLine = Lib::file_line([], 1);
+        $fileLine = Lib::file_line();
 
         $choicesInterpolated = $this->doChoicesOrDefault(
             $fileLine,
@@ -1139,7 +1140,7 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : array
     {
-        $fileLine = Lib::file_line([], 1);
+        $fileLine = Lib::file_line();
 
         $choicesInterpolated = $this->doChoices(
             $fileLine,
@@ -1166,7 +1167,7 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : array
     {
-        $fileLine = Lib::file_line([], 1);
+        $fileLine = Lib::file_line();
 
         $choicesInterpolated = $this->doChoicesOrDefault(
             $fileLine,
@@ -1197,7 +1198,7 @@ class I18nFacade implements I18nInterface
         ?array $groups = null, ?array $langs = null
     ) : array
     {
-        $fileLine = Lib::file_line([], 1);
+        $fileLine = Lib::file_line();
 
         $fallbacks = $fallback ? [ $fallback[0] ] : [];
 
@@ -1382,7 +1383,7 @@ class I18nFacade implements I18nInterface
 
                     if ( ! isset($poolItemLists[$i]) ) {
                         if ( ! array_key_exists($i, $fallbacks) ) {
-                            $e = new RuntimeException($errMessage);
+                            $e = new MissingPhraseException($errMessage);
                             $e->setFileOverride($file);
                             $e->setLineOverride($line);
 

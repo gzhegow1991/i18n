@@ -54,11 +54,12 @@ php test.php
 ```php
 <?php
 
-// > настраиваем PHP
+define('__DIR_ROOT__', __DIR__ . '/..');
+
 \Gzhegow\Lib\Lib::entrypoint()
     ->setAllRecommended()
     //
-    ->setCustomDirRoot(__DIR__ . '/..')
+    ->setCustomDirRoot(__DIR_ROOT__)
     //
     ->useAll()
     //
@@ -66,62 +67,11 @@ php test.php
 ;
 
 
-
-// > добавляем несколько функция для тестирования
-$ffn = new class {
-    function root() : string
-    {
-        return realpath(__DIR__ . '/..');
-    }
+$theDebug = \Gzhegow\Lib\Lib::debug();
+$theTest = \Gzhegow\Lib\Lib::test();
 
 
-    function value_array($value, ?int $maxLevel = null, array $options = []) : string
-    {
-        return \Gzhegow\Lib\Lib::debug()->dump_value_array($value, $maxLevel, $options);
-    }
-
-    function value_array_multiline($value, ?int $maxLevel = null, array $options = []) : string
-    {
-        return \Gzhegow\Lib\Lib::debug()->dump_value_array_multiline($value, $maxLevel, $options);
-    }
-
-
-    function values($separator = null, ...$values) : string
-    {
-        return \Gzhegow\Lib\Lib::debug()->dump_values([], $separator, ...$values);
-    }
-
-
-    function print(...$values) : void
-    {
-        echo $this->values(' | ', ...$values) . PHP_EOL;
-    }
-
-    function print_array($value, ?int $maxLevel = null, array $options = []) : void
-    {
-        echo $this->value_array($value, $maxLevel, $options) . PHP_EOL;
-    }
-
-    function print_array_multiline($value, ?int $maxLevel = null, array $options = []) : void
-    {
-        echo $this->value_array_multiline($value, $maxLevel, $options) . PHP_EOL;
-    }
-
-
-    function test(\Closure $fn, array $args = []) : \Gzhegow\Lib\Modules\Test\TestCase
-    {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
-
-        return \Gzhegow\Lib\Lib::test()->newTestCase()
-            ->fn($fn, $args)
-            ->trace($trace)
-        ;
-    }
-};
-
-
-
-// >>> ЗАПУСКАЕМ!
+// >>> ЗАПУСК
 
 // > сначала всегда фабрика
 $factory = new \Gzhegow\I18n\I18nFactory();
@@ -129,7 +79,7 @@ $factory = new \Gzhegow\I18n\I18nFactory();
 // > создаем конфигурацию
 $config = new \Gzhegow\I18n\Config\I18nConfig();
 $config->configure(
-    function (\Gzhegow\I18n\Config\I18nConfig $config) {
+    static function (\Gzhegow\I18n\Config\I18nConfig $config) {
         // > посмотрите на класс конфига, чтобы увидеть примеры заполнения
 
         // > можно добавить другие поддерживаемые языки
@@ -194,7 +144,7 @@ $config->configure(
 // > создаем репозиторий, который будет получать переводы из удаленного источника
 // > в пакете поставляются несколько готовых репозиториев: JSON, PHP, YAML, и всегда можно написать свой собственный
 // > задаем папку, где лежат переводы
-$langDir = $ffn->root() . '/disc/i18n';
+$langDir = __DIR_ROOT__ . '/disc/i18n';
 // > создаем нужный объект
 // $repositoryJson = new \Gzhegow\I18n\Repository\File\I18nJsonFileRepository($langDir);
 $repositoryJsonc = new \Gzhegow\I18n\Repository\File\I18nJsoncFileRepository($langDir);
@@ -235,22 +185,22 @@ $i18n = new \Gzhegow\I18n\I18nFacade(
 
 // > TEST
 // > Строим регулярное выражение, которое подключается в роутер для SEO оптимизации
-$fn = function () use ($i18n, $ffn) {
-    $ffn->print('TEST 1');
+$fn = function () use ($i18n, $theDebug) {
+    $theDebug->dump_value('TEST 1');
     echo PHP_EOL;
 
 
     $result = $i18n->getLangsRegex();
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->getLangsRegex('/');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->getLangsRegex('', '/');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->getLangsRegex('/', '/');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     echo "\n";
 
@@ -260,9 +210,9 @@ $fn = function () use ($i18n, $ffn) {
         $regexBraces = '/',
         $regexFlags = 'iu'
     );
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 };
-$test = $ffn->test($fn);
+$test = $theTest->newCase($fn);
 $test->expectStdout('
 "TEST 1"
 
@@ -278,8 +228,8 @@ $test->run();
 
 // > TEST
 // > Получаем часть пути, который подставляется при генерации URL, для языка по-умолчанию должен быть NULL
-$fn = function () use ($i18n, $ffn) {
-    $ffn->print('TEST 2');
+$fn = function () use ($i18n, $theDebug) {
+    $theDebug->dump_value('TEST 2');
     echo PHP_EOL;
 
 
@@ -287,15 +237,15 @@ $fn = function () use ($i18n, $ffn) {
     $langCurrentBefore = $i18n->setLangCurrent('ru');
 
     $result = $i18n->getLangUrlFor('en');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->getLangUrlFor('ru');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $i18n->setLangCurrent($langCurrentBefore);
     $i18n->setLangDefault($langDefaultBefore);
 };
-$test = $ffn->test($fn);
+$test = $theTest->newCase($fn);
 $test->expectStdout('
 "TEST 2"
 
@@ -307,8 +257,8 @@ $test->run();
 
 // > TEST
 // > Интерполяция (подстановка) строк
-$fn = function () use ($i18n, $ffn) {
-    $ffn->print('TEST 3');
+$fn = function () use ($i18n, $theDebug) {
+    $theDebug->dump_value('TEST 3');
     echo PHP_EOL;
 
 
@@ -316,9 +266,9 @@ $fn = function () use ($i18n, $ffn) {
         $phrase = "Здесь был [:name:]. И ниже кто-то дописал: [:name2:]",
         $placeholders = [ 'name' => 'Вася', 'name2' => 'сосед' ]
     );
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 };
-$test = $ffn->test($fn);
+$test = $theTest->newCase($fn);
 $test->expectStdout('
 "TEST 3"
 
@@ -329,8 +279,8 @@ $test->run();
 
 // > TEST
 // > Проверяем наличие в памяти без запроса в репозиторий
-$fn = function () use ($i18n, $ffn) {
-    $ffn->print('TEST 4');
+$fn = function () use ($i18n, $theDebug) {
+    $theDebug->dump_value('TEST 4');
     echo PHP_EOL;
 
 
@@ -349,7 +299,7 @@ $fn = function () use ($i18n, $ffn) {
     $i18n->loadUses();
 
     $result = $pool->has($words, $andGroupsIn = null, $andLangsIn = null);
-    $ffn->print_array_multiline($result, 2);
+    $theDebug->dump_array_multiline($result, 2);
 
     echo "\n";
 
@@ -358,12 +308,12 @@ $fn = function () use ($i18n, $ffn) {
     foreach ( $poolItems as $i => $poolItem ) {
         $result[$i] = $poolItem->getChoices();
     }
-    $ffn->print_array($result, 2);
+    $theDebug->dump_array($result, 2);
 
     $i18n->setLangCurrent($langCurrentBefore);
     $i18n->setLangDefault($langDefaultBefore);
 };
-$test = $ffn->test($fn);
+$test = $theTest->newCase($fn);
 $test->expectStdout('
 "TEST 4"
 
@@ -381,8 +331,8 @@ $test->run();
 
 // > TEST
 // > Проверяем наличие напрямую в репозитории
-$fn = function () use ($i18n, $ffn) {
-    $ffn->print('TEST 5');
+$fn = function () use ($i18n, $theDebug) {
+    $theDebug->dump_value('TEST 5');
     echo PHP_EOL;
 
 
@@ -397,7 +347,7 @@ $fn = function () use ($i18n, $ffn) {
         $andGroupsIn = [ 'main' ],
         $andLangsIn = [ 'en' ]
     );
-    $ffn->print_array($result, 2);
+    $theDebug->dump_array($result, 2);
 
     echo "\n";
 
@@ -406,7 +356,7 @@ $fn = function () use ($i18n, $ffn) {
         $andGroupsIn = [ 'main' ],
         $andLangsIn = [ 'en' ]
     );
-    $ffn->print_array_multiline($result, 2);
+    $theDebug->dump_array_multiline($result, 2);
 
     echo "\n";
 
@@ -422,9 +372,9 @@ $fn = function () use ($i18n, $ffn) {
             $result[] = $poolItem->getChoices();
         }
     }
-    $ffn->print_array($result, 2);
+    $theDebug->dump_array($result, 2);
 };
-$test = $ffn->test($fn);
+$test = $theTest->newCase($fn);
 $test->expectStdout('
 "TEST 5"
 
@@ -455,8 +405,8 @@ $test->run();
 // > TEST
 // > Проверяем наличие переводов в памяти без запроса в репозиторий
 // > Обратите внимание, что фраза до перевода начинаются с `@`, чтобы избежать повторного перевода и упростить поиск в массивах
-$fn = function () use ($i18n, $ffn) {
-    $ffn->print('TEST 6');
+$fn = function () use ($i18n, $theDebug) {
+    $theDebug->dump_value('TEST 6');
     echo PHP_EOL;
 
 
@@ -479,9 +429,9 @@ $fn = function () use ($i18n, $ffn) {
             $result[$i][$ii] = $poolItem->toArray();
         }
     }
-    $ffn->print_array_multiline($result, 4);
+    $theDebug->dump_array_multiline($result, 4);
     echo "\n";
-    $ffn->print_array_multiline($errors, 4);
+    $theDebug->dump_array_multiline($errors, 4);
     echo "\n";
 
     echo "\n";
@@ -493,15 +443,15 @@ $fn = function () use ($i18n, $ffn) {
             $result[$i][$ii] = $poolItem->toArray();
         }
     }
-    $ffn->print_array_multiline($result, 4);
+    $theDebug->dump_array_multiline($result, 4);
     echo "\n";
-    $ffn->print_array_multiline($errors, 4);
+    $theDebug->dump_array_multiline($errors, 4);
     echo "\n";
 
     $i18n->setLangCurrent($langCurrentBefore);
     $i18n->setLangDefault($langDefaultBefore);
 };
-$test = $ffn->test($fn);
+$test = $theTest->newCase($fn);
 $test->expectStdout('
 "TEST 6"
 
@@ -601,8 +551,8 @@ $test->run();
 // > TEST
 // > Получаем первую из доступных фразу по параметрам
 // > Обратите внимание, что фраза до перевода начинаются с `@`, чтобы избежать повторного перевода и упростить поиск в массивах
-$fn = function () use ($i18n, $ffn) {
-    $ffn->print('TEST 7');
+$fn = function () use ($i18n, $theDebug) {
+    $theDebug->dump_value('TEST 7');
     echo PHP_EOL;
 
     $langDefaultBefore = $i18n->setLangDefault('en');
@@ -615,37 +565,37 @@ $fn = function () use ($i18n, $ffn) {
     // $i18n->loadUses();
 
     $result = $i18n->phrase('@main.message.hello');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->phrase('@main.message.missing', $fallback = [ null ]);
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->phrase('@main.message.missing', $fallback = [ 123 ]);
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     try {
         // > throws exception cause of no fallback provided
         $i18n->phrase('@main.message.missing', $fallback = []);
     }
-    catch ( \Gzhegow\I18n\Exception\RuntimeException $e ) {
-        $ffn->print(
+    catch ( \Gzhegow\I18n\Exception\Runtime\MissingPhraseException $e ) {
+        $theDebug->dump_all_value([
             '[ CATCH ] ' . $e->getMessage(),
-            $e->getFileOverride($ffn->root()),
-            $e->getLineOverride()
-        );
+            $e->getFileOverride(),
+            $e->getLineOverride(),
+        ]);
     }
 
     $i18n->setLangCurrent($langCurrentBefore);
     $i18n->setLangDefault($langDefaultBefore);
 };
-$test = $ffn->test($fn);
+$test = $theTest->newCase($fn);
 $test->expectStdout('
 "TEST 7"
 
 "Привет"
 NULL
 "123"
-"[ CATCH ] The word is missing in dictionary: [ ru|main|message|missing ] / [ ru ]" | "tests/test.php" | 574
+"[ CATCH ] The word is missing in dictionary: [ ru|main|message|missing ] / [ ru ]" | "tests/test.php" | 524
 ');
 $test->run();
 
@@ -653,8 +603,8 @@ $test->run();
 // > TEST
 // > Получаем из памяти переводы (несколько) и подставляем в них аргументы
 // > Рекомендуется помечать в имени ключа число возможных аргументов для дальнейшей поддержки
-$fn = function () use ($i18n, $ffn) {
-    $ffn->print('TEST 8');
+$fn = function () use ($i18n, $theDebug) {
+    $theDebug->dump_value('TEST 8');
     echo PHP_EOL;
 
     $langDefaultBefore = $i18n->setLangDefault('en');
@@ -677,12 +627,12 @@ $fn = function () use ($i18n, $ffn) {
             [ 'name1' => 'Вася', 'name2' => 'Валера' ],
         ]
     );
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $i18n->setLangCurrent($langCurrentBefore);
     $i18n->setLangDefault($langDefaultBefore);
 };
-$test = $ffn->test($fn);
+$test = $theTest->newCase($fn);
 $test->expectStdout('
 "TEST 8"
 
@@ -693,8 +643,8 @@ $test->run();
 
 // > TEST
 // > Проверка фразы, которая есть только в русском языке (ещё не переведена переводчиком)
-$fn = function () use ($i18n, $ffn) {
-    $ffn->print('TEST 9');
+$fn = function () use ($i18n, $theDebug) {
+    $theDebug->dump_value('TEST 9');
     echo PHP_EOL;
 
     $langDefaultBefore = $i18n->setLangDefault('ru');
@@ -707,15 +657,15 @@ $fn = function () use ($i18n, $ffn) {
     // $i18n->loadUses();
 
     $result = $i18n->phrase('@main.title.apple_only_russian', [ null ]);
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->phraseOrDefault('@main.title.apple_only_russian');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $i18n->setLangCurrent($langCurrentBefore);
     $i18n->setLangDefault($langDefaultBefore);
 };
-$test = $ffn->test($fn);
+$test = $theTest->newCase($fn);
 $test->expectStdout('
 "TEST 9"
 
@@ -727,8 +677,8 @@ $test->run();
 
 // > TEST
 // > Проверка выбора фразы по количеству / EN
-$fn = function () use ($i18n, $ffn) {
-    $ffn->print('TEST 10');
+$fn = function () use ($i18n, $theDebug) {
+    $theDebug->dump_value('TEST 10');
     echo PHP_EOL;
 
     $langDefaultBefore = $i18n->setLangDefault('ru');
@@ -741,24 +691,24 @@ $fn = function () use ($i18n, $ffn) {
     // $i18n->loadUses();
 
     $result = $i18n->choice(1, '@main.title.apple');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->choice(2, '@main.title.apple');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->choice(1.5, '@main.title.apple');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->choices(
         $numbers = [ 1, 2, 1.5, '1', '2', '1.5' ],
         $awords = array_fill(0, count($numbers), '@main.title.apple')
     );
-    $ffn->print_array_multiline($result, 2);
+    $theDebug->dump_array_multiline($result, 2);
 
     $i18n->setLangCurrent($langCurrentBefore);
     $i18n->setLangDefault($langDefaultBefore);
 };
-$test = $ffn->test($fn);
+$test = $theTest->newCase($fn);
 $test->expectStdout('
 "TEST 10"
 
@@ -799,8 +749,8 @@ $test->run();
 
 // > TEST
 // > Проверка выбора фразы по количеству / RU
-$fn = function () use ($i18n, $ffn) {
-    $ffn->print('TEST 11');
+$fn = function () use ($i18n, $theDebug) {
+    $theDebug->dump_value('TEST 11');
     echo PHP_EOL;
 
     $langDefaultBefore = $i18n->setLangDefault('en');
@@ -813,24 +763,24 @@ $fn = function () use ($i18n, $ffn) {
     // $i18n->loadUses();
 
     $result = $i18n->choice(1, '@main.title.apple');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->choice(2, '@main.title.apple');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->choice(5, '@main.title.apple');
-    $ffn->print($result);
+    $theDebug->dump_value($result);
 
     $result = $i18n->choices(
         $numbers = [ 1, 2, 5, 11, 21, 1.5, '1', '2', '5', '11', '21', '1.5' ],
         $awords = array_fill(0, count($numbers), '@main.title.apple')
     );
-    $ffn->print_array_multiline($result, 2);
+    $theDebug->dump_array_multiline($result, 2);
 
     $i18n->setLangCurrent($langCurrentBefore);
     $i18n->setLangDefault($langDefaultBefore);
 };
-$test = $ffn->test($fn);
+$test = $theTest->newCase($fn);
 $test->expectStdout('
 "TEST 11"
 
@@ -895,8 +845,8 @@ $test->run();
 
 // > TEST
 // > Копируем имеющийся перевод в другой язык (если нам прислали переведенный файл)
-$fn = function () use ($i18n, $langDir, $ffn) {
-    $ffn->print('TEST 12');
+$fn = function () use ($i18n, $theDebug, $langDir) {
+    $theDebug->dump_value('TEST 12');
     echo PHP_EOL;
 
     $repository = $i18n->getRepository();
@@ -929,11 +879,15 @@ $fn = function () use ($i18n, $langDir, $ffn) {
 
     /** @var \Generator $gen */
     $repository->save($poolItemsCloned);
-    $ffn->print(is_file($langDir . '/by/main.jsonc'));
+    $theDebug->dump_value(
+        is_file($langDir . '/by/main.jsonc')
+    );
 
     /** @var \Generator $gen */
     $repository->delete($poolItemsCloned);
-    $ffn->print(! file_exists($langDir . '/by/main.jsonc'));
+    $theDebug->dump_value(
+        ! file_exists($langDir . '/by/main.jsonc')
+    );
 
     $it = new \DirectoryIterator($langDir . '/by');
     foreach ( $it as $spl ) {
@@ -944,7 +898,7 @@ $fn = function () use ($i18n, $langDir, $ffn) {
         unlink($spl->getRealPath());
     }
 };
-$test = $ffn->test($fn);
+$test = $theTest->newCase($fn);
 $test->expectStdout('
 "TEST 12"
 
